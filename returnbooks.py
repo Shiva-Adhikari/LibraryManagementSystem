@@ -70,8 +70,8 @@ class ReturnBooks:
     def user_add_books(self):
 
         book_names = self.books_type
-        # self.user_book_category = {}
-        self.user_book_category[book_names] = []
+        if book_names not in self.user_book_category:
+            self.user_book_category[book_names] = []
 
         book_info = {
             'Title' : self.user_book_name,
