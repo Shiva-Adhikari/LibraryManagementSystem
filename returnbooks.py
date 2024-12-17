@@ -13,8 +13,11 @@ class ReturnBooks:
         try:
             with open('user_issue_books.json') as file:
                 books = json.load(file)
+
                 for books_category, books_lists in books.items():
                     print(f'{books_category}:'.capitalize())
+                    # it print ------------------ this
+
                     for _ in range(50):
                         print('-',end='')
                     print()
@@ -32,7 +35,7 @@ class ReturnBooks:
 
     def return_books(self):
         books_types = input("What type of Books want to Return: ")
-        self.books_type = books_types.lower()
+        self.books_type = books_types.lower()   # convert in lower case
 
         with open('user_issue_books.json', 'r') as file_read:
             self.books = json.load(file_read)
