@@ -17,6 +17,10 @@ class IssueBooks:
             self.books = json.load(file_read)
 
             for books_category, books_list in self.books.items():
+                if self.books_type != books_category:
+                    print("Book not available")
+                    return False
+
                 if books_category == self.books_type:
                     input_book_names = input("Enter Book Name: ")
                     input_book_name = input_book_names.lower()
@@ -50,14 +54,8 @@ class IssueBooks:
     def user_add_books(self):
 
         book_names = self.books_type
-        # self.user_book_category = {}
-        # self.user_book_category[book_names] = []
-        # self.user_book_category[book_names] = []
         if book_names not in self.user_book_category:
             self.user_book_category[book_names] = []
-
-
-        # self.user_book_category = {}
 
         book_info = {
             'Title' : self.user_book_name,
@@ -67,7 +65,6 @@ class IssueBooks:
 
         with open('user_issue_books.json', 'w') as file_w:
             json.dump(self.user_book_category, file_w, indent=4)
-            # print('done')
 
         input("\nPress Any Key...")
 

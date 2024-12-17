@@ -38,6 +38,10 @@ class ReturnBooks:
             self.books = json.load(file_read)
 
             for books_category, books_list in self.books.items():
+                if self.books_type != books_category:
+                    print("Book not available")
+                    return False
+
                 if books_category == self.books_type:
                     input_book_name = input("Enter Book Name: ")
                     input_book_name = input_book_name.lower()
