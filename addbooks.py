@@ -21,7 +21,7 @@ class AddBooksLibrary:
 
         except (FileNotFoundError, json.JSONDecodeError):
             # if file not found or error to decode it will replace whole dictionary
-            print('creating file ...')
+            # print('creating file ...')
             self.book_category = {}
 
     def add_books(self):

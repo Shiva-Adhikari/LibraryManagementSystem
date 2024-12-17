@@ -13,10 +13,10 @@ while True:
     print('4. Return Book to Library')
     print('0. Exit\n')
 
-    choose = input("Select the List: ")
-    print()
-
     try:
+        choose = input("Select the List: ")
+        print()
+
         select = int(choose)
         match select:
             case 1:
@@ -66,3 +66,11 @@ while True:
     except ValueError:
         print("Please Enter a Number not String")
         input("Press Any Key...")
+    except KeyboardInterrupt:   # ctrl + c
+        continue
+    except EOFError:    # ctrl + d
+        continue
+    # except SystemExit:
+        # continue
+    # except RuntimeError:
+        # continue

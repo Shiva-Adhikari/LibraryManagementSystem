@@ -19,10 +19,11 @@ class IssueBooks:
 
             # seperate keys and values
             for books_category, books_list in self.books.items():
-                # if books not found it exit program but save empty string in file as dictionary
+
+                # if books not found it exit program but save empty string in (file) as dictionary
                 if self.books_type != books_category:
                     print("Book not available")
-                    return False
+                    return
 
                 if books_category == self.books_type:
                     input_book_names = input("Enter Book Name: ")

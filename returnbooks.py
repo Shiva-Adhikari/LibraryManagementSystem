@@ -30,7 +30,10 @@ class ReturnBooks:
         except FileNotFoundError:
             print("No books file found.")
         except json.JSONDecodeError:
-            print("Error reading the JSON file. File might be corrupted.")
+            print("Your List is Empty.")
+            input("Press Any key")
+            return
+            # print("Error reading the JSON file. File might be corrupted.")
 
 
     def return_books(self):
@@ -43,7 +46,7 @@ class ReturnBooks:
             for books_category, books_list in self.books.items():
                 if self.books_type != books_category:
                     print("Book not available")
-                    return False
+                    exit()
 
                 if books_category == self.books_type:
                     input_book_name = input("Enter Book Name: ")
