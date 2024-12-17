@@ -1,10 +1,12 @@
-import time, os
+import time
+import os
 from addbooks import AddBooksLibrary
 from readbooks import ReadBooks
 from issuebooks import IssueBooks
 from returnbooks import ReturnBooks
 
 while True:
+    os.system('clear')
     print('1. Add Book to Library')
     print('2. List of All Library Books')
     print('3. Issue Book From Library')
