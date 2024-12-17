@@ -14,7 +14,9 @@ class ReadBooks:
                             # del books[books_lists]
                             # with open('books.json', 'w') as file_rw:
                                 # json.dump(books, file_rw, indent=4)
-                    print(f'{books_category}:'.capitalize())
+                    print(f'{books_category}:'.capitalize())    # capitalize first char
+
+                    # it print ------------------ this
                     for _ in range(50):
                         print('-',end='')
                     print()
@@ -31,17 +33,14 @@ class ReadBooks:
                         #         json.dump(books, file_rw, indent=4)
                         # print('a')
                         print(book['Title'].capitalize() + '\t\t\t' + book['Author'].capitalize())
+                    
+                    # after loop ends it print space
                     print()
-
-            
-
 
         except FileNotFoundError:
             print("Books Not Found.")
         except json.JSONDecodeError:
             print("Json File Can't be Read.")
-
-
 
 
 if __name__ == '__main__':
