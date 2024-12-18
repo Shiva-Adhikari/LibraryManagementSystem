@@ -17,13 +17,17 @@ class IssueBooks:
         with open('books.json', 'r') as file_read:
             self.books = json.load(file_read)
 
+            # check if keys is empty or not if empty remove extra lists from file
+            for books_category, books_list in self.books.items():
+                if not books_list:
+                    print('list is empty')
+                    del self.books[books_category]
+                    with open('books.json', 'w') as file:
+                        json.dump(self.books, file, indent=4)
+                    return
+
             # seperate keys and values
             for books_category, books_list in self.books.items():
-
-                # if books not found it exit program but save empty string in (file) as dictionary
-                if self.books_type != books_category:
-                    print("Book not available")
-                    return
 
                 if books_category == self.books_type:
                     input_book_names = input("Enter Book Name: ")
@@ -51,10 +55,11 @@ class IssueBooks:
                     # print('file is present')
                 else:
                     print('file is not present')
-                    self.user_book_category = {}    # create new nested dictionary
+                    # self.user_book_category = {}    # create new nested dictionary
         except (FileNotFoundError, json.JSONDecodeError):
-            print('creating file ...')
-            self.user_book_category = {}    # create new nested dictionary
+            # pass
+            print('Nothing Found in file...')
+            # self.user_book_category = {}    # create new nested dictionary
 
 
     def user_add_books(self):

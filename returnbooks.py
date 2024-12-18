@@ -43,10 +43,16 @@ class ReturnBooks:
         with open('user_issue_books.json', 'r') as file_read:
             self.books = json.load(file_read)
 
+            # check if keys is empty or not if empty remove extra lists from file
             for books_category, books_list in self.books.items():
-                if self.books_type != books_category:
-                    print("Book not available")
-                    exit()
+                if not books_list:
+                    print('list is empty')
+                    del self.books[books_category]
+                    with open('user_issue_books.json', 'w') as file:
+                        json.dump(self.books, file, indent=4)
+                    return
+
+            for books_category, books_list in self.books.items():
 
                 if books_category == self.books_type:
                     input_book_name = input("Enter Book Name: ")
