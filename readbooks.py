@@ -41,8 +41,3 @@ class ReadBooks:
             print("Books Not Found.")
         except json.JSONDecodeError:
             print("Json File Can't be Read.")
-
-
-if __name__ == '__main__':
-    read_books = ReadBooks()
-    read_books.read_books()

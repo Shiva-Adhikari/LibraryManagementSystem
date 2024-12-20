@@ -57,8 +57,8 @@ class IssueBooks:
                     print('file is not present')
                     # self.user_book_category = {}    # create new nested dictionary
         except (FileNotFoundError, json.JSONDecodeError):
-            # pass
-            print('Nothing Found in file...')
+            pass
+            # print('New File created...')
             # self.user_book_category = {}    # create new nested dictionary
 
 
@@ -80,10 +80,3 @@ class IssueBooks:
 
         # at last hold the screen
         input("\nPress Any Key...")
-
-
-if __name__ == '__main__':
-    issue_books = IssueBooks()
-    issue_books.issue_books()
-    issue_books.user_read_books()
-    issue_books.user_add_books()

@@ -57,11 +57,3 @@ class AddBooksLibrary:
 
         # at last hold the screen
         input("\nPress Any Key...")
-
-
-
-
-if __name__ == '__main__':
-    add_books = AddBooksLibrary()
-    add_books.read_books()
-    add_books.add_books()

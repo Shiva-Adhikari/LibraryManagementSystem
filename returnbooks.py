@@ -100,11 +100,3 @@ class ReturnBooks:
             # print('done')
 
         input("\nPress Any Key...")
-
-
-if __name__ == '__main__':
-    return_books = ReturnBooks()
-    return_books.user_issued_books()
-    return_books.return_books()
-    return_books.user_read_books()
-    return_books.user_add_books()
