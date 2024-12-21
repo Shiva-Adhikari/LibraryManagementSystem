@@ -1,8 +1,4 @@
-__pycache__
+data/
+tests/
 */__pycache__
-z_test.py
-zbook.txt
-LibraryManagementSystem.pdf
-tempCodeRunnerFile.py
-user_issue_books.json
-books.json
+docs/LibraryManagementSystem.pdf
