@@ -1,5 +1,6 @@
 data/
 tests/
+logs/
 */__pycache__
 */.mypy_cache
 docs/LibraryManagementSystem.pdf
