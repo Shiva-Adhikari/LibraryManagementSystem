@@ -1,77 +1,60 @@
-import time
+from add_books import AddBooks
+
+import click
 import os
-from addbooks import AddBooksLibrary
-from readbooks import ReadBooks
-from issuebooks import IssueBooks
-from returnbooks import ReturnBooks
+import logging
 
-while True:
-    os.system('clear')
-    print('1. Add Book to Library')
-    print('2. List of All Library Books')
-    print('3. Issue Book From Library')
-    print('4. Return Book to Library')
-    print('0. Exit\n')
+path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+log_dir = os.path.join(path, 'logs')
+os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
+log_path = os.path.join(log_dir, 'log_file.log')
 
+logging.basicConfig(
+    level=logging.INFO, 
+    format='%(asctime)s %(levelname)s: %(message)s',
+    filename=log_path,
+    filemode='a'
+    )
+logger = logging.getLogger(__name__)
+
+
+@click.command()
+@click.option('--choose', prompt='1. AddBooks\n2. ListBooks\n3. IssueBooks\n4. ReturnBooks\n0. EXIT \n\nChoose 0-4', type=click.IntRange(0, 4), help='Choose between [ 0-4 ]')
+def menu(choose: int):
     try:
-        choose = input("Select the List: ")
-        print()
-
-        select = int(choose)
-        match select:
+        match choose:
             case 1:
-                os.system('clear')
-                add_books = AddBooksLibrary()
-
-                add_books.read_books()
-                add_books.add_books()
-                os.system('clear')
-
+                add_books()
             case 2:
-                os.system('clear')
-                read_books = ReadBooks()
-                read_books.read_books()
-                input("\nPress Any Key...")
-                os.system('clear')
-
+                list_books()
             case 3:
-                os.system('clear')
-                read_books = ReadBooks()
-                read_books.read_books()
-
-                issue_books = IssueBooks()
-                issue_books.issue_books()
-                issue_books.user_read_books()
-                issue_books.user_add_books()
-                os.system('clear')
-
+                issue_books()
             case 4:
-                os.system('clear')
-                return_books = ReturnBooks()
-                return_books.user_issued_books()
-
-                return_books.return_books()
-                return_books.user_read_books()
-                return_books.user_add_books()
-                os.system('clear')
-
+                return_books()
             case 0:
-                print("Thank You For your Time")
+                click.echo('Thank You For Your Time.')
                 exit()
-
             case _:
-                print("Enter a Valid Input [ 1 to 4 ]")
-                input("Press Any Key...")
-
+                click.echo('Please Input 1 to 4.')
     except ValueError:
-        print("Please Enter a Number not String")
-        input("Press Any Key...")
-    except KeyboardInterrupt:   # ctrl + c
-        continue
-    except EOFError:    # ctrl + d
-        continue
+        click.echo('Please Input 0 to 4.')
+    except (KeyboardInterrupt, EOFError):
+        click.echo('Invalid Method to Quit Program. type 0 for exit')
 
-    # except SystemExit:
-        # continue
-    # except RuntimeError:
-        # continue
+def add_books() -> None:
+    add_books = AddBooks()
+    add_books.add()
+    logger.info('Adding Books')
+
+def list_books() -> None:
+    logger.info('Listing Books')
+
+def issue_books() -> None:
+    logger.info('Issuing Books')
+
+def return_books() -> None:
+    logger.info('Returning Books')
+
+
+if __name__ == '__main__':
+    menu()
