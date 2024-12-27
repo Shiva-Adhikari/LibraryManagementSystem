@@ -1,24 +1,28 @@
 import src.add_books
+import src.issue_books
+import src.return_books
 
 import click
 import os
 import logging
 
 
-# def log_path():
-root_path = os.path.join(os.path.dirname(__file__))
-log_dir = os.path.join(root_path, 'logs')
-os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
-log_path = os.path.join(log_dir, 'log_file.log')
+def log_path():
+    root_path = os.path.join(os.path.dirname(__file__))
+    log_dir = os.path.join(root_path, 'logs')
+    os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
+    log_path = os.path.join(log_dir, 'log_file.log')
 
-logging.basicConfig(
-    level=logging.INFO, 
-    format='%(asctime)s %(levelname)s: %(message)s',
-    filename=log_path,
-    filemode='a'
-    )
-# return logger
-logger = logging.getLogger(__name__)
+    logging.basicConfig(
+        level=logging.INFO, 
+        format='%(asctime)s %(levelname)s: %(message)s',
+        filename=log_path,
+        filemode='a'
+        )
+    logger = logging.getLogger(__name__)
+    return logger
+
+logger = log_path()
 
 @click.command()
 @click.option('--choose', 
@@ -32,15 +36,15 @@ def menu(choose: int):
                 src.add_books.main()
             case 2:
                 logger.info('Listing Books')
-                # list_books()
+                # src.issue_books.main()
 
             case 3:
                 logger.info('Issuing Books')
-                # issue_books()
+                src.issue_books.main()
 
             case 4:
                 logger.info('Returning Books')
-                # return_books()
+                src.return_books.main()
 
             case 0:
                 click.echo('Thank You For Your Time.')
