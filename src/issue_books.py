@@ -37,6 +37,3 @@ def _issue_books(input_categories, input_book_id):
 
 def main():
     _issue_books()
-
-if __name__ == '__main__':
-    main()
