@@ -5,3 +5,4 @@ logs/
 */.mypy_cache
 */tempCodeRunnerFile.py
 docs/LibraryManagementSystem.pdf
+mypy_cache/
