@@ -59,7 +59,7 @@ def write_books(category, num_books):
     if category not in categories:
         categories[category]: List= []
     for i in range(num_books):
-        book_name = click.prompt(f'Enter "{category}" Book Name {i+1} ').lower()
+        book_name = click.prompt(f'\nEnter "{category}" Book Name {i+1} ').lower()
         author_name = click.prompt(f'Enter "{category}" Author name').lower()
         book_info = {
             'Id': len(categories[category]) + 1,
