@@ -10,8 +10,9 @@ os.makedirs(data_dir, exist_ok=True)     # create dir if not exist
 data_path = os.path.join(data_dir, 'LibraryBooks.json')
 library_books = Path(data_path)
 
+categories = {}
 def check_file(library_books):
-    """ Fetch Data """
+    """Fetch Data"""
     try:
         with open(library_books, 'r', encoding='utf-8') as file:
             categories = json.load(file)
@@ -30,6 +31,7 @@ category_keys = list(categories.keys())
 @click.option('--page', default=1, prompt='Enter page number', help='Page number')
 @click.option('--per-page', default=2, prompt='how many items per page', help='Items per page')
 def show_books(category_key, page, per_page):
+    """Pagination Calculate"""
     # get list of books
     books = categories[category_key]
     # get total pages
@@ -49,7 +51,7 @@ def show_books(category_key, page, per_page):
     # in which page number to start and end
     current_page_books = books[start:end]
 
-    # display 
+    """Display List fo Books"""
     click.echo(f'\nShowing {category_key.upper()} books (page {page})')
     click.echo(' Id | Title     | Author     | Available  ')
     for _ in range(45):
