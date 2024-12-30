@@ -10,7 +10,6 @@ os.makedirs(data_dir, exist_ok=True)     # create dir if not exist
 data_path = os.path.join(data_dir, 'LibraryBooks.json')
 library_books = Path(data_path)
 
-categories = {}
 def check_file(library_books):
     """Fetch Data"""
     try:
