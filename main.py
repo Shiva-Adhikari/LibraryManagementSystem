@@ -1,6 +1,7 @@
 import src.add_books
 import src.issue_books
 import src.return_books
+import src.list_books
 
 import click
 import os
@@ -36,7 +37,7 @@ def menu(choose: int):
                 src.add_books.main()
             case 2:
                 logger.info('Listing Books')
-                # src.issue_books.main()
+                src.list_books.main()
 
             case 3:
                 logger.info('Issuing Books')
