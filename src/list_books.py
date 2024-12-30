@@ -26,7 +26,7 @@ def check_file(library_books):
 categories = check_file(library_books)
 category_keys = list(categories.keys())
 @click.command()
-@click.argument('category_key', type=click.Choice(category_keys, case_sensitive=False))
+@click.option('--category-key', prompt='Enter Books Category', type=click.Choice(category_keys, case_sensitive=False))
 @click.option('--page', default=1, prompt='Enter page number', help='Page number')
 @click.option('--per-page', default=2, prompt='how many items per page', help='Items per page')
 def show_books(category_key, page, per_page):
@@ -64,5 +64,5 @@ def show_books(category_key, page, per_page):
     click.echo(f'\nPage {page} of {total_pages}')
 
 
-if __name__ == '__main__':
+def main():
     show_books()
