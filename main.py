@@ -18,7 +18,6 @@ logging.basicConfig(
     filename=log_path,
     filemode='a'
     )
-# logger = logging.getLogger(__name__)
 
 
 @click.command()

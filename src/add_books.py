@@ -69,7 +69,6 @@ def write_books(category, num_books):
         }
         categories[category].append(book_info)    # append in dictionary
     try:
-        # library_books.parent.mkdir(parents=True, exist_ok=True)
         with open(library_books, 'w', encoding='utf-8') as file:
             json.dump(categories, file, indent=4)
             click.echo('Data Successfully Saved in File\n')
