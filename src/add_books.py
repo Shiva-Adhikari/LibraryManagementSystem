@@ -25,6 +25,7 @@ def read_books(categories, library_books):
         if isinstance(categories, dict):
             categories = data
         else:
+            logging.warning('Warning: File not found. Creating new library.')
             click.echo('Warning: Invalid file format. Creating new library.')
             categories = {}
         return categories
