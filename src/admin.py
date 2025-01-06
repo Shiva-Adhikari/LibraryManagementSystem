@@ -85,13 +85,25 @@ def admin_register():
 
 
 def admin_login():
+    username = click.prompt('Enter username: ', type=str)
+    password = click.prompt('Enter password: ', type=str)
     """fetch from database"""
-    pass
+    try:
+        client = MongoClient('localhost', 27017)
+        db = client.LibraryManagementSystem
+        admin = db.admin.find_one({'username': username, 'password': password})
+        if admin:
+            print(f'found: {admin}')
+        else:
+            print(f'not found {admin}')
+    except Exception as e:
+        click.echo(f'Got Exception in admin_register: {e}')
 
 
-def main():
-    admin_register()
+# def main():
+    
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+    # main()
+    # admin_login()

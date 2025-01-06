@@ -1,6 +1,10 @@
 import click
-from src.admin import admin_register
-from src.user import user_register
+from src.admin import admin_register, admin_login
+from src.user import user_register, user_login
+
+
+logged_as_user = None
+logged_as_admin = None
 
 
 @click.command()
@@ -36,6 +40,8 @@ def admin_accounts(choose: int) -> int:
 
         case 2:
             click.echo("login admin account")
+            admin_login()
+
         case 0:
             exit()
         case _:
@@ -55,7 +61,7 @@ def user_accounts(choose: int) -> int:
             user_register()
         case 2:
             click.echo("login user account")
-            # for login or signup
+            user_login()
         case 0:
             exit()
         case _:
