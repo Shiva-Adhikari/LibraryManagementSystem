@@ -34,7 +34,7 @@ def user_register():
         click.echo(f'Got Exception in user_register: {e}')
 
 
-def user_login():
+def user_login() -> str:
     username = click.prompt('Enter username: ', type=str)
     email = click.prompt('Enter email: ', type=str)
     password = click.prompt('Enter password: ', type=str)
@@ -42,13 +42,11 @@ def user_login():
     try:
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
-        admin = db.user.find_one({
+        user = db.user.find_one({
             'username': username, 'email': email, 'password': password
         })
-        if admin:
-            print(f'found: {admin}')
-        else:
-            print(f'not found {admin}')
+        if user:
+            return user
     except Exception as e:
         click.echo(f'Got Exception in admin_register: {e}')
 

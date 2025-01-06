@@ -84,7 +84,7 @@ def admin_register():
         click.echo(f'Got Exception in admin_register: {e}')
 
 
-def admin_login():
+def admin_login() -> str:
     username = click.prompt('Enter username: ', type=str)
     password = click.prompt('Enter password: ', type=str)
     """fetch from database"""
@@ -93,9 +93,7 @@ def admin_login():
         db = client.LibraryManagementSystem
         admin = db.admin.find_one({'username': username, 'password': password})
         if admin:
-            print(f'found: {admin}')
-        else:
-            print(f'not found {admin}')
+            return admin
     except Exception as e:
         click.echo(f'Got Exception in admin_register: {e}')
 
