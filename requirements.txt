@@ -1,0 +1,6 @@
+click==8.1.8
+dnspython==2.7.0
+email_validator==2.2.0
+idna==3.10
+password-validator==1.0
+pymongo==4.10.1
