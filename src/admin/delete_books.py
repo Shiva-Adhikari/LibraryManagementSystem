@@ -21,9 +21,9 @@ def delete_books(input_category: str, input_book_name: str) -> None:
     if search_books:
         result = db.Books.delete_one(query)
         if result.deleted_count > 0:
-            print('successfully book deleted')
+            click.echo('successfully book deleted')
         else:
-            print('unable to delete book')
+            click.echo('unable to delete book')
 
 
 if __name__ == '__main__':
