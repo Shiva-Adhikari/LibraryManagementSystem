@@ -10,35 +10,42 @@ db = client.LibraryManagementSystem
 fetch_books = db.Books.find({}, {'_id': 0})
 for fetch_keys in fetch_books:
     books_keys.append(list(fetch_keys.keys()))
+if not books_keys:
+    exit()
 
 
-# @click.command()
-# @click.option(
-    # '--category',
-    # prompt='Enter book category',
-    # type=str,
-    # default=books_keys
-# )
-# @click.option('--page', prompt='Enter page number', type=int)
 def list_books():
-    category = click.prompt('Enter book category', type=str, default=books_keys)
-    page = click.prompt('Enter page number', type=int)
+    category = click.prompt(
+        'Enter book category',
+        type=str,
+        default=books_keys
+    )
+    page_no = click.prompt('Enter page number', type=int)
+    check_true = True
     while True:
-        # page = page
-        list_view(category, page)
-        ask = input('Again? Yes/no\n-> ').strip().lower()
+        check_true = list_view(category, page_no)
+        if check_true is False:
+            break
+        ask = input('next page? (yes/No)\n-> ').strip().lower()
         if ask == 'yes':
-            page += 1
+            page_no += 1
             continue
         else:
             break
 
 
-def list_view(category: str, page: int) -> None:
+def list_view(category: str, page_no: int) -> None:
     """list books from database"""
-    page_number = page
+    count_books = db.Books.aggregate([
+        {'$unwind': f'${category}'},
+        {'$count': 'total'}
+    ]).next()['total']
     page_size = 5  # Number of elements per page
-    skip_line = (page_number - 1) * page_size     # Calculate skip value
+    total_pages = (count_books + page_size - 1) // page_size
+    if page_no < 1 or page_no > total_pages:
+        click.echo(f'Invalid page, Available pages up to {total_pages}')
+        return False
+    skip_line = (page_no - 1) * page_size     # Calculate skip value
     pipeline = [
         {'$match': {category: {'$exists': True}}},
         {'$unwind': f'${category}'},
@@ -52,11 +59,12 @@ def list_view(category: str, page: int) -> None:
     for extract in find_books_page_1:
         table.append([
             extract[category]['Id'],
-            extract[category]['Title'],
-            extract[category]['Author'],
+            extract[category]['Title'].capitalize(),
+            extract[category]['Author'].capitalize(),
             'Yes' if extract[category]['Available'] else 'No'
         ])
-    print(tabulate(table, headers=header, tablefmt='mixed_grid'))
+    click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
+    click.echo(f'\nPage {page_no} of {total_pages}')
 
 
 if __name__ == '__main__':
