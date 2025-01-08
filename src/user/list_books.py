@@ -1,3 +1,4 @@
+from tabulate import tabulate
 from pymongo import MongoClient
 import click
 
@@ -11,15 +12,29 @@ for fetch_keys in fetch_books:
     books_keys.append(list(fetch_keys.keys()))
 
 
-@click.command()
-@click.option(
-    '--category',
-    prompt='Enter book category',
-    type=str,
-    default=books_keys
-)
-@click.option('--page', prompt='Enter page number', type=int)
-def list_books(category: str, page: int) -> None:
+# @click.command()
+# @click.option(
+    # '--category',
+    # prompt='Enter book category',
+    # type=str,
+    # default=books_keys
+# )
+# @click.option('--page', prompt='Enter page number', type=int)
+def list_books():
+    category = click.prompt('Enter book category', type=str, default=books_keys)
+    page = click.prompt('Enter page number', type=int)
+    while True:
+        # page = page
+        list_view(category, page)
+        ask = input('Again? Yes/no\n-> ').strip().lower()
+        if ask == 'yes':
+            page += 1
+            continue
+        else:
+            break
+
+
+def list_view(category: str, page: int) -> None:
     """list books from database"""
     page_number = page
     page_size = 5  # Number of elements per page
@@ -32,12 +47,16 @@ def list_books(category: str, page: int) -> None:
     ]
     find_books_page_1 = list(db.Books.aggregate(pipeline))
 
+    header = ['Id', 'Title', 'Author', 'Available']
+    table = []
     for extract in find_books_page_1:
-        print(f"Id: {extract[category]['Id']}")
-        print(f"Title: {extract[category]['Title']}")
-        print(f"Author: {extract[category]['Author']}")
-        print(f"Available: {extract[category]['Available']}")
-        print()
+        table.append([
+            extract[category]['Id'],
+            extract[category]['Title'],
+            extract[category]['Author'],
+            'Yes' if extract[category]['Available'] else 'No'
+        ])
+    print(tabulate(table, headers=header, tablefmt='mixed_grid'))
 
 
 if __name__ == '__main__':
