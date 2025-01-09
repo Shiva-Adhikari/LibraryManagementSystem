@@ -43,29 +43,25 @@ def write_books(category, num_books):
         }
         categories[category].append(book_info)    # append in dictionary
     try:
-        existing_doc = db.Books.find_one({category: {'$exists': True}})
-        if existing_doc:
-            result = db.Books.update_one(
-                {category: {'$exists': True}},
-                {'$push': {category: {'$each': categories[category]}}}
-            )
-            if result.modified_count:
-                click.echo(f'Successfully updated {category} with new books')
-            else:
-                click.echo('No updates were necessary')
+        """it push double list in database"""
+        insert_doc = db.Books.update_one(
+            {category: {'$exists': True}},
+            {'$push': {category: {'$each': categories[category]}}},
+            upsert=True
+        )
+        if insert_doc.modified_count > 0 or insert_doc.upserted_id:
+            click.echo('Books successfully added')
         else:
-            result = db.Books.insert_one(
-                {category: categories[category]}
-            )
-            if result.inserted_id:
-                click.echo(
-                    f'Successfully created new category {category} with books'
-                )
-            else:
-                click.echo('Failed to create new category')
+            click.echo('Failed to add books')
     except Exception as e:
         logging.error(
-            f'Failed to save in file(add_books): {str(e)}',
+            f'Failed to save (add_books): {str(e)}',
             exc_info=True)
-        click.echo(f'failed to save in file: {str(e)}')
+        click.echo(f'failed to save: {str(e)}')
     input("Press Any Key...")
+
+
+"""DO ID AUTO MANAGE"""
+"""convert password to hash"""
+if __name__ == '__main__':
+    write_books()
