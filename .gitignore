@@ -7,3 +7,4 @@ logs/
 docs/LibraryManagementSystem.pdf
 mypy_cache/
 tempCodeRunnerFile.py
+*/*/__pycache__
