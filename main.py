@@ -1,10 +1,26 @@
 import click
-from src.admin import admin_register, admin_login
-from src.user import user_register, user_login
+import os
+import logging
+import time
+from src.admin.admin_account import admin_register, admin_login
+from src.user.user_account import user_register, user_login
 
 
+"""global variable"""
 logged_as_user = False
 logged_as_admin = False
+
+"""Logging Module"""
+root_path = os.path.join(os.path.dirname(__file__))
+log_dir = os.path.join(root_path, 'logs')
+os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
+log_path = os.path.join(log_dir, 'log_file.log')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s: %(message)s',
+    filename=log_path,
+    filemode='a'
+)
 
 
 @click.command()
@@ -22,13 +38,16 @@ def admin_accounts(choose: int):
                 click.echo("registering admin account...")
                 admin_register()
             else:
-                click.echo('You are a user Unable to Register as Admin')
+                click.echo('You are a USER unable to register as Admin')
+                time.sleep(3)
+                library()
 
         case 2:
             click.echo("logging Admin Account...")
-            logged_as_admin = admin_login()
+            admin_login()
+            logged_as_admin = True
             logged_as_user = False
-            input('Login successfully. Press Any Key to Continue')
+            input('Press Any Key to Continue')
             library()
         case 0:
             exit()
@@ -74,8 +93,8 @@ def user_accounts(choose: int):
 @click.command()
 @click.option(
     '--choose',
-    prompt='1. Create Books\n2. List Books\n3. Update Books\n4. Remove Books\n'
-    '0. Exit\n',
+    prompt='1. Create Books\n2. Search Books\n'
+    '3. Update Books\n4. Remove Books\n0. Exit\n',
     type=int
 )
 def admin_list_books(choose: int):
@@ -83,6 +102,10 @@ def admin_list_books(choose: int):
         case 1:
             pass
         case 2:
+            pass
+        case 3:
+            pass
+        case 4:
             pass
         case 0:
             exit()
@@ -93,7 +116,7 @@ def admin_list_books(choose: int):
 @click.command()
 @click.option(
     '--choose',
-    prompt='1. Issue Books\n2.Return Books\n0. Exit',
+    prompt='1. Issue Books\n2. List Books\n3. Return Books\n0. Exit\n',
     type=int
 )
 def user_list_books(choose: int):
@@ -147,7 +170,9 @@ def library(choose: int):
             elif logged_as_admin:
                 admin_list_books()
             else:
-                input('You are not loggedin. Please login first. PRESS ANY KEY...')
+                input(
+                    'You are not loggedin. Please login first. PRESS ANY KEY..'
+                )
                 library()
         case 0:
             exit()
