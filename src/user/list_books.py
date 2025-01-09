@@ -5,16 +5,26 @@ import click
 
 books_keys = []
 
+
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
-fetch_books = db.Books.find({}, {'_id': 0})
-for fetch_keys in fetch_books:
-    books_keys.append(list(fetch_keys.keys()))
-if not books_keys:
-    exit()
+
+
+def connect_database():
+    fetch_books = db.Books.find({}, {'_id': 0})
+    for fetch_keys in fetch_books:
+        books_keys.append(list(fetch_keys.keys()))
+    if books_keys:
+        return books_keys
+    else:
+        return False
 
 
 def list_books():
+    books_keys = connect_database()
+    if not books_keys:
+        click.echo('Books list is empty')
+        return
     category = click.prompt(
         'Enter book category',
         type=str,
@@ -34,7 +44,7 @@ def list_books():
             break
 
 
-def list_view(category: str, page_no: int) -> None:
+def list_view(category: str, page_no: int) -> bool:
     """list books from database"""
     count_books = db.Books.aggregate([
         {'$unwind': f'${category}'},
