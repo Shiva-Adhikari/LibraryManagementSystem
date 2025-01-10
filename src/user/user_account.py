@@ -2,6 +2,8 @@ from email_validator import validate_email, EmailNotValidError
 import click
 from src.admin.admin_account import validation
 from pymongo import MongoClient
+import json
+from config import data_path
 
 
 def email_validation() -> str:
@@ -12,7 +14,7 @@ def email_validation() -> str:
             email = email.normalized
             return email
         except EmailNotValidError as e:
-            print(str(e))
+            click.echo(str(e))
 
 
 def user_register():
@@ -43,22 +45,26 @@ def user_register():
 
 
 def user_login():
-    username = click.prompt('Enter username: ', type=str)
-    email = click.prompt('Enter email: ', type=str)
-    password = click.prompt('Enter password: ', type=str)
-    """fetch from database"""
+    username = click.prompt('Username: ', type=str)
+    password = click.prompt('Password: ', type=str)
+    """user credential from database"""
     try:
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
         user = db.Accounts.find_one({
             'User.username': username,
-            'User.email': email,
             'User.password': password
-        }, {'User.$': 1}  # get only 1 specific match element
-        )
+        })
         if user:
             click.echo('Login Successfully')
-            user_details(user)
+            extract_user = {
+                'username': user['User'][0]['username'],
+                'email': user['User'][0]['email']
+            }
+            data_dir = data_path('user')
+            with open(data_dir, 'w') as file:
+                json.dump(extract_user, file)
+            return user
         else:
             click.echo('Account not found')
     except Exception as e:
@@ -66,12 +72,7 @@ def user_login():
         click.echo(f'Got Exception in admin_register: {e}')
 
 
-def user_details(user):
-    """get user credentials"""
-    return user
-
-
-if __name__ == '__main__':
-    pass
+# if __name__ == '__main__':
+    #     pass
     # user_register()
     # user_login()
