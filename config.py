@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 
 
@@ -15,7 +16,7 @@ def logging_module():
     root_path = os.path.join(os.path.dirname(__file__))
     log_dir = os.path.join(root_path, 'logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
-    log_path = os.path.join(log_dir, 'log_file.log')
+    log_path = os.path.join(log_dir, 'log.log')
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s %(levelname)s: %(message)s',
@@ -24,3 +25,24 @@ def logging_module():
     )
     logger = logging.getLogger(__name__)
     return logger
+
+
+def get_user_login_details():
+    details = data_path()
+    try:
+        with open(details) as file:
+            get_details = json.load(file)
+            if get_details:
+                return get_details
+    except json.decoder.JSONDecodeError:
+        return
+
+
+def remove_user_login_details():
+    path = data_path()
+    if os.path.exists(path):
+        os.remove(path)
+
+
+# if __name__ == '__main__':
+    # remove_user_login_details()
