@@ -23,8 +23,9 @@ def delete_books(input_category: str, input_book_name: str) -> None:
         if result.deleted_count > 0:
             click.echo('successfully book deleted')
         else:
+            """ ADD LOGGING MODULE """
             click.echo('unable to delete book')
 
 
-if __name__ == '__main__':
-    delete_books()
+# if __name__ == '__main__':
+#     delete_books()
