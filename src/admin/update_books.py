@@ -51,5 +51,5 @@ def update_books(input_category: str, input_book_name: str) -> None:
         click.echo('Book Not Found')
 
 
-if __name__ == '__main__':
-    update_books()
+# if __name__ == '__main__':
+#     update_books()
