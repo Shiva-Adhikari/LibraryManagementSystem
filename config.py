@@ -3,11 +3,11 @@ import json
 import logging
 
 
-def data_path():
+def data_path(file_name):
     root_path = os.path.join(os.path.dirname(__file__))
     data_dir = os.path.join(root_path, 'data')
     os.makedirs(data_dir, exist_ok=True)
-    data_path = os.path.join(data_dir, 'login.json')
+    data_path = os.path.join(data_dir, f'{file_name}.json')
     return data_path
 
 
@@ -28,18 +28,37 @@ def logging_module():
 
 
 def get_user_login_details():
-    details = data_path()
+    details = data_path('user')
+    return details if os.path.exists(details) else False
     try:
         with open(details) as file:
             get_details = json.load(file)
             if get_details:
-                return get_details
+                return True
     except json.decoder.JSONDecodeError:
-        return
+        return False
 
 
 def remove_user_login_details():
-    path = data_path()
+    path = data_path('user')
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def get_admin_login_details():
+    details = data_path('admin')
+    return details if os.path.exists(details) else False
+    try:
+        with open(details) as file:
+            get_details = json.load(file)
+            if get_details:
+                return True
+    except json.decoder.JSONDecodeError:
+        return False
+
+
+def remove_admin_login_details():
+    path = data_path('admin')
     if os.path.exists(path):
         os.remove(path)
 
