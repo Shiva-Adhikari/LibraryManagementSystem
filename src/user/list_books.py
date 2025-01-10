@@ -5,7 +5,6 @@ import click
 
 books_keys = []
 
-
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
@@ -77,5 +76,5 @@ def list_view(category: str, page_no: int) -> bool:
     click.echo(f'\nPage {page_no} of {total_pages}')
 
 
-if __name__ == '__main__':
-    list_books()
+# if __name__ == '__main__':
+#     list_books()
