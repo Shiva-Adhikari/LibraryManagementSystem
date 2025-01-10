@@ -24,7 +24,7 @@ db = client.LibraryManagementSystem
         ).lower(),
     type=click.IntRange(min=1),
     default=1)
-def write_books(category, num_books):
+def add_books(category, num_books):
     """ Write books in files """
     global categories
     # if list is empty then it create list
@@ -63,5 +63,5 @@ def write_books(category, num_books):
 
 """DO ID AUTO MANAGE"""
 """convert password to hash"""
-if __name__ == '__main__':
-    write_books()
+# if __name__ == '__main__':
+#     add_books()
