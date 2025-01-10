@@ -1,6 +1,5 @@
 import click
 from pymongo import MongoClient
-from issue_books import process_book
 
 
 client = MongoClient('localhost', 27017)
@@ -10,17 +9,25 @@ db = client.LibraryManagementSystem
 @click.command()
 @click.option('--input-categories', prompt=('Enter Book Category'), type=str)
 @click.option('--input-book-name', prompt=('Enter Book Name'), type=str)
-def _return_books(input_categories: str, input_book_name: str) -> None:
-    process_book(
-        input_categories,
-        input_book_name,
-        1   # set-available = 0 for issue books
-        )
-
-
-def main():
-    _return_books()
-
-
-if __name__ == '__main__':
-    main()
+def return_books(input_categories: str, input_book_name: str, set_available=1
+                 ) -> None:
+    input_categories = input_categories.lower()
+    result = db.Books.update_one(
+        {f'{input_categories}.Title': input_book_name},
+        {
+            '$set': {
+                f'{input_categories}.$.Available': set_available
+            },
+            '$unset': {
+                f'{input_categories}.$.Days': '',
+                f'{input_categories}.$.Date': '',
+                f'{input_categories}.$.Details': ''
+            }
+        },
+        upsert=False
+    )
+    if result.modified_count > 0:
+        click.echo('You return books')
+    else:
+        """ ADD LOGGING MODULE """
+        click.echo('Unable to return books')
