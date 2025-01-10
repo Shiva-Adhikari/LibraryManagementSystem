@@ -1,6 +1,9 @@
-from password_validator import PasswordValidator
 import click
+import json
 from pymongo import MongoClient
+from password_validator import PasswordValidator
+
+from config import data_path
 
 
 def password_validation(password: str) -> str:
@@ -110,6 +113,13 @@ def admin_login():
         })
         if admin:
             click.echo('Login Successfully')
+            extract_user = {
+                'username': admin['Admin'][0]['username'],
+            }
+            data_dir = data_path('admin')
+            with open(data_dir, 'w') as file:
+                json.dump(extract_user, file)
+            return admin
         else:
             click.echo('Account not found')
     except Exception as e:
@@ -117,7 +127,7 @@ def admin_login():
         click.echo(f'Got Exception in admin_register: {e}')
 
 
-if __name__ == '__main__':
-    pass
-    admin_register()
+# if __name__ == '__main__':
+    #     pass
+    # admin_register()
     # admin_login()
