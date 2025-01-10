@@ -1,26 +1,30 @@
 import click
-import os
-import logging
 import time
-from src.admin.admin_account import admin_register, admin_login
-from src.user.user_account import user_register, user_login
+
+from src.admin.admin_account import admin_register
+from src.admin.admin_account import admin_login
+from src.admin.add_books import add_books
+# from src.admin.search_books
+from src.admin.update_books import update_books
+from src.admin.delete_books import delete_books
+from src.user.user_account import user_register
+from src.user.user_account import user_login
+from src.user.issue_books import issue_books
+from src.user.list_books import list_books
+from src.user.return_books import return_books
+# from config import data_path
+# from config import logging_module
+from config import get_user_login_details
+from config import remove_user_login_details
+from config import get_admin_login_details
+from config import remove_admin_login_details
 
 
 """global variable"""
-logged_as_user = False
-logged_as_admin = False
+logged_as_user = get_user_login_details()
+logged_as_admin = get_admin_login_details()
 
-"""Logging Module"""
-root_path = os.path.join(os.path.dirname(__file__))
-log_dir = os.path.join(root_path, 'logs')
-os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
-log_path = os.path.join(log_dir, 'log_file.log')
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s: %(message)s',
-    filename=log_path,
-    filemode='a'
-)
+# loggger = logging_module()
 
 
 @click.command()
@@ -30,24 +34,30 @@ logging.basicConfig(
     type=int
 )
 def admin_accounts(choose: int):
+    click.clear()
     match choose:
         case 1:
             global logged_as_user
             global logged_as_admin
-            if not logged_as_user:
-                click.echo("registering admin account...")
-                admin_register()
+            if logged_as_user:
+                click.echo('You are a USER, unable to register as Admin')
             else:
-                click.echo('You are a USER unable to register as Admin')
-                time.sleep(3)
-                library()
+                admin_register()
+            time.sleep(2)
+            click.clear()
+            library()
 
         case 2:
-            click.echo("logging Admin Account...")
-            admin_login()
-            logged_as_admin = True
-            logged_as_user = False
-            input('Press Any Key to Continue')
+            if logged_as_admin:
+                click.echo('You are already a Admin. Unable to login twice.')
+            else:
+                check_login = admin_login()
+                if check_login:
+                    remove_user_login_details()
+                    logged_as_admin = True
+                    logged_as_user = False
+            time.sleep(2)
+            click.clear()
             library()
         case 0:
             exit()
@@ -67,22 +77,26 @@ def user_accounts(choose: int):
             global logged_as_admin
             global logged_as_user
             if logged_as_admin:
-                click.echo("registering user account...")
                 user_register()
-                input('Register successfully. Press Any Key to Continue')
-                library()
+                """ user progress bar """
             else:
                 click.echo('You are not a Admin User to Create Account')
+            time.sleep(2)
+            click.clear()
+            library()
         case 2:
             if logged_as_user:
                 click.echo('You are already a User. Unable to login twice.')
-                input('PRESS ANY KEY...')
+                time.sleep(2)
+                click.clear()
                 library()
-            click.echo("logging user account...")
-            user_login()
-            logged_as_user = True
-            logged_as_admin = False
-            input('Login successfully. Press Any Key to Continue')
+            check_login = user_login()
+            if check_login:
+                remove_admin_login_details()
+                logged_as_user = True
+                logged_as_admin = False
+            time.sleep(2)
+            click.clear()
             library()
         case 0:
             exit()
@@ -98,15 +112,31 @@ def user_accounts(choose: int):
     type=int
 )
 def admin_list_books(choose: int):
+    """ use while loop """
     match choose:
         case 1:
-            pass
+            click.echo('create_books')
+            add_books()
+            time.sleep(1)
+            click.clear()
+            library()
         case 2:
-            pass
+            click.echo('search_books')
+            time.sleep(1)
+            click.clear()
+            library()
         case 3:
-            pass
+            click.echo('update_books')
+            update_books()
+            time.sleep(1)
+            click.clear()
+            library()
         case 4:
-            pass
+            click.echo('remove_books')
+            delete_books()
+            time.sleep(1)
+            click.clear()
+            library()
         case 0:
             exit()
         case _:
@@ -122,9 +152,20 @@ def admin_list_books(choose: int):
 def user_list_books(choose: int):
     match choose:
         case 1:
-            pass
+            issue_books()
+            time.sleep(1)
+            click.clear()
+            library()
         case 2:
-            pass
+            list_books()
+            time.sleep(1)
+            click.clear()
+            library()
+        case 3:
+            return_books()
+            time.sleep(1)
+            click.clear()
+            library()
         case 0:
             exit()
         case _:
@@ -134,18 +175,23 @@ def user_list_books(choose: int):
 @click.command()
 @click.option(
     '--choose',
-    prompt='1. Admin Account\n2. User Account\n0. Exit\n',
+    prompt='1. Admin Account\n2. User Account\n3. LogOut\n0. Exit\n',
     type=int
 )
 def show_accounts(choose: int):
     """Show Admin, User Accounts"""
+    click.clear()
     match choose:
         case 1:
-            click.echo("call admin account")
             admin_accounts()
+            click.clear()
         case 2:
-            click.echo("call user account")
             user_accounts()
+            click.clear()
+        case 3:
+            remove_user_login_details()
+            remove_admin_login_details()
+            click.echo('Logging out...')
         case 0:
             exit()
         case _:
@@ -159,20 +205,22 @@ def show_accounts(choose: int):
     type=int
 )
 def library(choose: int):
+    click.clear()
     match choose:
         case 1:
-            click.echo("Managing Account...")
             show_accounts()
+            click.clear()
         case 2:
-            click.echo("List of Books...")
             if logged_as_user:
                 user_list_books()
-            elif logged_as_admin:
+            if logged_as_admin:
                 admin_list_books()
             else:
-                input(
-                    'You are not loggedin. Please login first. PRESS ANY KEY..'
+                click.echo(
+                    'You are not loggedin. Please login first'
                 )
+                time.sleep(2)
+                click.clear()
                 library()
         case 0:
             exit()
