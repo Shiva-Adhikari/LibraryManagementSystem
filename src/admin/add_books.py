@@ -1,10 +1,9 @@
-from typing import List
-from pymongo import MongoClient
 import click
 import logging
+import time
+from pymongo import MongoClient
+from typing import List
 
-
-categories = {}
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -25,8 +24,8 @@ db = client.LibraryManagementSystem
     type=click.IntRange(min=1),
     default=1)
 def add_books(category, num_books):
-    """ Write books in files """
-    global categories
+    """Write books in files"""
+    categories = {}
     # if list is empty then it create list
     if category not in categories:
         categories[category]: List = []
@@ -35,15 +34,16 @@ def add_books(category, num_books):
             f'\nEnter "{category}" Book Name {i+1} '
             ).lower()
         author_name = click.prompt(f'Enter "{category}" Author name').lower()
+        auto_id = len(categories[category])
+        id = count_books(auto_id)
         book_info = {
-            'Id': len(categories[category]) + 1,
+            'Id': id + 1,
             'Title': book_name,
             'Author': author_name,
             'Available': 1
         }
         categories[category].append(book_info)    # append in dictionary
     try:
-        """it push double list in database"""
         insert_doc = db.Books.update_one(
             {category: {'$exists': True}},
             {'$push': {category: {'$each': categories[category]}}},
@@ -58,10 +58,25 @@ def add_books(category, num_books):
             f'Failed to save (add_books): {str(e)}',
             exc_info=True)
         click.echo(f'failed to save: {str(e)}')
-    input("Press Any Key...")
+    time.sleep(2)
 
 
-"""DO ID AUTO MANAGE"""
+def count_books(auto_id):
+    try:
+        count_book = db.Books.aggregate([
+            {
+                '$match': {'bca': {'$exists': True}}
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'count': {'$size': '$bca'}
+                }
+            }
+        ]).next()['count']
+        return count_book
+    except StopIteration:
+        return auto_id
+
+
 """convert password to hash"""
-# if __name__ == '__main__':
-#     add_books()
