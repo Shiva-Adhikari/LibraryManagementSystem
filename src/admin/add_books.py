@@ -7,7 +7,7 @@ from typing import List
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
-
+start_id = 0
 
 @click.command()
 @click.option(
@@ -35,9 +35,9 @@ def add_books(category, num_books):
             ).lower()
         author_name = click.prompt(f'Enter "{category}" Author name').lower()
         auto_id = len(categories[category])
-        id = count_books(auto_id)
+        id = count_books(auto_id, category)
         book_info = {
-            'Id': id + 1,
+            'Id': id,
             'Title': book_name,
             'Author': author_name,
             'Available': 1
@@ -58,25 +58,43 @@ def add_books(category, num_books):
             f'Failed to save (add_books): {str(e)}',
             exc_info=True)
         click.echo(f'failed to save: {str(e)}')
-    time.sleep(2)
+    time.sleep(1)
 
 
-def count_books(auto_id):
+def count_books(auto_id, category):
+    global start_id
     try:
         count_book = db.Books.aggregate([
             {
-                '$match': {'bca': {'$exists': True}}
+                '$match': {category: {'$exists': True}}
             },
             {
                 '$project': {
                     '_id': 0,
-                    'count': {'$size': '$bca'}
+                    'count': {
+                        '$add': [
+                            {'$size': f'${category}'},
+                            1
+                        ]
+                    }
                 }
             }
         ]).next()['count']
-        return count_book
+        if start_id == 0:
+            start_id = count_book
+        else:
+            start_id += 1
+        print('a')
+        print(f'count_book: {start_id}')
+        return start_id
     except StopIteration:
-        return auto_id
+        print('b')
+        print(f'auto_id: {auto_id}')
+        return auto_id + 1
+        # pass
 
 
 """convert password to hash"""
+if __name__ == '__main__':
+    add_books()
+    # count_books()
