@@ -1,5 +1,6 @@
 import click
 import json
+import bcrypt
 from pymongo import MongoClient
 from password_validator import PasswordValidator
 
@@ -46,6 +47,10 @@ def confirm_password_validation() -> str:
             if confirm_password:
                 break
         if password == confirm_password:
+            # create salt
+            salt = bcrypt.gensalt(rounds=10)
+            # convert password to hash with added salt
+            password = bcrypt.hashpw(password.encode(), salt)
             return password
         else:
             click.echo('password not match')
@@ -107,21 +112,31 @@ def admin_login():
     try:
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
-        admin = db.Accounts.find_one({
-            'Admin.username': username,
-            'Admin.password': password
-        })
+        admin = db.Accounts.find_one(
+            {'Admin.username': username},
+            {'Admin.$': 1}
+        )
         if admin:
-            click.echo('Login Successfully')
-            extract_user = {
+            extract_password = {
+                'password': admin['Admin'][0]['password']
+            }
+            # check hash password
+            if bcrypt.checkpw(password.encode(), extract_password['password']):
+                click.echo('Login Successfully')
+            else:
+                # ADD LOGGING HERE
+                click.echo('Login Failed')
+                return
+            extract_username = {
                 'username': admin['Admin'][0]['username'],
             }
             data_dir = data_path('admin')
             with open(data_dir, 'w') as file:
-                json.dump(extract_user, file)
+                json.dump(extract_username, file)
             return admin
         else:
             click.echo('Account not found')
+            return
     except Exception as e:
         # ADD LOGGING HERE
         click.echo(f'Got Exception in admin_register: {e}')
