@@ -3,6 +3,7 @@ import click
 from src.admin.admin_account import validation
 from pymongo import MongoClient
 import json
+import bcrypt
 from config import data_path
 
 
@@ -21,6 +22,8 @@ def user_register():
     try:
         email = email_validation()
         username, password = validation()
+        # salt = bcrypt.gensalt(rounds=10)
+        # password = bcrypt.hashpw(password.encode(), salt)
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
         add_accounts = db.Accounts.update_one(
@@ -51,25 +54,33 @@ def user_login():
     try:
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
-        user = db.Accounts.find_one({
-            'User.username': username,
-            'User.password': password
-        })
+        user = db.Accounts.find_one(
+            {'User.username': username},
+            {'User.$': 1}
+        )
         if user:
-            click.echo('Login Successfully')
-            extract_user = {
+            extract_password = {
+                'password': user['User'][0]['password']
+            }
+            print(f'extract_password: {extract_password}')
+            print(f'user: {user}')
+            if bcrypt.checkpw(password.encode(), extract_password['password']):
+                click.echo('Login Successfully')
+            else:
+                click.echo('please Enter correct password')
+            extract_username_email = {
                 'username': user['User'][0]['username'],
                 'email': user['User'][0]['email']
             }
             data_dir = data_path('user')
             with open(data_dir, 'w') as file:
-                json.dump(extract_user, file)
+                json.dump(extract_username_email, file)
             return user
         else:
             click.echo('Account not found')
     except Exception as e:
         # ADD LOGGING HERE
-        click.echo(f'Got Exception in admin_register: {e}')
+        click.echo(f'Got Exception in user_login: {e}')
 
 
 # if __name__ == '__main__':
