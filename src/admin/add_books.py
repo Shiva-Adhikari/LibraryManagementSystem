@@ -9,6 +9,7 @@ client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 start_id = 0
 
+
 @click.command()
 @click.option(
     '--category',
@@ -52,6 +53,7 @@ def add_books(category, num_books):
         if insert_doc.modified_count > 0 or insert_doc.upserted_id:
             click.echo('Books successfully added')
         else:
+            """ ADD LOGGING MODULE """
             click.echo('Failed to add books')
     except Exception as e:
         logging.error(
@@ -84,17 +86,10 @@ def count_books(auto_id, category):
             start_id = count_book
         else:
             start_id += 1
-        print('a')
-        print(f'count_book: {start_id}')
         return start_id
     except StopIteration:
-        print('b')
-        print(f'auto_id: {auto_id}')
         return auto_id + 1
-        # pass
 
 
 """convert password to hash"""
-if __name__ == '__main__':
-    add_books()
-    # count_books()
+
