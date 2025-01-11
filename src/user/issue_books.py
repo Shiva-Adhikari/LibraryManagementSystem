@@ -18,7 +18,7 @@ def issue_books(input_categories: str, input_book_name: str, to_date: int,
                 set_available=0) -> None:
     input_categories = input_categories.lower()
     user_detail = {}
-    user_detail = data_path()
+    user_detail = data_path('user')
     with open(user_detail) as file:
         user_detail = json.load(file)
     result = db.Books.update_one(
@@ -37,3 +37,7 @@ def issue_books(input_categories: str, input_book_name: str, to_date: int,
     else:
         """ ADD LOGGING MODULE """
         click.echo('Unable to get book')
+
+
+# if __name__ == '__main__':
+    # issue_books()
