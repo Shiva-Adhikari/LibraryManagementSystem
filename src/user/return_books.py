@@ -19,8 +19,10 @@ def return_books(input_categories: str, input_book_name: str, set_available=1
                 f'{input_categories}.$.Available': set_available
             },
             '$unset': {
+                f'{input_categories}.$.IssueDate': '',
                 f'{input_categories}.$.Days': '',
-                f'{input_categories}.$.Date': '',
+                f'{input_categories}.$.DueWarning': '',
+                f'{input_categories}.$.DueDate': '',
                 f'{input_categories}.$.Details': ''
             }
         },
