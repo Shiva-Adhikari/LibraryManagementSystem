@@ -22,9 +22,9 @@ def due_book_check():
             books = data[categories]
             for book in books:
                 if 'IssueDate' in book:
-                    due_warning = book['IssueDate']
+                    due_warning = book['DueWarning']
                     due_warning_day = datetime.date(due_warning)
-                    due_date = book['IssueDate']
+                    due_date = book['DueDate']
                     due_date_day = datetime.date(due_date)
 
                     if today_date == due_warning_day:
