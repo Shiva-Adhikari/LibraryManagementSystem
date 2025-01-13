@@ -92,4 +92,3 @@ LIBRARY"""
 
 if __name__ == '__main__':
     due_book_check()
-    # send_email()
