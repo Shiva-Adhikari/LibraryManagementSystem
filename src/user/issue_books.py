@@ -5,7 +5,10 @@ from datetime import datetime
 from datetime import timedelta
 
 from config import data_path
+from config import logging_module
 
+
+logger = logging_module()
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -43,12 +46,8 @@ def issue_books(input_categories: str, input_book_name: str, to_date: int,
         if result.modified_count > 0:
             click.echo('You got book')
         else:
-            """ ADD LOGGING MODULE """
+            logger.error('Unable to get book')
             click.echo('Unable to get book')
     except Exception as e:
-        # ADD LOGGING HERE
+        logger.error(f'{str(e)}')
         click.echo(f"got exception as {str(e)}")
-
-
-# if __name__ == '__main__':
-    # issue_books()
