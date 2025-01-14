@@ -5,6 +5,10 @@ from pymongo import MongoClient
 from password_validator import PasswordValidator
 
 from config import data_path
+from config import logging_module
+
+
+logger = logging_module()
 
 
 def password_validation(password: str) -> str:
@@ -99,9 +103,10 @@ def admin_register():
         if add_accounts.modified_count > 0 or add_accounts.upserted_id:
             click.echo('Register Successfully')
         else:
-            # ADD LOGGING HERE
+            logger.error('Register Failed')
             click.echo('Register Failed')
     except Exception as e:
+        logger.error(f'Got Exception {str(e)}')
         click.echo(f'Got Exception in admin_register: {e}')
 
 
@@ -124,8 +129,7 @@ def admin_login():
             if bcrypt.checkpw(password.encode(), extract_password['password']):
                 click.echo('Login Successfully')
             else:
-                # ADD LOGGING HERE
-                click.echo('Login Failed')
+                click.echo('please Enter correct password')
                 return
             extract_username = {
                 'username': admin['Admin'][0]['username'],
@@ -138,11 +142,5 @@ def admin_login():
             click.echo('Account not found')
             return
     except Exception as e:
-        # ADD LOGGING HERE
+        logger.error(f'Admin Error: {str(e)}')
         click.echo(f'Got Exception in admin_register: {e}')
-
-
-# if __name__ == '__main__':
-    #     pass
-    # admin_register()
-    # admin_login()
