@@ -1,7 +1,10 @@
 import click
-# import logging
 from pymongo import MongoClient
 
+from config import logging_module
+
+
+logger = logging_module()
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -26,9 +29,5 @@ def delete_books(input_category: str, input_book_name: str) -> None:
         if result.modified_count > 0:
             click.echo('successfully book deleted')
         else:
-            """ ADD LOGGING MODULE """
+            logger.error('Unable to delete book')
             click.echo('unable to delete book')
-
-
-# if __name__ == '__main__':
-#     delete_books()
