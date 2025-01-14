@@ -75,6 +75,5 @@ def list_view(category: str, page_no: int) -> bool:
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
     click.echo(f'\nPage {page_no} of {total_pages}')
 
-
-# if __name__ == '__main__':
-#     list_books()
+    global books_keys
+    books_keys = []
