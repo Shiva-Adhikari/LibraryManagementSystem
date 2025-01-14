@@ -67,29 +67,12 @@ def validation() -> tuple[str, str]:
     return username, password
 
 
-def get_next_sequence_value(sequence_name: str, db):
-    """Auto increment user_id"""
-    counter = db.counters.find_one_and_update(
-        # find the document with the sequence name eg. 'user_id'all
-        {'+_id': sequence_name},
-        # increment seq by 1
-        {'$inc': {'seq': 1}},
-        # if not found, create the document with 1
-        upsert=True,
-        # return the updated document
-        return_document=True
-    )
-    # return the updated vlaue of seq ( the next unique ID)
-    return counter['seq']
-
-
 def admin_register():
     """save in database"""
     try:
         username, password = validation()
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
-        # next_id = get_next_sequence_value('admin_id', db)
         add_accounts = db.Accounts.update_one(
             {'Admin': {'$exists': True}},
             {'$push': {
