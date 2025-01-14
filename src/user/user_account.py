@@ -45,6 +45,8 @@ def user_register():
         else:
             logger.error('Register Failed')
             click.echo('Register Failed')
+    except KeyboardInterrupt:
+        click.echo('exiting...')
     except Exception as e:
         logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_register: {e}')
@@ -79,6 +81,8 @@ def user_login():
             return user
         else:
             click.echo('Account not found')
+    except KeyboardInterrupt:
+        click.echo('exiting...')
     except Exception as e:
         logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_login: {e}')
