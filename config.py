@@ -4,6 +4,7 @@ import logging
 
 
 def data_path(file_name):
+    """save login filepath"""
     root_path = os.path.join(os.path.dirname(__file__))
     data_dir = os.path.join(root_path, 'data')
     os.makedirs(data_dir, exist_ok=True)
@@ -16,10 +17,11 @@ def logging_module():
     root_path = os.path.join(os.path.dirname(__file__))
     log_dir = os.path.join(root_path, 'logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
-    log_path = os.path.join(log_dir, 'log.log')
+    log_path = os.path.join(log_dir, 'log_file.log')
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s %(levelname)s: %(message)s',
+        format='%(asctime)s %(filename)s %(funcName)s lineno: %(lineno)d '
+        '%(levelname)s: %(message)s',
         filename=log_path,
         filemode='a'
     )
@@ -28,6 +30,7 @@ def logging_module():
 
 
 def get_user_login_details():
+    """save user login session"""
     details = data_path('user')
     return details if os.path.exists(details) else False
     try:
@@ -40,12 +43,14 @@ def get_user_login_details():
 
 
 def remove_user_login_details():
+    """remove admin session"""
     path = data_path('user')
     if os.path.exists(path):
         os.remove(path)
 
 
 def get_admin_login_details():
+    """save admin login session"""
     details = data_path('admin')
     return details if os.path.exists(details) else False
     try:
@@ -58,10 +63,7 @@ def get_admin_login_details():
 
 
 def remove_admin_login_details():
+    """remove admin session"""
     path = data_path('admin')
     if os.path.exists(path):
         os.remove(path)
-
-
-# if __name__ == '__main__':
-    # remove_user_login_details()
