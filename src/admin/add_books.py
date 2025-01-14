@@ -1,9 +1,11 @@
 import click
-import logging
 import time
 from pymongo import MongoClient
 from typing import List
+from config import logging_module
 
+
+logger = logging_module()
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -53,11 +55,11 @@ def add_books(category, num_books):
         if insert_doc.modified_count > 0 or insert_doc.upserted_id:
             click.echo('Books successfully added')
         else:
-            """ ADD LOGGING MODULE """
+            logger.error('Failed to add books')
             click.echo('Failed to add books')
     except Exception as e:
-        logging.error(
-            f'Failed to save (add_books): {str(e)}',
+        logger.error(
+            f'Failed to save books: {str(e)}',
             exc_info=True)
         click.echo(f'failed to save: {str(e)}')
     time.sleep(1)
@@ -89,7 +91,3 @@ def count_books(auto_id, category):
         return start_id
     except StopIteration:
         return auto_id + 1
-
-
-"""convert password to hash"""
-
