@@ -46,6 +46,6 @@ def search_books(input_book_name: str) -> None:
     input('Press Any Key...')
 
 
-def display_books():
+def display_books() -> None:
     header = ['Category', 'Id', 'Title', 'Author', 'Available']
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
