@@ -39,10 +39,6 @@ def admin_accounts(choose: int):
                 click.echo('You are a USER, unable to register as Admin')
             else:
                 admin_register()
-            time.sleep(2)
-            click.clear()
-            library()
-
         case 2:
             if logged_as_admin:
                 click.echo('You are already a Admin. Unable to login twice.')
@@ -52,13 +48,13 @@ def admin_accounts(choose: int):
                     remove_user_login_details()
                     logged_as_admin = True
                     logged_as_user = False
-            time.sleep(2)
-            click.clear()
-            library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(2)
+    click.clear()
+    library()
 
 
 @click.command()
@@ -74,30 +70,23 @@ def user_accounts(choose: int):
             global logged_as_user
             if logged_as_admin:
                 user_register()
-                """ user progress bar """
             else:
                 click.echo('You are not a Admin User to Create Account')
-            time.sleep(2)
-            click.clear()
-            library()
         case 2:
             if logged_as_user:
                 click.echo('You are already a User. Unable to login twice.')
-                time.sleep(2)
-                click.clear()
-                library()
             check_login = user_login()
             if check_login:
                 remove_admin_login_details()
                 logged_as_user = True
                 logged_as_admin = False
-            time.sleep(2)
-            click.clear()
-            library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(2)
+    click.clear()
+    library()
 
 
 @click.command()
@@ -108,32 +97,22 @@ def user_accounts(choose: int):
     type=int
 )
 def admin_list_books(choose: int):
-    """ use while loop """
     match choose:
         case 1:
             add_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 2:
             search_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 3:
             update_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 4:
             delete_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(1)
+    click.clear()
+    library()
 
 
 @click.command()
@@ -146,23 +125,17 @@ def user_list_books(choose: int):
     match choose:
         case 1:
             issue_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 2:
             list_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 3:
             return_books()
-            time.sleep(1)
-            click.clear()
-            library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(1)
+    click.clear()
+    library()
 
 
 @click.command()
@@ -177,21 +150,19 @@ def show_accounts(choose: int):
     match choose:
         case 1:
             admin_accounts()
-            click.clear()
         case 2:
             user_accounts()
-            click.clear()
         case 3:
             remove_user_login_details()
             remove_admin_login_details()
             click.echo('Logging out...')
-            time.sleep(1)
-            click.clear()
-            library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(1)
+    click.clear()
+    library()
 
 
 @click.command()
@@ -205,7 +176,6 @@ def library(choose: int):
     match choose:
         case 1:
             show_accounts()
-            click.clear()
         case 2:
             if logged_as_user:
                 user_list_books()
@@ -215,13 +185,13 @@ def library(choose: int):
                 click.echo(
                     'You are not loggedin. Please login first'
                 )
-                time.sleep(2)
-                click.clear()
-                library()
         case 0:
             exit()
         case _:
             click.echo("Invalid Input")
+    time.sleep(2)
+    click.clear()
+    library()
 
 
 def main():
