@@ -1,7 +1,9 @@
 import click
-# import logging
 from pymongo import MongoClient
+from config import logging_module
 
+
+logger = logging_module()
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -43,13 +45,9 @@ def update_books(input_category: str, input_book_name: str) -> None:
         }
         result = db.Books.update_one(*update_query)
         if result.modified_count > 0:
-            print('successfully book updated')
+            click.echo('successfully book updated')
         else:
-            # ADD LOGGING HERE
-            print('unable to update book')
+            logger.error('Unable to update book')
+            click.echo('unable to update book')
     else:
         click.echo('Book Not Found')
-
-
-# if __name__ == '__main__':
-#     update_books()
