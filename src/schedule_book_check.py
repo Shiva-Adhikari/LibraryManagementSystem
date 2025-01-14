@@ -1,9 +1,9 @@
-import click
-from pymongo import MongoClient
-from datetime import datetime
-from email.message import EmailMessage
 import ssl
+import click
 import smtplib
+from datetime import datetime
+from pymongo import MongoClient
+from email.message import EmailMessage
 
 
 client = MongoClient('localhost', 27017)
@@ -30,21 +30,11 @@ def due_book_check():
                     if today_date == due_warning_day:
                         user_username = book['Details']['username']
                         user_email = book['Details']['email']
-
-                        print(f'details_username: {user_username}')
-                        print(f'details_username: {user_email}')
-                        print('yes it is, Due warning date')
-
                         due_warning_text = 'DueWarning'
                         send_email(user_username, user_email, due_warning_text)
                     if today_date == due_date_day:
                         user_username = book['Details']['username']
                         user_email = book['Details']['email']
-
-                        print(f'details_username: {user_username}')
-                        print(f'details_username: {user_email}')
-                        print('yes it is, Due date day')
-
                         due_date_text = 'DueDate'
                         send_email(user_username, user_email, due_date_text)
 
@@ -86,7 +76,6 @@ LIBRARY"""
             smtp.login(email_sender, email_sender_password)
             smtp.sendmail(email_sender, email_receiver, em.as_string())
     except smtplib.SMTPRecipientsRefused:
-        # ADD LOGGING HERE
         click.echo('Email not Valid')
 
 
