@@ -1,6 +1,10 @@
 import click
 from pymongo import MongoClient
 
+from config import logging_module
+
+
+logger = logging_module()
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -31,5 +35,5 @@ def return_books(input_categories: str, input_book_name: str, set_available=1
     if result.modified_count > 0:
         click.echo('You return books')
     else:
-        """ ADD LOGGING MODULE """
+        logger.error('Unable to return books')
         click.echo('Unable to return books')
