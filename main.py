@@ -4,7 +4,7 @@ import time
 from src.admin.admin_account import admin_register
 from src.admin.admin_account import admin_login
 from src.admin.add_books import add_books
-# from src.admin.search_books
+from src.admin.search_books import search_books
 from src.admin.update_books import update_books
 from src.admin.delete_books import delete_books
 from src.user.user_account import user_register
@@ -12,8 +12,6 @@ from src.user.user_account import user_login
 from src.user.issue_books import issue_books
 from src.user.list_books import list_books
 from src.user.return_books import return_books
-# from config import data_path
-# from config import logging_module
 from config import get_user_login_details
 from config import remove_user_login_details
 from config import get_admin_login_details
@@ -23,8 +21,6 @@ from config import remove_admin_login_details
 """global variable"""
 logged_as_user = get_user_login_details()
 logged_as_admin = get_admin_login_details()
-
-# loggger = logging_module()
 
 
 @click.command()
@@ -115,24 +111,21 @@ def admin_list_books(choose: int):
     """ use while loop """
     match choose:
         case 1:
-            click.echo('create_books')
             add_books()
             time.sleep(1)
             click.clear()
             library()
         case 2:
-            click.echo('search_books')
+            search_books()
             time.sleep(1)
             click.clear()
             library()
         case 3:
-            click.echo('update_books')
             update_books()
             time.sleep(1)
             click.clear()
             library()
         case 4:
-            click.echo('remove_books')
             delete_books()
             time.sleep(1)
             click.clear()
@@ -192,6 +185,9 @@ def show_accounts(choose: int):
             remove_user_login_details()
             remove_admin_login_details()
             click.echo('Logging out...')
+            time.sleep(1)
+            click.clear()
+            library()
         case 0:
             exit()
         case _:
