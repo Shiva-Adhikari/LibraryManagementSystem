@@ -1,10 +1,15 @@
-from email_validator import validate_email, EmailNotValidError
-import click
-from src.admin.admin_account import validation
-from pymongo import MongoClient
 import json
+import click
 import bcrypt
+from pymongo import MongoClient
+from email_validator import validate_email, EmailNotValidError
+
 from config import data_path
+from config import logging_module
+from src.admin.admin_account import validation
+
+
+logger = logging_module()
 
 
 def email_validation() -> str:
@@ -22,8 +27,6 @@ def user_register():
     try:
         email = email_validation()
         username, password = validation()
-        # salt = bcrypt.gensalt(rounds=10)
-        # password = bcrypt.hashpw(password.encode(), salt)
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
         add_accounts = db.Accounts.update_one(
@@ -40,10 +43,10 @@ def user_register():
         if add_accounts.modified_count > 0 or add_accounts.upserted_id:
             click.echo('Register Successfully')
         else:
-            # ADD LOGGING HERE
+            logger.error('Register Failed')
             click.echo('Register Failed')
     except Exception as e:
-        # ADD LOGGING HERE
+        logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_register: {e}')
 
 
@@ -62,8 +65,6 @@ def user_login():
             extract_password = {
                 'password': user['User'][0]['password']
             }
-            print(f'extract_password: {extract_password}')
-            print(f'user: {user}')
             if bcrypt.checkpw(password.encode(), extract_password['password']):
                 click.echo('Login Successfully')
             else:
@@ -79,11 +80,5 @@ def user_login():
         else:
             click.echo('Account not found')
     except Exception as e:
-        # ADD LOGGING HERE
+        logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_login: {e}')
-
-
-# if __name__ == '__main__':
-    #     pass
-    # user_register()
-    # user_login()
