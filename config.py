@@ -1,6 +1,7 @@
 import os
 import jwt
 import json
+import time
 import click
 import logging
 from dotenv import load_dotenv
@@ -102,6 +103,8 @@ def decode_token(token):
         logger = logging_module()
         logger.debug(e)
         return
+    finally:
+        time.sleep(2)
 
 
 def verify_jwt_token():
