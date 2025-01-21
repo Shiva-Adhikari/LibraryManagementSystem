@@ -1,6 +1,14 @@
 import os
+import jwt
 import json
+import click
 import logging
+from dotenv import load_dotenv
+
+
+src_path = os.path.join('src')
+env_path = os.path.join(src_path, '.env')
+load_dotenv(env_path)
 
 
 def data_path(file_name):
@@ -32,12 +40,14 @@ def logging_module():
 def get_user_login_details():
     """save user login session"""
     details = data_path('user')
-    return details if os.path.exists(details) else False
+    # return details if os.path.exists(details) else False
+    if not os.path.exists(details):
+        return False
     try:
         with open(details) as file:
             get_details = json.load(file)
             if get_details:
-                return True
+                return get_details
     except json.decoder.JSONDecodeError:
         return False
 
@@ -52,12 +62,13 @@ def remove_user_login_details():
 def get_admin_login_details():
     """save admin login session"""
     details = data_path('admin')
-    return details if os.path.exists(details) else False
+    if not os.path.exists(details):
+        return False
     try:
         with open(details) as file:
             get_details = json.load(file)
             if get_details:
-                return True
+                return get_details
     except json.decoder.JSONDecodeError:
         return False
 
@@ -67,3 +78,44 @@ def remove_admin_login_details():
     path = data_path('admin')
     if os.path.exists(path):
         os.remove(path)
+
+
+def decode_token(token):
+    SECRET_KEY = os.getenv('jwt_password')
+    try:
+        decoded = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=['HS256'],
+            options={
+                'require': ['iat', 'exp'],
+                'verify_iss': ['iat'],
+                'verify_exp': ['exp']
+            })
+        return decoded
+    except jwt.exceptions.InvalidTokenError and jwt.DecodeError:
+        remove_admin_login_details()
+        remove_user_login_details()
+        click.echo('Your Token is invalid, Login Again')
+        return
+    except Exception as e:
+        logger = logging_module()
+        logger.debug(e)
+        return
+
+
+def verify_jwt_token():
+    admin = get_admin_login_details()
+    user = get_user_login_details()
+
+    if admin:
+        token_data = decode_token(admin)
+    elif user:
+        token_data = decode_token(user)
+    else:
+        return
+    return token_data
+
+
+if __name__ == '__main__':
+    verify_jwt_token()
