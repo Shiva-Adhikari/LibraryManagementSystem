@@ -100,13 +100,21 @@ def user_accounts(choose: int):
 def admin_list_books(choose: int):
     match choose:
         case 1:
-            add_books()
+            verify = verify_jwt_token()
+            if verify:
+                add_books()
         case 2:
-            search_books()
+            verify = verify_jwt_token()
+            if verify:
+                search_books()
         case 3:
-            update_books()
+            verify = verify_jwt_token()
+            if verify:
+                update_books()
         case 4:
-            delete_books()
+            verify = verify_jwt_token()
+            if verify:
+                delete_books()
         case 0:
             exit()
         case _:
@@ -125,11 +133,17 @@ def admin_list_books(choose: int):
 def user_list_books(choose: int):
     match choose:
         case 1:
-            issue_books()
+            verify = verify_jwt_token()
+            if verify:
+                issue_books()
         case 2:
-            list_books()
+            verify = verify_jwt_token()
+            if verify:
+                list_books()
         case 3:
-            return_books()
+            verify = verify_jwt_token()
+            if verify:
+                return_books()
         case 0:
             exit()
         case _:
