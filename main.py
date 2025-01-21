@@ -1,5 +1,5 @@
-import click
 import time
+import click
 
 from src.admin.admin_account import admin_register
 from src.admin.admin_account import admin_login
@@ -16,6 +16,7 @@ from config import get_user_login_details
 from config import remove_user_login_details
 from config import get_admin_login_details
 from config import remove_admin_login_details
+from config import verify_jwt_token
 
 
 """global variable"""
@@ -179,7 +180,7 @@ def library(choose: int):
         case 2:
             if logged_as_user:
                 user_list_books()
-            if logged_as_admin:
+            elif logged_as_admin:
                 admin_list_books()
             else:
                 click.echo(
@@ -195,6 +196,8 @@ def library(choose: int):
 
 
 def main():
+    click.clear()
+    verify_jwt_token()
     library()
 
 
