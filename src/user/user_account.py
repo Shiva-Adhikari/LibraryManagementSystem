@@ -1,6 +1,11 @@
+import os
+import jwt
 import json
 import click
 import bcrypt
+from datetime import datetime
+from datetime import timedelta
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from email_validator import validate_email, EmailNotValidError
 
@@ -11,16 +16,36 @@ from src.admin.admin_account import validation
 
 logger = logging_module()
 
+src_path = os.path.join('src')
+env_path = os.path.join(src_path, '.env')
+load_dotenv(env_path)
+
 
 def email_validation() -> str:
     while True:
-        email = click.prompt('Enter Email: ', type=str)
+        email = click.prompt('Enter Email', type=str)
         try:
             email = validate_email(email, check_deliverability=False)
             email = email.normalized
             return email
         except EmailNotValidError as e:
             click.echo(str(e))
+
+
+def validate_token(extract_username_email):
+    username = extract_username_email['username']
+    email = extract_username_email['email']
+    SECRET_KEY = os.getenv('jwt_password')
+    ALGORITHM = 'HS256'
+    EXP_DATE = timedelta(hours=24)
+    payload = {
+        'username': username,
+        'email': email,
+        'iat': int(datetime.now().timestamp()),
+        'exp': int((datetime.now() + EXP_DATE).timestamp())
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
 
 
 def user_register():
@@ -75,9 +100,10 @@ def user_login():
                 'username': user['User'][0]['username'],
                 'email': user['User'][0]['email']
             }
+            token = validate_token(extract_username_email)
             data_dir = data_path('user')
             with open(data_dir, 'w') as file:
-                json.dump(extract_username_email, file)
+                json.dump(token, file)
             return user
         else:
             click.echo('Account not found')

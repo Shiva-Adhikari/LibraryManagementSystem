@@ -1,14 +1,37 @@
-import click
+import os
+import jwt
 import json
+import click
 import bcrypt
+from dotenv import load_dotenv
+from datetime import datetime
+from datetime import timedelta
 from pymongo import MongoClient
 from password_validator import PasswordValidator
 
 from config import data_path
 from config import logging_module
 
-
 logger = logging_module()
+
+src_path = os.path.join('src')
+env_path = os.path.join(src_path, '.env')
+load_dotenv(env_path)
+
+
+def generate_token(username: str):
+    print(f'username: {username}')
+    SECRET_KEY = os.getenv('jwt_password')
+    print(f'secret key: {SECRET_KEY}')
+    ALGORITHM = 'HS256'
+    EXP_DATE = timedelta(hours=24)
+    payload = {
+        'username': username,
+        'iat': int(datetime.now().timestamp()),
+        'exp': int((datetime.now() + EXP_DATE).timestamp())
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
 
 
 def password_validation(password: str) -> str:
@@ -89,7 +112,7 @@ def admin_register():
             logger.error('Register Failed')
             click.echo('Register Failed')
     except Exception as e:
-        logger.error(f'Got Exception {str(e)}')
+        logger.error(e)
         click.echo(f'Got Exception in admin_register: {e}')
 
 
@@ -117,13 +140,16 @@ def admin_login():
             extract_username = {
                 'username': admin['Admin'][0]['username'],
             }
+            # get user token
+            token = generate_token(extract_username['username'])
             data_dir = data_path('admin')
+            # save in file
             with open(data_dir, 'w') as file:
-                json.dump(extract_username, file)
+                json.dump(token, file)
             return admin
         else:
             click.echo('Account not found')
             return
     except Exception as e:
-        logger.error(f'Admin Error: {str(e)}')
+        logger.error(e)
         click.echo(f'Got Exception in admin_register: {e}')
