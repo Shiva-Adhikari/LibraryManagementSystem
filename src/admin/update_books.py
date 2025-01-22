@@ -35,12 +35,14 @@ def update_books(input_category: str, input_book_name: str) -> None:
             'Enter book author name to update',
             type=str
         )
+        book_stock = click.prompt('How many books are in stock', type=int)
         update_query = {
             f'{input_category}.Title': input_book_name,
             }, {
                 '$set': {
                     f'{input_category}.$.Title': book_name,
-                    f'{input_category}.$.Author': book_author
+                    f'{input_category}.$.Author': book_author,
+                    f'{input_category}.$.Available': book_stock
                 }
         }
         result = db.Books.update_one(*update_query)
