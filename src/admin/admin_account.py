@@ -20,9 +20,7 @@ load_dotenv(env_path)
 
 
 def generate_token(username: str):
-    print(f'username: {username}')
     SECRET_KEY = os.getenv('jwt_password')
-    print(f'secret key: {SECRET_KEY}')
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(hours=24)
     payload = {
