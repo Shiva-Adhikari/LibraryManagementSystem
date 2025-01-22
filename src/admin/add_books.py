@@ -26,11 +26,6 @@ start_id = 0
         ).lower(),
     type=click.IntRange(min=1),
     default=1)
-# @click.option(
-#     '--book-stock',
-#     prompt='How many Book stock are there',
-#     type=int
-# )
 def add_books(category, num_books):
     """Write books in files"""
     categories = {}
@@ -39,7 +34,7 @@ def add_books(category, num_books):
         categories[category]: List = []
     for i in range(num_books):
         book_name = click.prompt(
-            f'\nEnter "{category}" Book Name {i+1} '
+            f'\nEnter "{category}" Book Name ({i+1}) '
             ).lower()
         author_name = click.prompt(
             f'Enter "{category}" Author name',
