@@ -1,3 +1,4 @@
+import time
 import click
 from datetime import datetime
 from datetime import timedelta
@@ -28,8 +29,11 @@ def issue_books(input_categories: str, input_book_name: str, to_date: int,
         user_detail = verify_jwt_token()
         username = user_detail['username']
         email = user_detail['email']
-        # validata_user(input_categories, input_book_name, username)
-        # input('hold')
+        does_exist = validate_user(input_categories, input_book_name, username)
+        if does_exist:
+            click.echo('Book is already Issue, unable to issue again.')
+            time.sleep(2)
+            return
         result = db.Books.update_one(
             {f'{input_categories}.Title': input_book_name},
             {
@@ -60,44 +64,27 @@ def issue_books(input_categories: str, input_book_name: str, to_date: int,
         click.echo(f"got exception as {str(e)}")
 
 
-"""
-def validata_user(input_categories, input_book_name, username):
-    check_user = db.Books.find(
+def validate_user(input_categories, input_book_name, username):
+    """check book is available or not"""
+    check_user = db.Books.aggregate([
+        {'$unwind': f'${input_categories}'},
+        {'$unwind': f'${input_categories}.UserDetails'},
         {
-            f'{input_categories}.Title': input_book_name,
-            f'{input_categories}.UserDetails.Username': username,
-            # f'{input_categories}.UserDetails.$.Username': True, '_id': 0
-        },
-        {
-            # f'{input_categories}.UserDetails.Username$': True,
-            f'{input_categories}.UserDetails.$': 1,
-            '_id': 0
+            '$match': {
+                f'{input_categories}.UserDetails.Username': username,
+                f'{input_categories}.Title': input_book_name
+            }
+        }, {
+            '$project': {
+                '_id': 0,
+                'username': f'${input_categories}.UserDetails.Username'
+            }
         }
-    )
-# check_user = db.Books.aggregate([
-#     {
-#         '$match': {
-#             f'{input_categories}.Title': input_book_name,
-#             f'{input_categories}.UserDetails.Username': username
-#         }
-#     },
-#     {
-#         '$project': {
-#             '_id': 0,
-#             'bca': {
-#                 '$filter': {
-#                     'input': f'${input_categories}',
-#                     'as': 'book',
-#                     'cond': {'$eq': ['$$book.Title', input_book_name]}
-#                 }
-#             }
-#         }
-#     }
-# ])
-    print(f'check_user: {list(check_user)}')
-    if check_user:
-        print('yes')
-    else:
-        print('no')
-    exit()
-"""
+    ])
+    try:
+        is_data = list(check_user)
+        if is_data and is_data[0]:
+            return True
+        return False
+    except IndexError:
+        return False
