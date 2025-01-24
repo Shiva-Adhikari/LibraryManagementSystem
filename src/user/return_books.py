@@ -1,3 +1,4 @@
+import time
 import click
 from tabulate import tabulate
 from pymongo import MongoClient
@@ -18,6 +19,8 @@ def user_issue_books_list() -> None:
     username = user_details['username']
     email = user_details['email']
     category_keys = find_keys()
+    if not category_keys:
+        return False
     # Add print statements for debugging
     fetch_isssue_books = db.Books.aggregate([
         {'$unwind': f'${category_keys}'},
@@ -48,7 +51,11 @@ def user_issue_books_list() -> None:
 
 
 def return_books() -> None:
-    user_issue_books_list()
+    is_books_empty = user_issue_books_list()
+    if not is_books_empty:
+        click.echo('Books list is empty, exiting...')
+        time.sleep(2)
+        return
     input_categories = click.prompt('Enter Book Category', type=str).lower()
     input_book_name = click.prompt('Enter Book Name', type=str).lower()
     user_details = verify_jwt_token()
