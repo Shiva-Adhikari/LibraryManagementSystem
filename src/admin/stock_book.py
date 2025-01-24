@@ -6,16 +6,15 @@ client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
 
-def find():
+def find_keys():
     results = db.Books.find()
     for result in results:
         category_keys = next(iter(result.keys() - {'_id': 0}))
-        print(f'keys:{category_keys}')
     return category_keys
 
 
 def stock_book():
-    category = find()
+    category = find_keys()
     results = db.Books.aggregate([
         {'$unwind': f'${category}'},
         {
@@ -42,7 +41,3 @@ def stock_book():
 
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
     input('\nPress Any Key...')
-
-
-if __name__ == '__main__':
-    stock_book()
