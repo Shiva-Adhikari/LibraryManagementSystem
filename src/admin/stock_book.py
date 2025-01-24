@@ -8,43 +8,48 @@ db = client.LibraryManagementSystem
 
 
 def find_keys():
-    results = db.Books.find()
-    if not list(results):
+    categories = db.Books.find()
+    keys = [next(iter(data.keys() - {'_id'})) for data in categories]
+    if not keys:
         return False
-    for result in results:
-        category_keys = next(iter(result.keys() - {'_id': 0}))
-    return category_keys
+    return keys
 
 
 def stock_book():
-    category = find_keys()
-    if not category:
+    category_key = find_keys()
+    if not category_key:
         click.echo('Books Not found, exiting...')
         time.sleep(2)
         return
-    results = db.Books.aggregate([
-        {'$unwind': f'${category}'},
-        {
-            '$match': {
-                f'{category}.Available': {'$lt': 5}
+    append_result = []
+    for category in category_key:
+        results = db.Books.aggregate([
+            {'$unwind': f'${category}'},
+            {
+                '$match': {
+                    f'{category}.Available': {'$lt': 5}
+                }
+            }, {
+                '$project': {
+                    'Title': f'${category}.Title',
+                    'Available': f'${category}.Available',
+                    '_id': 0
+                }
             }
-        }, {
-            '$project': {
-                'Title': f'${category}.Title',
-                'Available': f'${category}.Available',
-                '_id': 0
-            }
-        }
-    ])
-
+        ])
+        for result in results:
+            append_result.append({
+                'Category': category,
+                'Title': result['Title'],
+                'Available': result['Available'],
+            })
     table = []
-    for result in results:
-        header = ['Category', 'Title', 'Available']
+    for result in append_result:
         table.append([
-            category.capitalize(),
+            result['Category'].capitalize(),
             result['Title'].capitalize(),
             result['Available']
         ])
-
+    header = ['Category', 'Title', 'Available']
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
     input('\nPress Any Key...')
