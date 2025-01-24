@@ -1,6 +1,7 @@
+import time
+import click
 from tabulate import tabulate
 from pymongo import MongoClient
-import click
 
 
 books_keys = []
@@ -22,7 +23,8 @@ def connect_database():
 def list_books():
     books_keys = connect_database()
     if not books_keys:
-        click.echo('Books list is empty')
+        click.echo('Books list is empty, exiting...')
+        time.sleep(2)
         return
     category = click.prompt(
         'Enter book category',
