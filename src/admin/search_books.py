@@ -13,14 +13,14 @@ table = []
 
 
 def search_books() -> None:
-    category = find_keys()
-    if not category:
+    categories = find_keys()
+    if not categories:
         click.echo('Books Not found, exiting...')
         time.sleep(2)
         return
     input_book_name = click.prompt('Enter Book Name', type=str).lower()
-    fetch_data = db.Books.find()
-    categories = [next(iter(data.keys() - {'_id'})) for data in fetch_data]
+    # fetch_data = db.Books.find()
+    # categories = [next(iter(data.keys() - {'_id'})) for data in fetch_data]
     for category in categories:
         fetch_books = db.Books.find(
                     {f"{category}.Title": {
