@@ -41,6 +41,7 @@ def stock_book():
         ])
 
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
+    input('\nPress Any Key...')
 
 
 if __name__ == '__main__':
