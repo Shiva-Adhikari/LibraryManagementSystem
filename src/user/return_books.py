@@ -19,11 +19,16 @@ def user_issue_books_list() -> None:
     username = user_details['username']
     email = user_details['email']
     category_key = find_keys()
-    if not category_key:
+    check_book = db.Books.aggregate([
+            {'$unwind': '$bca'},
+            {'$unwind': '$bca.UserDetails'},
+            {'$match': {'bca.UserDetails.Username': username}}
+    ])
+    category = list(check_book)
+    if not category:
         return False
     fetch_issue_books = []
     for category_keys in category_key:
-        print(f'category_keys: {category_keys}')
         result = db.Books.aggregate([
             {'$unwind': f'${category_keys}'},
             {'$unwind': f'${category_keys}.UserDetails'},
