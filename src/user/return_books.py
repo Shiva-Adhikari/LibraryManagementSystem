@@ -18,36 +18,45 @@ def user_issue_books_list() -> None:
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
-    category_keys = find_keys()
-    if not category_keys:
+    category_key = find_keys()
+    if not category_key:
         return False
-    # Add print statements for debugging
-    fetch_isssue_books = db.Books.aggregate([
-        {'$unwind': f'${category_keys}'},
-        {'$unwind': f'${category_keys}.UserDetails'},
-        {
-            '$match': {
-                f'{category_keys}.UserDetails.Username': username,
-                f'{category_keys}.UserDetails.Email': email
+    fetch_issue_books = []
+    for category_keys in category_key:
+        print(f'category_keys: {category_keys}')
+        result = db.Books.aggregate([
+            {'$unwind': f'${category_keys}'},
+            {'$unwind': f'${category_keys}.UserDetails'},
+            {
+                '$match': {
+                    f'{category_keys}.UserDetails.Username': username,
+                    f'{category_keys}.UserDetails.Email': email
+                }
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'Title': f'${category_keys}.Title',
+                    'Author': f'${category_keys}.Author',
+                }
             }
-        },
-        {
-            '$project': {
-                '_id': 0,
-                'Title': f'${category_keys}.Title',
-                'Author': f'${category_keys}.Author',
-            }
-        }
-    ])
+        ])
+        for book in result:
+            fetch_issue_books.append({
+                'Category': category_keys,
+                'Title': book['Title'],
+                'Author': book['Author']
+            })
     table = []
     header = ['Categories', 'Title', 'Author']
-    for books in fetch_isssue_books:
+    for book in fetch_issue_books:
         table.append([
-            category_keys.capitalize(),
-            books['Title'].capitalize(),
-            books['Author'].capitalize()
+            book['Category'].capitalize(),
+            book['Title'].capitalize(),
+            book['Author'].capitalize()
         ])
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
+    return True
 
 
 def return_books() -> None:
@@ -61,8 +70,6 @@ def return_books() -> None:
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
-    # user_issue_books_list(username, email, input_categories)
-    # exit()
     # fetch data or remove data like this code
     # don't use other method to remove this type of nested data.
     result = db.Books.update_one(
@@ -92,4 +99,4 @@ def return_books() -> None:
 
 
 if __name__ == '__main__':
-    return_books()
+    user_issue_books_list()
