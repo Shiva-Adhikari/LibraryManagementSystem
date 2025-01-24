@@ -1,22 +1,23 @@
 import time
 import click
 
-from src.admin.admin_account import admin_register
-from src.admin.admin_account import admin_login
+from src.user.list_books import list_books
+from src.user.issue_books import issue_books
+from src.user.user_account import user_login
+from src.user.return_books import return_books
+from src.user.user_account import user_register
 from src.admin.add_books import add_books
+from src.admin.stock_book import stock_book
 from src.admin.search_books import search_books
 from src.admin.update_books import update_books
 from src.admin.delete_books import delete_books
-from src.user.user_account import user_register
-from src.user.user_account import user_login
-from src.user.issue_books import issue_books
-from src.user.list_books import list_books
-from src.user.return_books import return_books
-from config import get_user_login_details
-from config import remove_user_login_details
-from config import get_admin_login_details
-from config import remove_admin_login_details
+from src.admin.admin_account import admin_login
+from src.admin.admin_account import admin_register
 from config import verify_jwt_token
+from config import get_user_login_details
+from config import get_admin_login_details
+from config import remove_user_login_details
+from config import remove_admin_login_details
 
 
 """global variable"""
@@ -93,8 +94,8 @@ def user_accounts(choose: int):
 @click.command()
 @click.option(
     '--choose',
-    prompt='1. Create Books\n2. Search Books\n'
-    '3. Update Books\n4. Remove Books\n0. Exit\n',
+    prompt='1. Create Books\n2. Search Books\n3. Stock Books\n'
+    '4. Update Books\n5. Remove Books\n0. Exit\n',
     type=int
 )
 def admin_list_books(choose: int):
@@ -110,8 +111,12 @@ def admin_list_books(choose: int):
         case 3:
             verify = verify_jwt_token()
             if verify:
-                update_books()
+                stock_book()
         case 4:
+            verify = verify_jwt_token()
+            if verify:
+                update_books()
+        case 5:
             verify = verify_jwt_token()
             if verify:
                 delete_books()
@@ -161,6 +166,8 @@ def user_list_books(choose: int):
 )
 def show_accounts(choose: int):
     """Show Admin, User Accounts"""
+    global logged_as_admin
+    global logged_as_user
     click.clear()
     match choose:
         case 1:
@@ -170,6 +177,8 @@ def show_accounts(choose: int):
         case 3:
             remove_user_login_details()
             remove_admin_login_details()
+            logged_as_user = False
+            logged_as_admin = False
             click.echo('Logging out...')
         case 0:
             exit()
