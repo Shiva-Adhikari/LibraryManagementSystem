@@ -31,7 +31,11 @@ def list_books():
         type=str,
         default=books_keys
     )
-    page_no = click.prompt('Enter page number', type=int)
+    page_no = click.prompt(
+        'Enter page number',
+        type=click.IntRange(min=1),
+        default=1
+    )
     check_true = True
     while True:
         check_true = list_view(category, page_no)
