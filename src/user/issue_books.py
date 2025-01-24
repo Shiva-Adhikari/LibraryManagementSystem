@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 from config import logging_module
 from config import verify_jwt_token
-
+from src.admin.stock_book import find_keys
 
 logger = logging_module()
 
@@ -14,12 +14,17 @@ client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
 
-@click.command()
-@click.option('--input-categories', prompt=('Enter Book Category'), type=str)
-@click.option('--input-book-name', prompt=('Enter Book Name'), type=str)
-@click.option('--to-date', prompt='For how many days you need', type=int)
-def issue_books(input_categories: str, input_book_name: str, to_date: int,
-                ) -> None:
+def issue_books() -> None:
+    """check if books is empty or not"""
+    check_books = find_keys()
+    if not check_books:
+        click.echo('Books Not found, exiting...')
+        time.sleep(2)
+        return
+    """user input"""
+    input_categories = click.prompt('Enter Book Category', type=str).lower()
+    input_book_name = click.prompt('Enter Book Name', type=str).lower()
+    to_date = click.prompt('For how many days you need', type=int)
     try:
         input_categories = input_categories.lower()
         issue_date = datetime.now()
