@@ -1,3 +1,4 @@
+import time
 import click
 from tabulate import tabulate
 from pymongo import MongoClient
@@ -8,6 +9,8 @@ db = client.LibraryManagementSystem
 
 def find_keys():
     results = db.Books.find()
+    if not list(results):
+        return False
     for result in results:
         category_keys = next(iter(result.keys() - {'_id': 0}))
     return category_keys
@@ -15,6 +18,10 @@ def find_keys():
 
 def stock_book():
     category = find_keys()
+    if not category:
+        click.echo('Books Not found, exiting...')
+        time.sleep(2)
+        return
     results = db.Books.aggregate([
         {'$unwind': f'${category}'},
         {
