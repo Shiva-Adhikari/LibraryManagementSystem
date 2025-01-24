@@ -1,6 +1,9 @@
+import time
 import click
 from pymongo import MongoClient
 from config import logging_module
+
+from src.admin.stock_book import find_keys
 
 
 logger = logging_module()
@@ -9,18 +12,20 @@ client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
 
-@click.command()
-@click.option(
-    '--input-category',
-    prompt='Enter book category to search',
-    type=str
-)
-@click.option(
-    '--input-book-name',
-    prompt='Enter book name to search',
-    type=str
-)
-def update_books(input_category: str, input_book_name: str) -> None:
+def update_books() -> None:
+    """check book list is empty or not"""
+    check_book = find_keys()
+    if not check_book:
+        click.echo('Books Not found, exiting...')
+        time.sleep(2)
+        return
+    """input book"""
+    input_category = click.prompt(
+        'Enter book category to search',
+        type=str).lower()
+    input_book_name = click.prompt(
+        'Enter book name to search',
+        type=str).lower()
     query = {
         '$and': [
             {input_category: {'$exists': True}},

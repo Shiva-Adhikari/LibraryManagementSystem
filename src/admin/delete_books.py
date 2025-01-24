@@ -1,7 +1,9 @@
+import time
 import click
 from pymongo import MongoClient
 
 from config import logging_module
+from src.admin.stock_book import find_keys
 
 
 logger = logging_module()
@@ -10,10 +12,16 @@ client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
 
-@click.command()
-@click.option('--input-category', prompt='Enter book category', type=str)
-@click.option('--input-book-name', prompt='Enter book name', type=str)
-def delete_books(input_category: str, input_book_name: str) -> None:
+def delete_books() -> None:
+    """check book is empty or not"""
+    check_book = find_keys()
+    if not check_book:
+        click.echo('Books Not found, exiting...')
+        time.sleep(2)
+        return
+    """input books"""
+    input_category = click.prompt('Enter book category', type=str).lower()
+    input_book_name = click.prompt('Enter book name', type=str).lower()
     query = {
             f'{input_category}.Title': input_book_name,
             f'{input_category}.$': 1
