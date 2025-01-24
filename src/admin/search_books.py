@@ -1,6 +1,9 @@
+import time
 import click
 from tabulate import tabulate
 from pymongo import MongoClient
+
+from src.admin.stock_book import find_keys
 
 
 client = MongoClient('localhost', 27017)
@@ -9,9 +12,13 @@ db = client.LibraryManagementSystem
 table = []
 
 
-@click.command()
-@click.option('--input-book-name', prompt='Enter Book Name', type=str)
-def search_books(input_book_name: str) -> None:
+def search_books() -> None:
+    category = find_keys()
+    if not category:
+        click.echo('Books Not found, exiting...')
+        time.sleep(2)
+        return
+    input_book_name = click.prompt('Enter Book Name', type=str).lower()
     fetch_data = db.Books.find()
     categories = [next(iter(data.keys() - {'_id'})) for data in fetch_data]
     for category in categories:
