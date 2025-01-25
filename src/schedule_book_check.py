@@ -17,9 +17,7 @@ db = client.LibraryManagementSystem
 
 def due_book_check():
     today_date_ = datetime.now()
-    print(f'today_date_: {today_date_}')
     today_date = datetime.date(today_date_)
-    print(f'today_date: {today_date}')
     fetch_data = db.Books.aggregate([
         {'$unwind': '$bca'},
         {'$unwind': '$bca.UserDetails'},
@@ -30,7 +28,6 @@ def due_book_check():
         },
         {
             '$project': {
-                'Title': '$bca.Title',
                 'Username': '$bca.UserDetails.Username',
                 'Email': '$bca.UserDetails.Email',
                 'DueWarning': '$bca.UserDetails.DueWarning',
@@ -64,18 +61,21 @@ def send_email(user_username, user_email, due_text):
 
     if due_text == 'DueWarning':
         subject = 'Return your library book - 3 days left'
-        body = f'Dear {user_username},\n',
-        'Your library book is due in 3 days. ',
-        'Please return it on time to avoid a Rs.500 late fee.\n',
-        'Thank you,\nLIBRARY'
+        body = f"""Dear {user_username},
+
+Your library book is due in 3 days. Please return it on time to avoid a Rs.500 late fee.
+
+Thank you,
+LIBRARY"""
 
     if due_text == 'DueDate':
         subject = 'Library Book Overdue'
-        body = f'Dear {user_username},\n',
-        'Your library book is now overdue.',
-        ' Please return it immediately.',
-        'A late fee of Rs.500 has been added to your account.\n',
-        'Thank you,\nLIBRARY'
+        body = f"""Dear {user_username},
+
+Your library book is now overdue. Please return it immediately. A late fee of Rs.500 has been added to your account.
+
+Thank you,
+LIBRARY"""
 
     em = EmailMessage()
     em['From'] = email_sender
