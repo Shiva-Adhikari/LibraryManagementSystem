@@ -16,51 +16,60 @@ db = client.LibraryManagementSystem
 
 
 def due_book_check():
-    fetch_data = db.Books.find({})
     today_date_ = datetime.now()
+    print(f'today_date_: {today_date_}')
     today_date = datetime.date(today_date_)
-    if fetch_data:
+    print(f'today_date: {today_date}')
+    fetch_data = db.Books.aggregate([
+        {'$unwind': '$bca'},
+        {'$unwind': '$bca.UserDetails'},
+        {
+            '$match': {
+                    'bca.UserDetails.IssueDate': {'$lte': today_date_}
+            }
+        },
+        {
+            '$project': {
+                'Title': '$bca.Title',
+                'Username': '$bca.UserDetails.Username',
+                'Email': '$bca.UserDetails.Email',
+                'DueWarning': '$bca.UserDetails.DueWarning',
+                'DueDate': '$bca.UserDetails.DueDate'
+            }
+        }
+    ])
+    for book in fetch_data:
+        due_warning = book['DueWarning']
+        due_warning_day = datetime.date(due_warning)
+        due_date = book['DueDate']
+        due_date_day = datetime.date(due_date)
 
-        for data in fetch_data:
-            keys = data.keys() - {'_id'}
-            # get one by one and it hold until previous is completed
-            categories = next(iter(keys))
-            books = data[categories]
-
-            for book in books:
-                if 'IssueDate' in book:
-                    due_warning = book['DueWarning']
-                    due_warning_day = datetime.date(due_warning)
-                    due_date = book['DueDate']
-                    due_date_day = datetime.date(due_date)
-
-                    if today_date == due_warning_day:
-                        user_username = book['Details']['username']
-                        user_email = book['Details']['email']
-                        due_warning_text = 'DueWarning'
-
-                        send_email(user_username, user_email, due_warning_text)
-                    if today_date == due_date_day:
-                        user_username = book['Details']['username']
-                        user_email = book['Details']['email']
-                        due_date_text = 'DueDate'
-                        send_email(user_username, user_email, due_date_text)
+        if today_date == due_warning_day:
+            user_username = book['Username']
+            user_email = book['Email']
+            due_warning_text = 'DueWarning'
+            send_email(user_username, user_email, due_warning_text)
+        if today_date == due_date_day:
+            user_username = book['Username']
+            user_email = book['Email']
+            due_date_text = 'DueDate'
+            send_email(user_username, user_email, due_date_text)
 
 
-def send_email(user_username, user_email, due_warning_text):
+def send_email(user_username, user_email, due_text):
     load_dotenv()
     email_sender = os.getenv('sender_email')
     email_sender_password = os.getenv('sender_password')
     email_receiver = user_email
 
-    if due_warning_text == 'DueWarning':
+    if due_text == 'DueWarning':
         subject = 'Return your library book - 3 days left'
         body = f'Dear {user_username},\n',
         'Your library book is due in 3 days. ',
         'Please return it on time to avoid a Rs.500 late fee.\n',
         'Thank you,\nLIBRARY'
 
-    if due_warning_text == 'DueDate':
+    if due_text == 'DueDate':
         subject = 'Library Book Overdue'
         body = f'Dear {user_username},\n',
         'Your library book is now overdue.',
