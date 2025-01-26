@@ -1,0 +1,5 @@
+export PYTHONPATH=/home/lx/Everything/Coding/python/LibraryManagementSystem/LibraryManagementSystem
+
+`
+alias pp='export PYTHONPATH=/home/lx/Everything/Coding/python/LibraryManagementSystem/LibraryManagementSystem'
+`
