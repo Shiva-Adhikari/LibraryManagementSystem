@@ -1,5 +1,6 @@
-export PYTHONPATH=/home/lx/Everything/Coding/python/LibraryManagementSystem/LibraryManagementSystem
-
-`
-alias pp='export PYTHONPATH=/home/lx/Everything/Coding/python/LibraryManagementSystem/LibraryManagementSystem'
-`
+#export PYTHONPATH=/project_path
+export PYTHONPATH=LibraryManagementSystem/
+"""
+eg:-
+export PYTHONPATH=~/Everything/Coding/python/LibraryManagementSystem/LibraryManagementSystem
+"""
