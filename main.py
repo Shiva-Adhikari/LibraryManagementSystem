@@ -1,6 +1,8 @@
 import time
 import click
 
+from concurrent.futures import ThreadPoolExecutor
+
 from src.user.list_books import list_books
 from src.user.issue_books import issue_books
 from src.user.user_account import user_login
@@ -13,6 +15,7 @@ from src.admin.update_books import update_books
 from src.admin.delete_books import delete_books
 from src.admin.admin_account import admin_login
 from src.admin.admin_account import admin_register
+from config import tqdm_progressbar
 from config import verify_jwt_token
 from config import get_user_login_details
 from config import get_admin_login_details
@@ -219,10 +222,12 @@ def library(choose: int):
 
 
 def main():
+    tqdm_progressbar()
     click.clear()
-    verify_jwt_token()
     library()
 
 
 if __name__ == '__main__':
-    main()
+    with ThreadPoolExecutor() as executor:
+        executor.submit(main)
+        executor.submit(verify_jwt_token)

@@ -4,6 +4,7 @@ import json
 import time
 import click
 import logging
+from tqdm import tqdm
 from dotenv import load_dotenv
 
 
@@ -120,5 +121,6 @@ def verify_jwt_token():
     return token_data
 
 
-if __name__ == '__main__':
-    verify_jwt_token()
+def tqdm_progressbar():
+    for _ in tqdm(range(0, 100), desc='Loading..'):
+        time.sleep(0.01)
