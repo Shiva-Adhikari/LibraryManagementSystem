@@ -18,6 +18,7 @@ def user_issue_books_list() -> None:
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
+    category_check_merge = []
     category_key = find_keys()
     for category in category_key:
         check_book = db.Books.aggregate([
@@ -25,8 +26,8 @@ def user_issue_books_list() -> None:
                 {'$unwind': f'${category}.UserDetails'},
                 {'$match': {f'{category}.UserDetails.Username': username}}
         ])
-    category_check = list(check_book)
-    if not category_check:
+        category_check_merge.append(list(check_book))
+    if all(not check_detail for check_detail in category_check_merge):
         return False
     fetch_issue_books = []
     for category_keys in category_key:
@@ -71,7 +72,7 @@ def user_issue_books_list() -> None:
 def return_books() -> None:
     is_books_empty = user_issue_books_list()
     if not is_books_empty:
-        click.echo('Books list is empty, exiting...')
+        click.echo('First Issue book, now exiting...')
         time.sleep(2)
         return
     input_categories = click.prompt('Enter Book Category', type=str).lower()
