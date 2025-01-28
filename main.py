@@ -36,10 +36,10 @@ logged_as_admin = get_admin_login_details()
 )
 def admin_accounts(choose: int):
     click.clear()
+    global logged_as_user
+    global logged_as_admin
     match choose:
         case 1:
-            global logged_as_user
-            global logged_as_admin
             if logged_as_user:
                 click.echo('You are a USER, unable to register as Admin')
             else:
@@ -69,10 +69,10 @@ def admin_accounts(choose: int):
     type=int
 )
 def user_accounts(choose: int):
+    global logged_as_admin
+    global logged_as_user
     match choose:
         case 1:
-            global logged_as_admin
-            global logged_as_user
             if logged_as_admin:
                 user_register()
             else:
