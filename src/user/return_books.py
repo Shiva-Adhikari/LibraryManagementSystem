@@ -75,7 +75,6 @@ def return_books() -> None:
         time.sleep(2)
         return
     input_categories = click.prompt('Enter Book Category', type=str).lower()
-    # input_book_name = click.prompt('Enter Book Name', type=str).lower()
     input_book_id = click.prompt('Enter Book Id', type=int)
     user_details = verify_jwt_token()
     username = user_details['username']
@@ -84,7 +83,6 @@ def return_books() -> None:
     # don't use other method to remove this type of nested data.
     result = db.Books.update_one(
         {
-            # f'{input_categories}.Title': input_book_name,
             f'{input_categories}.Id': input_book_id,
             f'{input_categories}.UserDetails.Username': username,
             f'{input_categories}.UserDetails.Email': email,
