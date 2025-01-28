@@ -98,14 +98,13 @@ def decode_token(token):
     except jwt.exceptions.InvalidTokenError and jwt.DecodeError:
         remove_admin_login_details()
         remove_user_login_details()
+        time.sleep(2)
         click.echo('Your Token is invalid, Login Again')
-        return
+        return False
     except Exception as e:
         logger = logging_module()
         logger.debug(e)
-        return
-    finally:
-        time.sleep(2)
+        return False
 
 
 def verify_jwt_token():
