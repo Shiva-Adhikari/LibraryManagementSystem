@@ -204,9 +204,10 @@ def library(choose: int):
         case 1:
             show_accounts()
         case 2:
-            if logged_as_user:
+            verify = verify_jwt_token()
+            if logged_as_user and verify:
                 user_list_books()
-            elif logged_as_admin:
+            elif logged_as_admin and verify:
                 admin_list_books()
             else:
                 click.echo(
@@ -221,13 +222,23 @@ def library(choose: int):
     library()
 
 
-def main():
+def run():
+    click.clear()
     tqdm_progressbar()
     click.clear()
     library()
 
 
-if __name__ == '__main__':
+def main():
+    global logged_as_user
+    global logged_as_admin
     with ThreadPoolExecutor() as executor:
-        executor.submit(main)
-        executor.submit(verify_jwt_token)
+        executor.submit(run)
+        verify = executor.submit(verify_jwt_token)
+        if not verify.result():
+            logged_as_user = False
+            logged_as_admin = False
+
+
+if __name__ == '__main__':
+    main()

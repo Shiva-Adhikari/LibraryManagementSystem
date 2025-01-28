@@ -98,7 +98,7 @@ def decode_token(token):
     except jwt.exceptions.InvalidTokenError and jwt.DecodeError:
         remove_admin_login_details()
         remove_user_login_details()
-        time.sleep(2)
+        time.sleep(1.1)
         click.echo('Your Token is invalid, Login Again')
         return False
     except Exception as e:
@@ -113,10 +113,14 @@ def verify_jwt_token():
 
     if admin:
         token_data = decode_token(admin)
+        if not token_data:
+            return False
     elif user:
         token_data = decode_token(user)
+        if not token_data:
+            return False
     else:
-        return
+        return False
     return token_data
 
 
