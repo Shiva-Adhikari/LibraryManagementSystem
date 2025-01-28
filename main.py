@@ -127,7 +127,8 @@ def admin_list_books(choose: int):
             exit()
         case _:
             click.echo("Invalid Input")
-    time.sleep(2)
+    verify_jwt_token()
+    time.sleep(1)
     click.clear()
     library()
 
@@ -156,7 +157,8 @@ def user_list_books(choose: int):
             exit()
         case _:
             click.echo("Invalid Input")
-    time.sleep(2)
+    verify_jwt_token()
+    time.sleep(1)
     click.clear()
     library()
 
