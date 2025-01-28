@@ -77,6 +77,9 @@ def return_books() -> None:
     input_categories = click.prompt('Enter Book Category', type=str).lower()
     input_book_id = click.prompt('Enter Book Id', type=int)
     user_details = verify_jwt_token()
+    if not user_details:
+        time.sleep(1)
+        return
     username = user_details['username']
     email = user_details['email']
     # fetch data or remove data like this code

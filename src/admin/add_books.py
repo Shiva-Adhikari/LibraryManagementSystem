@@ -1,8 +1,9 @@
-import click
 import time
-from pymongo import MongoClient
+import click
 from typing import List
+from pymongo import MongoClient
 from config import logging_module
+from config import verify_jwt_token
 
 
 logger = logging_module()
@@ -52,6 +53,11 @@ def add_books(category, num_books):
         }
         categories[category].append(book_info)    # append in dictionary
     try:
+        verify = verify_jwt_token()
+        if not verify:
+            click.echo('Data is Discard, please insert again.')
+            time.sleep(1)
+            return
         insert_doc = db.Books.update_one(
             {category: {'$exists': True}},
             {'$push': {category: {'$each': categories[category]}}},

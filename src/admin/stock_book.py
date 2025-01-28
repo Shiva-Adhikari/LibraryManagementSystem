@@ -3,6 +3,9 @@ import click
 from tabulate import tabulate
 from pymongo import MongoClient
 
+from config import verify_jwt_token
+
+
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
 
@@ -16,6 +19,10 @@ def find_keys():
 
 
 def stock_book():
+    verify = verify_jwt_token()
+    if not verify:
+        time.sleep(1)
+        return
     category_key = find_keys()
     if not category_key:
         click.echo('Books Not found, exiting...')

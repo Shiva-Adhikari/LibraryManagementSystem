@@ -3,6 +3,8 @@ import click
 from tabulate import tabulate
 from pymongo import MongoClient
 
+from config import verify_jwt_token
+
 
 books_keys = []
 
@@ -18,35 +20,6 @@ def connect_database():
         return books_keys
     else:
         return False
-
-
-def list_books():
-    books_keys = connect_database()
-    if not books_keys:
-        click.echo('Books list is empty, exiting...')
-        time.sleep(2)
-        return
-    category = click.prompt(
-        'Enter book category',
-        type=str,
-        default=books_keys
-    )
-    page_no = click.prompt(
-        'Enter page number',
-        type=click.IntRange(min=1),
-        default=1
-    )
-    check_true = True
-    while True:
-        check_true = list_view(category, page_no)
-        if check_true is False:
-            break
-        ask = input('next page? (yes/No)\n-> ').strip().lower()
-        if ask == 'yes':
-            page_no += 1
-            continue
-        else:
-            break
 
 
 def list_view(category: str, page_no: int) -> bool:
@@ -83,3 +56,36 @@ def list_view(category: str, page_no: int) -> bool:
 
     global books_keys
     books_keys = []
+
+
+def list_books():
+    books_keys = connect_database()
+    if not books_keys:
+        click.echo('Books list is empty, exiting...')
+        time.sleep(2)
+        return
+    category = click.prompt(
+        'Enter book category',
+        type=str,
+        default=books_keys
+    )
+    page_no = click.prompt(
+        'Enter page number',
+        type=click.IntRange(min=1),
+        default=1
+    )
+    verify = verify_jwt_token()
+    if not verify:
+        time.sleep(1)
+        return
+    check_true = True
+    while True:
+        check_true = list_view(category, page_no)
+        if check_true is False:
+            break
+        ask = input('next page? (yes/No)\n-> ').strip().lower()
+        if ask == 'yes':
+            page_no += 1
+            continue
+        else:
+            break

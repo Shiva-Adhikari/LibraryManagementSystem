@@ -32,6 +32,9 @@ def issue_books() -> None:
         due_warning = issue_date + timedelta(days=warning_to_date)
         due_date = issue_date + timedelta(days=to_date)
         user_detail = verify_jwt_token()
+        if not user_detail:
+            time.sleep(1)
+            return
         username = user_detail['username']
         email = user_detail['email']
         does_exist = validate_user(input_categories, input_book_name, username)

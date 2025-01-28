@@ -4,6 +4,7 @@ from tabulate import tabulate
 from pymongo import MongoClient
 
 from src.admin.stock_book import find_keys
+from config import verify_jwt_token
 
 
 client = MongoClient('localhost', 27017)
@@ -19,8 +20,10 @@ def search_books() -> None:
         time.sleep(2)
         return
     input_book_name = click.prompt('Enter Book Name', type=str).lower()
-    # fetch_data = db.Books.find()
-    # categories = [next(iter(data.keys() - {'_id'})) for data in fetch_data]
+    verify = verify_jwt_token()
+    if not verify:
+        time.sleep(1)
+        return
     for category in categories:
         fetch_books = db.Books.find(
                     {f"{category}.Title": {

@@ -2,6 +2,7 @@ import time
 import click
 from pymongo import MongoClient
 from config import logging_module
+from config import verify_jwt_token
 
 from src.admin.stock_book import find_keys
 
@@ -41,6 +42,11 @@ def update_books() -> None:
             type=str
         )
         book_stock = click.prompt('How many books are in stock', type=int)
+        verify = verify_jwt_token()
+        if not verify:
+            click.echo('Data is Discard, please insert again.')
+            time.sleep(1)
+            return
         update_query = {
             f'{input_category}.Title': input_book_name,
             }, {
