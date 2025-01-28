@@ -19,13 +19,14 @@ def user_issue_books_list() -> None:
     username = user_details['username']
     email = user_details['email']
     category_key = find_keys()
-    check_book = db.Books.aggregate([
-            {'$unwind': '$bca'},
-            {'$unwind': '$bca.UserDetails'},
-            {'$match': {'bca.UserDetails.Username': username}}
-    ])
-    category = list(check_book)
-    if not category:
+    for category in category_key:
+        check_book = db.Books.aggregate([
+                {'$unwind': f'${category}'},
+                {'$unwind': f'${category}.UserDetails'},
+                {'$match': {f'{category}.UserDetails.Username': username}}
+        ])
+    category_check = list(check_book)
+    if not category_check:
         return False
     fetch_issue_books = []
     for category_keys in category_key:
@@ -41,6 +42,7 @@ def user_issue_books_list() -> None:
             {
                 '$project': {
                     '_id': 0,
+                    'Id': f'${category_keys}.Id',
                     'Title': f'${category_keys}.Title',
                     'Author': f'${category_keys}.Author',
                 }
@@ -49,14 +51,16 @@ def user_issue_books_list() -> None:
         for book in result:
             fetch_issue_books.append({
                 'Category': category_keys,
+                'Id': book['Id'],
                 'Title': book['Title'],
                 'Author': book['Author']
             })
     table = []
-    header = ['Categories', 'Title', 'Author']
+    header = ['Categories', 'Id', 'Title', 'Author']
     for book in fetch_issue_books:
         table.append([
             book['Category'].capitalize(),
+            book['Id'],
             book['Title'].capitalize(),
             book['Author'].capitalize()
         ])
@@ -71,7 +75,8 @@ def return_books() -> None:
         time.sleep(2)
         return
     input_categories = click.prompt('Enter Book Category', type=str).lower()
-    input_book_name = click.prompt('Enter Book Name', type=str).lower()
+    # input_book_name = click.prompt('Enter Book Name', type=str).lower()
+    input_book_id = click.prompt('Enter Book Id', type=int)
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
@@ -79,7 +84,8 @@ def return_books() -> None:
     # don't use other method to remove this type of nested data.
     result = db.Books.update_one(
         {
-            f'{input_categories}.Title': input_book_name,
+            # f'{input_categories}.Title': input_book_name,
+            f'{input_categories}.Id': input_book_id,
             f'{input_categories}.UserDetails.Username': username,
             f'{input_categories}.UserDetails.Email': email,
         }, {
