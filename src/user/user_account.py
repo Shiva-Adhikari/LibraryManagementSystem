@@ -96,6 +96,7 @@ def user_login():
                 click.echo('Login Successfully')
             else:
                 click.echo('please Enter correct password')
+                return
             extract_username_email = {
                 'username': user['User'][0]['username'],
                 'email': user['User'][0]['email']
