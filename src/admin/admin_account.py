@@ -159,7 +159,3 @@ def admin_login():
         logger.error(e)
         click.echo(f'Got Exception in admin login: {e}')
         return
-
-
-# if __name__ == '__main__':
-    # admin_register()
