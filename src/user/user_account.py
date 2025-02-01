@@ -41,6 +41,7 @@ def validate_token(extract_username_email):
     payload = {
         'username': username,
         'email': email,
+        'is_admin': False,
         'iat': int(datetime.now().timestamp()),
         'exp': int((datetime.now() + EXP_DATE).timestamp())
     }
