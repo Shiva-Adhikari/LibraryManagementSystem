@@ -1,16 +1,20 @@
+# this no need to install
 import os
-import jwt
 import json
+from datetime import datetime, timedelta  # combine is better
+
+# this need to install
+import jwt
 import click
 import bcrypt
 from dotenv import load_dotenv
-from datetime import datetime
-from datetime import timedelta
 from pymongo import MongoClient
 from password_validator import PasswordValidator
 
+# import from file
 from config import data_path
 from config import logging_module
+
 
 logger = logging_module()
 
@@ -25,6 +29,7 @@ def generate_token(username: str):
     EXP_DATE = timedelta(hours=24)
     payload = {
         'username': username,
+        'is_admin': True,
         'iat': int(datetime.now().timestamp()),
         'exp': int((datetime.now() + EXP_DATE).timestamp())
     }
@@ -32,7 +37,7 @@ def generate_token(username: str):
     return token
 
 
-def password_validation(password: str) -> str:
+def password_validation(password: str):
     """password validation"""
     # creating PasswordValidator object
     validator = PasswordValidator()
@@ -109,9 +114,11 @@ def admin_register():
         else:
             logger.error('Register Failed')
             click.echo('Register Failed')
+            return
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in admin_register: {e}')
+        click.echo(f'Got Exception in admin register: {e}')
+        return
 
 
 def admin_login():
@@ -150,4 +157,9 @@ def admin_login():
             return
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in admin_register: {e}')
+        click.echo(f'Got Exception in admin login: {e}')
+        return
+
+
+# if __name__ == '__main__':
+    # admin_register()
