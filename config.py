@@ -113,11 +113,21 @@ def verify_jwt_token():
 
     if admin:
         token_data = decode_token(admin)
-        if not token_data:
+        token_data_ = token_data['is_admin']
+        if not token_data_:     # if i am not an admin then run this code
+            remove_user_login_details()
+            remove_admin_login_details()
+            return False
+        if not token_data:  # if token not found
             return False
     elif user:
         token_data = decode_token(user)
-        if not token_data:
+        token_data_ = token_data['is_admin']
+        if token_data_:     # if i am admin then run this code
+            remove_user_login_details()
+            remove_admin_login_details()
+            return False
+        if not token_data:  # if token not found
             return False
     else:
         return False
