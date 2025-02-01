@@ -35,7 +35,7 @@ def email_validation() -> str:
 def validate_token(extract_username_email):
     username = extract_username_email['username']
     email = extract_username_email['email']
-    SECRET_KEY = os.getenv('jwt_password')
+    SECRET_KEY = os.getenv('jwt_secret')
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(hours=24)
     payload = {

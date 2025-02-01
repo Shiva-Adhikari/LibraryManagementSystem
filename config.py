@@ -83,7 +83,7 @@ def remove_admin_login_details():
 
 
 def decode_token(token):
-    SECRET_KEY = os.getenv('jwt_password')
+    SECRET_KEY = os.getenv('jwt_secret')
     try:
         decoded = jwt.decode(
             token,
