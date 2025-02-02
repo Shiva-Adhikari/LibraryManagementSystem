@@ -82,8 +82,13 @@ def remove_admin_login_details():
         os.remove(path)
 
 
-def decode_token(token):
-    SECRET_KEY = os.getenv('jwt_secret')
+def logout():
+    remove_admin_login_details()
+    remove_user_login_details()
+
+
+def decode_token(token, SECRET):
+    SECRET_KEY = os.getenv(SECRET)
     try:
         decoded = jwt.decode(
             token,
@@ -96,14 +101,14 @@ def decode_token(token):
             })
         return decoded
     except jwt.exceptions.InvalidTokenError and jwt.DecodeError:
-        remove_admin_login_details()
-        remove_user_login_details()
+        logout()
         time.sleep(1.1)
         click.echo('Your Token is invalid, Login Again')
         return False
     except Exception as e:
         logger = logging_module()
         logger.debug(e)
+        logout()
         return False
 
 
@@ -112,21 +117,13 @@ def verify_jwt_token():
     user = get_user_login_details()
 
     if admin:
-        token_data = decode_token(admin)
-        token_data_ = token_data['is_admin']
-        if not token_data_:     # if i am not an admin then run this code
-            remove_user_login_details()
-            remove_admin_login_details()
-            return False
+        SECRET = 'jwt_admin_secret'
+        token_data = decode_token(admin, SECRET)
         if not token_data:  # if token not found
             return False
     elif user:
-        token_data = decode_token(user)
-        token_data_ = token_data['is_admin']
-        if token_data_:     # if i am admin then run this code
-            remove_user_login_details()
-            remove_admin_login_details()
-            return False
+        SECRET = 'jwt_user_secret'
+        token_data = decode_token(user, SECRET)
         if not token_data:  # if token not found
             return False
     else:
