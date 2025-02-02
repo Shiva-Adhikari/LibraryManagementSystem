@@ -24,12 +24,11 @@ load_dotenv(env_path)
 
 
 def generate_token(username: str):
-    SECRET_KEY = os.getenv('jwt_secret')
+    SECRET_KEY = os.getenv('jwt_admin_secret')
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(hours=24)
     payload = {
         'username': username,
-        'is_admin': True,
         'iat': int(datetime.now().timestamp()),
         'exp': int((datetime.now() + EXP_DATE).timestamp())
     }
