@@ -23,13 +23,14 @@ load_dotenv(env_path)
 
 def email_validation() -> str:
     while True:
-        email = click.prompt('Enter Email', type=str)
         try:
+            email = click.prompt('Enter Email', type=str)
             email = validate_email(email, check_deliverability=False)
             email = email.normalized
             return email
         except EmailNotValidError as e:
             click.echo(str(e))
+            continue
 
 
 def validate_token(extract_username_email):
@@ -50,8 +51,11 @@ def validate_token(extract_username_email):
 
 def user_register():
     try:
+        user = 'User'
         email = email_validation()
-        username, password = validation()
+        if not email:
+            return
+        username, password = validation(user)
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
         add_accounts = db.Accounts.update_one(
@@ -78,8 +82,8 @@ def user_register():
 
 
 def user_login():
-    username = click.prompt('Username: ', type=str)
-    password = click.prompt('Password: ', type=str)
+    # input username
+    username = click.prompt('Username: ', type=str).strip()
     """user credential from database"""
     try:
         client = MongoClient('localhost', 27017)
@@ -89,6 +93,8 @@ def user_login():
             {'User.$': 1}
         )
         if user:
+            # input password from user
+            password = click.prompt('Password: ', type=str).strip()
             extract_password = {
                 'password': user['User'][0]['password']
             }
