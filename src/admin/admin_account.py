@@ -22,6 +22,9 @@ src_path = os.path.join('src')
 env_path = os.path.join(src_path, '.env')
 load_dotenv(env_path)
 
+client = MongoClient('localhost', 27017)
+db = client.LibraryManagementSystem
+
 
 def generate_token(username: str):
     SECRET_KEY = os.getenv('jwt_admin_secret')
@@ -85,9 +88,30 @@ def confirm_password_validation() -> str:
             click.echo('password not match')
 
 
-def validation() -> tuple[str, str]:
+def check_accounts(account, username):
+    fetch_account = db.Accounts.aggregate([
+        {'$unwind': f'${account}'},
+        {'$match': {f'{account}.username': username}},
+        {'$project': {'username': f'${account}.username', '_id': 0}}
+    ])
+    check_account = list(fetch_account)
+    if check_account:
+        return True
+    else:
+        return False
+
+
+def validation(admin) -> tuple[str, str]:
     """get username and return with password"""
-    username = click.prompt('Enter Username: ', type=str)
+    while True:
+        username = click.prompt('Enter Username', type=str).lower().strip()
+        if len(username) > 3:
+            account = check_accounts(admin, username)
+            if account:
+                click.echo("Username exits check another\n")
+                continue
+            break
+        click.echo('username must be more than 4 letter long\n')
     password = confirm_password_validation()
     return username, password
 
@@ -95,7 +119,8 @@ def validation() -> tuple[str, str]:
 def admin_register():
     """save in database"""
     try:
-        username, password = validation()
+        admin = 'Admin'
+        username, password = validation(admin)
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
         add_accounts = db.Accounts.update_one(
@@ -125,8 +150,6 @@ def admin_login():
     password = click.prompt('Enter password: ', type=str)
     """fetch from database"""
     try:
-        client = MongoClient('localhost', 27017)
-        db = client.LibraryManagementSystem
         admin = db.Accounts.find_one(
             {'Admin.username': username},
             {'Admin.$': 1}
@@ -158,3 +181,8 @@ def admin_login():
         logger.error(e)
         click.echo(f'Got Exception in admin login: {e}')
         return
+
+
+if __name__ == '__main__':
+    # check_accounts('Admin', 'admin1')
+    validation()
