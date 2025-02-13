@@ -100,7 +100,12 @@ def decode_token(token, SECRET):
                 'verify_exp': ['exp']
             })
         return decoded
-    except jwt.exceptions.InvalidTokenError and jwt.DecodeError:
+    except jwt.exceptions.ExpiredSignatureError:
+        logout()
+        time.sleep(1.1)
+        click.echo('Your Token is Expired.')
+        return False
+    except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
         time.sleep(1.1)
         click.echo('Your Token is invalid, Login Again')
