@@ -1,17 +1,21 @@
 import os
 import jwt
-import json
 import click
-import bcrypt
 from datetime import datetime
 from datetime import timedelta
 from dotenv import load_dotenv
-from pymongo import MongoClient
 from email_validator import validate_email, EmailNotValidError
 
-from config import data_path
 from config import logging_module
-from src.admin.admin_account import validation
+from src.admin.admin_account import account_login
+from src.admin.admin_account import account_register
+
+# import json
+# import bcrypt
+# from pymongo import MongoClient
+# from config import data_path
+# from src.admin.admin_account import validation
+# from src.admin.admin_account import _count_accounts
 
 
 logger = logging_module()
@@ -38,7 +42,7 @@ def validate_token(extract_username_email):
     email = extract_username_email['email']
     SECRET_KEY = os.getenv('jwt_user_secret')
     ALGORITHM = 'HS256'
-    EXP_DATE = timedelta(hours=24)
+    EXP_DATE = timedelta(minutes=5)
     payload = {
         'username': username,
         'email': email,
@@ -50,6 +54,12 @@ def validate_token(extract_username_email):
 
 
 def user_register():
+    whoami = 'User'
+    account_register(whoami)
+
+
+'''
+def temp_for_now_user_register():
     try:
         user = 'User'
         email = email_validation()
@@ -58,10 +68,12 @@ def user_register():
         username, password = validation(user)
         client = MongoClient('localhost', 27017)
         db = client.LibraryManagementSystem
+        id = _count_accounts(user)
         add_accounts = db.Accounts.update_one(
             {'User': {'$exists': True}},
             {'$push': {
                 'User': {
+                    'id': id,
                     'username': username,
                     'email': email,
                     'password': password
@@ -79,9 +91,16 @@ def user_register():
     except Exception as e:
         logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_register: {e}')
+'''
 
 
 def user_login():
+    whoami = 'User'
+    account_login(whoami)
+
+
+'''
+def temp_for_now_user_login():
     # input username
     username = click.prompt('Username: ', type=str).strip()
     """user credential from database"""
@@ -119,3 +138,9 @@ def user_login():
     except Exception as e:
         logger.error(f'{str(e)}')
         click.echo(f'Got Exception in user_login: {e}')
+'''
+
+
+if __name__ == '__main__':
+    # user_register()
+    user_login()
