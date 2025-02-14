@@ -10,8 +10,10 @@ import bcrypt
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from password_validator import PasswordValidator
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from email_validator import validate_email, EmailNotValidError
+
+from config import logout
 
 
 # import from file
@@ -20,8 +22,6 @@ from config import logging_module
 
 # from src.user.user_account import email_validation
 
-
-# start_id = 1
 
 logger = logging_module()
 
@@ -181,6 +181,7 @@ def account_register(whoami):
 def admin_login():
     whoami = 'Admin'
     account_login(whoami)
+    return True
 
 
 def account_login(whoami):
@@ -206,26 +207,22 @@ def account_login(whoami):
                 # if password not match exit
                 return
 
-            # EXP_DATE = timedelta(minutes=5)   ###############
+            mac_address = device_mac_address()
+
+            EXP_DATE = timedelta(days=30)
             _access_token = {
                 'account': whoami,
                 'id': account[whoami][0]['id'],
-                # 'device': insert_device_mac_address   ###############
-                # 'exp': int((datetime.now() + EXP_DATE).timestamp())   ###############
+                'device': mac_address,
+                'exp': int((datetime.now() + EXP_DATE).timestamp())
             }
-
-            print('access_token')
 
             # encrypt access_token
             check = encrypt_text(_access_token)
             if not check:
-                print('not check')
-                print('exiting..')
                 return
 
             refresh_token()
-            print('encrypt_text done')
-
             return True
         else:
             click.echo('Account not found')
@@ -234,8 +231,17 @@ def account_login(whoami):
         click.echo('exiting...')
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in admin login: {e}')
+        click.echo(f'Got Exception in login: {e}')
         return False
+
+
+# get macaddress from device
+def device_mac_address():
+    mac_address = ''
+    device = '/sys/class/net/enp1s0/address'
+    with open(device, 'r') as file:
+        mac_address = file.readline().strip()
+        return mac_address
 
 
 def _count_accounts(category):
@@ -268,10 +274,8 @@ def encrypt_text(text):
     # now it becomes string and now successfully encoded
     json_text = json.dumps(text)
 
-    print(f'json_text: {json_text}')
     encrypted_text = fernet.encrypt(json_text.encode()).decode()
     data_dir = data_path('access_token')
-    print(f'encrypted_text: {encrypted_text}')
 
     with open(data_dir, 'w') as file:
         json.dump(encrypted_text, file)
@@ -284,29 +288,49 @@ def decrypt_text():
     # create fernet instance (object)
     fernet = Fernet(SECRET_KEY_FERNET)
     data_dir = data_path('access_token')
-    print('hello')
 
-    with open(data_dir, 'r') as file:
-        print("hello1")
-        text = json.load(file)
-        print(f'text: {text}')
+    try:
+        with open(data_dir, 'r') as file:
+            text = json.load(file)
+    except FileNotFoundError:
+        return
 
-    print("hello2")
-    decrypted_text = fernet.decrypt(text.encode()).decode()
-    print(f'decrypted_text: {decrypted_text}')
-    return decrypted_text
+    try:
+        decrypted_text = fernet.decrypt(text.encode()).decode()
+        return decrypted_text
+    except InvalidToken:
+        logout()
+        return
 
 
 def refresh_token():
     # decrypt token
     data_dict = decrypt_text()
+
+    if not data_dict:
+        return
+
     # convert into json file from dictionary
     data_json = json.loads(data_dict)
+
+    # check mac of device is same or not
+    device = data_json['device']
+    address = device_mac_address()
+    if device != address:
+        logout()
+        click.echo('Your Token is Expired')
+        return
+
+    # check date is valid or not
+    today_date = int(datetime.now().timestamp())
+    expiry_date = data_json['exp']
+    if today_date > expiry_date:
+        logout()
+        return
+
     # check whose access token is it (admin/user)
     account = data_json['account']
     id = data_json['id']
-    print(f"data account: {data_json['account']}")
-    print(f"data id: {data_json['id']}")
 
     accounts = db.Accounts.find_one(
             {f'{account}.id': id},
@@ -315,7 +339,6 @@ def refresh_token():
 
     # get username
     username = accounts[account][0]['username']
-    print(f'username: {username}')
     token = ''
     data_dir = ''
 
@@ -334,13 +357,13 @@ def refresh_token():
     # after condition check then save in file
     with open(data_dir, 'w') as file:
         json.dump(token, file)
-        print('successfully dump token')
+        return True
 
 
 def generate_token(username, secret, email):
     SECRET_KEY = os.getenv(secret)
     ALGORITHM = 'HS256'
-    EXP_DATE = timedelta(minutes=5)
+    EXP_DATE = timedelta(minutes=2)
     payload = {}
 
     if secret == 'jwt_user_secret':
@@ -358,15 +381,5 @@ def generate_token(username, secret, email):
             'exp': int((datetime.now() + EXP_DATE).timestamp())
         }
 
-    print(f'generate_token payload: {payload}')
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    print(f'generate_token token: {token}')
     return token
-
-
-if __name__ == '__main__':
-    # admin_register()
-    admin_login()
-    # refresh_token()
-    # encrypt_text()
-    # decrypt_text()
