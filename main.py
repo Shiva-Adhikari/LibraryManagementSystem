@@ -15,6 +15,7 @@ from src.admin.update_books import update_books
 from src.admin.delete_books import delete_books
 from src.admin.admin_account import admin_login
 from src.admin.admin_account import admin_register
+from config import logout
 from config import tqdm_progressbar
 from config import verify_jwt_token
 from config import get_user_login_details
@@ -80,11 +81,12 @@ def user_accounts(choose: int):
         case 2:
             if logged_as_user:
                 click.echo('You are already a User. Unable to login twice.')
-            check_login = user_login()
-            if check_login:
-                remove_admin_login_details()
-                logged_as_user = True
-                logged_as_admin = False
+            else:
+                check_login = user_login()
+                if check_login:
+                    remove_admin_login_details()
+                    logged_as_user = True
+                    logged_as_admin = False
         case 0:
             exit()
         case _:
@@ -180,8 +182,7 @@ def show_accounts(choose: int):
         case 2:
             user_accounts()
         case 3:
-            remove_user_login_details()
-            remove_admin_login_details()
+            logout()
             logged_as_user = False
             logged_as_admin = False
             click.echo('Logging out...')
