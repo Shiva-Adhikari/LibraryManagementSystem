@@ -10,13 +10,6 @@ from config import logging_module
 from src.admin.admin_account import account_login
 from src.admin.admin_account import account_register
 
-# import json
-# import bcrypt
-# from pymongo import MongoClient
-# from config import data_path
-# from src.admin.admin_account import validation
-# from src.admin.admin_account import _count_accounts
-
 
 logger = logging_module()
 
@@ -58,89 +51,7 @@ def user_register():
     account_register(whoami)
 
 
-'''
-def temp_for_now_user_register():
-    try:
-        user = 'User'
-        email = email_validation()
-        if not email:
-            return
-        username, password = validation(user)
-        client = MongoClient('localhost', 27017)
-        db = client.LibraryManagementSystem
-        id = _count_accounts(user)
-        add_accounts = db.Accounts.update_one(
-            {'User': {'$exists': True}},
-            {'$push': {
-                'User': {
-                    'id': id,
-                    'username': username,
-                    'email': email,
-                    'password': password
-                }
-            }},
-            upsert=True
-        )
-        if add_accounts.modified_count > 0 or add_accounts.upserted_id:
-            click.echo('Register Successfully')
-        else:
-            logger.error('Register Failed')
-            click.echo('Register Failed')
-    except KeyboardInterrupt:
-        click.echo('exiting...')
-    except Exception as e:
-        logger.error(f'{str(e)}')
-        click.echo(f'Got Exception in user_register: {e}')
-'''
-
-
 def user_login():
     whoami = 'User'
     account_login(whoami)
-
-
-'''
-def temp_for_now_user_login():
-    # input username
-    username = click.prompt('Username: ', type=str).strip()
-    """user credential from database"""
-    try:
-        client = MongoClient('localhost', 27017)
-        db = client.LibraryManagementSystem
-        user = db.Accounts.find_one(
-            {'User.username': username},
-            {'User.$': 1}
-        )
-        if user:
-            # input password from user
-            password = click.prompt('Password: ', type=str).strip()
-            extract_password = {
-                'password': user['User'][0]['password']
-            }
-            if bcrypt.checkpw(password.encode(), extract_password['password']):
-                click.echo('Login Successfully')
-            else:
-                click.echo('please Enter correct password')
-                return
-            extract_username_email = {
-                'username': user['User'][0]['username'],
-                'email': user['User'][0]['email']
-            }
-            token = validate_token(extract_username_email)
-            data_dir = data_path('user')
-            with open(data_dir, 'w') as file:
-                json.dump(token, file)
-            return user
-        else:
-            click.echo('Account not found')
-    except KeyboardInterrupt:
-        click.echo('exiting...')
-    except Exception as e:
-        logger.error(f'{str(e)}')
-        click.echo(f'Got Exception in user_login: {e}')
-'''
-
-
-if __name__ == '__main__':
-    # user_register()
-    user_login()
+    return True
