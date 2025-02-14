@@ -7,7 +7,6 @@ import logging
 from tqdm import tqdm
 from dotenv import load_dotenv
 
-
 src_path = os.path.join('src')
 env_path = os.path.join(src_path, '.env')
 load_dotenv(env_path)
@@ -82,7 +81,14 @@ def remove_admin_login_details():
         os.remove(path)
 
 
+def remove_access_token():
+    path = data_path('access_token')
+    if os.path.exists(path):
+        os.remove(path)
+
+
 def logout():
+    remove_access_token()
     remove_admin_login_details()
     remove_user_login_details()
 
@@ -101,9 +107,11 @@ def decode_token(token, SECRET):
             })
         return decoded
     except jwt.exceptions.ExpiredSignatureError:
-        logout()
+        from src.admin.admin_account import refresh_token
         time.sleep(1.1)
-        click.echo('Your Token is Expired.')
+        token = refresh_token()
+        if token:
+            return True
         return False
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
