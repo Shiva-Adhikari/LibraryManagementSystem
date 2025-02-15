@@ -53,6 +53,7 @@ def user_register():
 
 def user_login():
     whoami = 'User'
-    success_login = account_login(whoami)
+    access_token = 'SECRET_ACCESS_TOKEN_USER'
+    success_login = account_login(whoami, access_token)
     if success_login:
         return True
