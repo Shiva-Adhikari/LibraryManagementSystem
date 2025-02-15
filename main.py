@@ -22,6 +22,7 @@ from config import get_user_login_details
 from config import get_admin_login_details
 from config import remove_user_login_details
 from config import remove_admin_login_details
+from config import validate_access_token
 
 
 """global variable"""
@@ -243,11 +244,10 @@ def library(choose: int):
                     user_list_books()
                 elif logged_as_admin:
                     admin_list_books()
-                else:
-                    click.echo(
+            else:
+                click.echo(
                         'You are not loggedin. Please login first'
                     )
-            else:
                 logged_as_admin = False
                 logged_as_user = False
         case 0:
@@ -272,7 +272,11 @@ def main():
     with ThreadPoolExecutor() as executor:
         executor.submit(run)
         verify = executor.submit(verify_jwt_token)
-        if not verify.result():
+        if verify.result():
+            is_it = validate_access_token()
+            if is_it:
+                logout()
+        else:
             logged_as_user = False
             logged_as_admin = False
 
