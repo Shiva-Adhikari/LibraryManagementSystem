@@ -180,8 +180,9 @@ def account_register(whoami):
 
 def admin_login():
     whoami = 'Admin'
-    account_login(whoami)
-    return True
+    success_login = account_login(whoami)
+    if success_login:
+        return True
 
 
 def account_login(whoami):
