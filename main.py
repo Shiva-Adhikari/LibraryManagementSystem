@@ -104,27 +104,44 @@ def user_accounts(choose: int):
     type=int
 )
 def admin_list_books(choose: int):
+    global logged_as_admin
+    global logged_as_user
     match choose:
         case 1:
             verify = verify_jwt_token()
             if verify:
                 add_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 2:
             verify = verify_jwt_token()
             if verify:
                 search_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 3:
             verify = verify_jwt_token()
             if verify:
                 stock_book()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 4:
             verify = verify_jwt_token()
             if verify:
                 update_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 5:
             verify = verify_jwt_token()
             if verify:
                 delete_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 0:
             exit()
         case _:
@@ -142,19 +159,30 @@ def admin_list_books(choose: int):
     type=int
 )
 def user_list_books(choose: int):
+    global logged_as_admin
+    global logged_as_user
     match choose:
         case 1:
             verify = verify_jwt_token()
             if verify:
                 issue_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 2:
             verify = verify_jwt_token()
             if verify:
                 list_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 3:
             verify = verify_jwt_token()
             if verify:
                 return_books()
+            else:
+                logged_as_admin = False
+                logged_as_user = False
         case 0:
             exit()
         case _:
@@ -203,19 +231,25 @@ def show_accounts(choose: int):
 )
 def library(choose: int):
     click.clear()
+    global logged_as_admin
+    global logged_as_user
     match choose:
         case 1:
             show_accounts()
         case 2:
             verify = verify_jwt_token()
-            if logged_as_user and verify:
-                user_list_books()
-            elif logged_as_admin and verify:
-                admin_list_books()
+            if verify:
+                if logged_as_user:
+                    user_list_books()
+                elif logged_as_admin:
+                    admin_list_books()
+                else:
+                    click.echo(
+                        'You are not loggedin. Please login first'
+                    )
             else:
-                click.echo(
-                    'You are not loggedin. Please login first'
-                )
+                logged_as_admin = False
+                logged_as_user = False
         case 0:
             exit()
         case _:
