@@ -53,5 +53,6 @@ def user_register():
 
 def user_login():
     whoami = 'User'
-    account_login(whoami)
-    return True
+    success_login = account_login(whoami)
+    if success_login:
+        return True
