@@ -6,6 +6,11 @@ import click
 import logging
 from tqdm import tqdm
 from dotenv import load_dotenv
+from pymongo import MongoClient
+
+
+client = MongoClient('localhost', 27017)
+db = client.LibraryManagementSystem
 
 src_path = os.path.join('src')
 env_path = os.path.join(src_path, '.env')
@@ -88,6 +93,10 @@ def remove_access_token():
 
 
 def logout():
+    token = validate_access_token()
+    if not token:
+        token_blacklist()
+
     remove_access_token()
     remove_admin_login_details()
     remove_user_login_details()
@@ -102,16 +111,29 @@ def decode_token(token, SECRET):
             algorithms=['HS256'],
             options={
                 'require': ['iat', 'exp'],
-                'verify_iss': ['iat'],
+                'verify_iat': ['iat'],
                 'verify_exp': ['exp']
             })
         return decoded
     except jwt.exceptions.ExpiredSignatureError:
         from src.admin.admin_account import refresh_token
+
+        admin = get_admin_login_details()
+        user = get_user_login_details()
+        token = ''
+
+        if admin:
+            access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+            token = refresh_token(access_token)
+
+        elif user:
+            access_token = 'SECRET_ACCESS_TOKEN_USER'
+            token = refresh_token(access_token)
         time.sleep(1.1)
-        token = refresh_token()
+
         if token:
             return True
+
         return False
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
@@ -128,22 +150,98 @@ def decode_token(token, SECRET):
 def verify_jwt_token():
     admin = get_admin_login_details()
     user = get_user_login_details()
+    account = ''
 
     if admin:
+        account = 'Admin'
         SECRET = 'jwt_admin_secret'
         token_data = decode_token(admin, SECRET)
         if not token_data:  # if token not found
             return False
     elif user:
+        account = 'User'
         SECRET = 'jwt_user_secret'
         token_data = decode_token(user, SECRET)
         if not token_data:  # if token not found
             return False
     else:
         return False
-    return token_data
+    return token_data, account
 
 
 def tqdm_progressbar():
     for _ in tqdm(range(0, 100), desc='Loading..'):
         time.sleep(0.01)
+
+
+def get_access_token():
+    data_dir = data_path('access_token')
+    try:
+        with open(data_dir, 'r') as file:
+            token = json.load(file)
+            return token
+    except FileNotFoundError:
+        return
+
+
+def token_blacklist():
+    from src.admin.admin_account import dencode_access_token
+
+    token = get_access_token()
+    if not token:
+        return
+
+    verify, account = verify_jwt_token()
+    data_json = ''
+
+    if account == 'Admin':
+        access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+        data_json = dencode_access_token(access_token)
+    elif account == 'User':
+        access_token = 'SECRET_ACCESS_TOKEN_USER'
+        data_json = dencode_access_token(access_token)
+
+    id = data_json['id']
+    account = data_json['account']
+
+    blacklist = db.Accounts.update_one(
+        {f'{account}.id': id},
+        {
+            '$push': {
+                f'{account}.$.TokenBlacklist': {
+                    'token': token
+                }
+            }
+        }
+    )
+
+    if blacklist.modified_count > 0:
+        return True
+    else:
+        return False
+
+
+# check token is available or not in database
+def validate_access_token():
+    token = get_access_token()
+    if not token:
+        return
+    check_token = db.Accounts.aggregate([
+        {'$unwind': '$User'},
+        {'$unwind': '$User.TokenBlacklist'},
+        {'$match': {'User.TokenBlacklist.token': token}},
+        {
+            '$project': {
+                'username': '$User.username',
+                'token': '$User.TokenBlacklist.token'
+            }
+        }
+    ])
+
+    try:
+        is_data = list(check_token)
+        if is_data and is_data[0]:
+            return True
+        return False
+    except IndexError:
+        return False
