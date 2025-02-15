@@ -2,7 +2,7 @@ data/
 tests/
 logs/
 */__pycache__
-*/.mypy_cache
+*/.*
 */tempCodeRunnerFile.py
 docs/LibraryManagementSystem.pdf
 mypy_cache/
