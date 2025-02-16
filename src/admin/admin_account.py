@@ -13,6 +13,7 @@ from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
 
 from config import logout
+from config import logmeout
 
 # import from file
 from config import data_path
@@ -295,10 +296,12 @@ def dencode_access_token(access_token):
             })
         return decoded
     except jwt.exceptions.ExpiredSignatureError:
-        click.echo('Your Token is Expired, Login Again')
+        click.echo('Your Token is Expired, Login Again..')
+        logmeout()
         return False
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
-        click.echo('Your Token is invalid, Login Again')
+        click.echo('Your Token is invalid, Login Again..')
+        logmeout()
         return False
     except Exception as e:
         logger = logging_module()
