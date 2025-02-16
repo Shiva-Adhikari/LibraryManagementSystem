@@ -165,7 +165,7 @@ def verify_jwt_token():
         if not token_data:  # if token not found
             return False
     else:
-        return False
+        return '', ''
     return token_data, account
 
 
@@ -192,6 +192,9 @@ def token_blacklist():
         return
 
     verify, account = verify_jwt_token()
+    if not verify:
+        return
+
     data_json = ''
 
     if account == 'Admin':
@@ -223,17 +226,23 @@ def token_blacklist():
 
 # check token is available or not in database
 def validate_access_token():
+    verify, account = verify_jwt_token()
+
+    if not verify:
+        return
+
     token = get_access_token()
+
     if not token:
         return
     check_token = db.Accounts.aggregate([
-        {'$unwind': '$User'},
-        {'$unwind': '$User.TokenBlacklist'},
-        {'$match': {'User.TokenBlacklist.token': token}},
+        {'$unwind': f'${account}'},
+        {'$unwind': f'${account}.TokenBlacklist'},
+        {'$match': {f'{account}.TokenBlacklist.token': token}},
         {
             '$project': {
-                'username': '$User.username',
-                'token': '$User.TokenBlacklist.token'
+                'username': f'${account}.username',
+                'token': f'${account}.TokenBlacklist.token'
             }
         }
     ])
@@ -243,5 +252,7 @@ def validate_access_token():
         if is_data and is_data[0]:
             return True
         return False
-    except IndexError:
+    except IndexError as e:
+        logger = logging_module()
+        logger.error(e)
         return False
