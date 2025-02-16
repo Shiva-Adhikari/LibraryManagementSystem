@@ -102,6 +102,12 @@ def logout():
     remove_user_login_details()
 
 
+def logmeout():
+    remove_access_token()
+    remove_admin_login_details()
+    remove_user_login_details()
+
+
 def decode_token(token, SECRET):
     SECRET_KEY = os.getenv(SECRET)
     try:
@@ -137,8 +143,8 @@ def decode_token(token, SECRET):
         return False
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
-        time.sleep(1.1)
         click.echo('Your Token is invalid, Login Again')
+        time.sleep(1.1)
         return False
     except Exception as e:
         logger = logging_module()
