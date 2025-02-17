@@ -13,7 +13,7 @@ from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
 
 from config import logout
-from config import logmeout
+# from config import logmeout
 
 # import from file
 from config import data_path
@@ -151,9 +151,9 @@ def account_register(whoami):
                 return
 
             add_accounts = db.Accounts.update_one(
-                {'User': {'$exists': True}},
+                {f'{whoami}': {'$exists': True}},
                 {'$push': {
-                    'User': {
+                    f'{whoami}': {
                         'id': id,
                         'username': username,
                         'email': email,
@@ -178,14 +178,22 @@ def account_register(whoami):
 def admin_login():
     whoami = 'Admin'
     access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+
+    # username = 'admin'
+    # password = 'admin@123A'
+    # success_login = account_login(whoami, access_token, username, password)
     success_login = account_login(whoami, access_token)
     if success_login:
         return True
 
 
 def account_login(whoami, access_token):
+    # def account_login(whoami, access_token, username, password):
+    # get username and password
     username = click.prompt('Enter username', type=str).strip().lower()
     password = click.prompt('Enter password', type=str)
+
+    # print('account_login\n')
     """fetch from database"""
     try:
         account = db.Accounts.find_one(
@@ -206,7 +214,9 @@ def account_login(whoami, access_token):
                 # if password not match exit
                 return
 
+            # print('CALL mac_address\n')
             mac_address = device_mac_address()
+            # print(f'BACK mac_address: {mac_address}\n')
 
             EXP_DATE = timedelta(days=30)
             payload = {
@@ -218,29 +228,37 @@ def account_login(whoami, access_token):
             }
 
             # encrypt access_token
+            # print('Call enocde_access_token\n')
             check = encode_access_token(payload, access_token)
+            # print(f'BACK enocde_access_token: {check}\n')
             if not check:
                 return
 
+            # print('CALL refresh_token\n')
             refresh_token(access_token)
+            # print('BACK refresh_token\n')
+
+            # print("SUCCESSFULLY LOGIN")
             return True
         else:
             click.echo('Account not found')
-            return False
+            return
     except KeyboardInterrupt:
         click.echo('exiting...')
     except Exception as e:
         logger.error(e)
         click.echo(f'Got Exception in login: {e}')
-        return False
+        return
 
 
 # get macaddress from device
 def device_mac_address():
+    # print('INSIDE device_mac_address\n')
     mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
         mac_address = file.readline().strip()
+        # print(f'RETURN mac_address: {mac_address}\n')
         return mac_address
 
 
@@ -265,6 +283,7 @@ def _count_accounts(category):
 
 
 def encode_access_token(json_text, access_token):
+    # print('INSIDE encode_access_token')
     SECRET_KEY = os.getenv(access_token)
     ALGORITHM = 'HS256'
 
@@ -273,8 +292,8 @@ def encode_access_token(json_text, access_token):
 
     with open(data_dir, 'w') as file:
         json.dump(encrypted_text, file)
+        # print('RETURN from encode_access_token')
         return True
-    return False
 
 
 def dencode_access_token(access_token):
@@ -284,97 +303,131 @@ def dencode_access_token(access_token):
     token = get_access_token()
     if not token:
         return
+
     try:
         decoded = jwt.decode(
             token,
             SECRET_KEY,
             algorithms=['HS256'],
             options={
-                'require': ['iat', 'exp'],
-                'verify_iat': ['iat'],
+                'require': ['exp'],
                 'verify_exp': ['exp']
             })
         return decoded
+
     except jwt.exceptions.ExpiredSignatureError:
         click.echo('Your Token is Expired, Login Again..')
-        logmeout()
-        return False
+        # logmeout()
+        return
+
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         click.echo('Your Token is invalid, Login Again..')
-        logmeout()
-        return False
+        # logmeout()
+        return
+
     except Exception as e:
         logger = logging_module()
         logger.debug(e)
-        return False
+        return
 
 
 def refresh_token(access_token):
-    # decrypt token
-    data_json = dencode_access_token(access_token)
+    # print('INSIDE refresh_token')
+    try:
+        # decrypt token
+        data_json = dencode_access_token(access_token)
 
-    if not data_json:
+        if not data_json:
+            return
+
+        # check mac of device is same or not
+        device = data_json['device']
+        # print(f"CALL MAC ADDRESS FROM refresh_token{device}\n")
+        address = device_mac_address()
+        # print(f"RETURN MAC ADDRESS FROM refresh_token{address}\n")
+        if device != address:
+            logout()
+            click.echo('Your Token is Invalid')
+            return
+
+        # check whose access token is it (admin/user)
+        account = data_json['account']
+        id = data_json['id']
+
+        accounts = db.Accounts.find_one(
+                {f'{account}.id': id},
+                {f'{account}.$': 1}
+            )
+        # get username
+        # print(f'Accounts in refresh_token: {list(accounts)}')
+
+        username = accounts[account][0]['username']
+        token = ''
+        data_dir = ''
+
+        if account == 'Admin':
+            secret = 'jwt_admin_secret'
+            data_dir = data_path('admin')
+            email = ''
+            # print('CALL generate_token\n')
+            token = generate_token(username, secret, email)
+            # print(f'AFTER generate_token: {token}\n')
+            # if not token:
+            #     return
+
+        elif account == 'User':
+            secret = 'jwt_user_secret'
+            data_dir = data_path('user')
+            email = accounts[account][0]['email']
+            # print('CALL generate_token')
+            token = generate_token(username, secret, email)
+            # print(f'AFTER generate_token: {token}\n')
+            # if not token:
+            #     return
+
+        # after condition check then save in file
+        with open(data_dir, 'w') as file:
+            json.dump(token, file)
+            # print(f'written REFRESH_TOKEN to File{token}\n')
+    except Exception as e:
+        logger.error(e)
         return
-
-    # check mac of device is same or not
-    device = data_json['device']
-    address = device_mac_address()
-    if device != address:
-        logout()
-        click.echo('Your Token is Expired')
-        return
-
-    # check whose access token is it (admin/user)
-    account = data_json['account']
-    id = data_json['id']
-
-    accounts = db.Accounts.find_one(
-            {f'{account}.id': id},
-            {f'{account}.$': 1}
-        )
-    # get username
-    username = accounts[account][0]['username']
-    token = ''
-    data_dir = ''
-
-    if account == 'Admin':
-        secret = 'jwt_admin_secret'
-        data_dir = data_path('admin')
-        email = ''
-        token = generate_token(username, secret, email)
-
-    elif account == 'User':
-        secret = 'jwt_user_secret'
-        data_dir = data_path('user')
-        email = accounts[account][0]['email']
-        token = generate_token(username, secret, email)
-
-    # after condition check then save in file
-    with open(data_dir, 'w') as file:
-        json.dump(token, file)
-        return True
+    # return False
 
 
 def generate_token(username, secret, email):
+    # print('INSIDE generate_token')
     SECRET_KEY = os.getenv(secret)
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(minutes=1)
     payload = {}
 
-    if secret == 'jwt_user_secret':
-        payload = {
-            'username': username,
-            'email': email,
-            'iat': int(datetime.now().timestamp()),
-            'exp': int((datetime.now() + EXP_DATE).timestamp())
-        }
+    try:
+        if secret == 'jwt_user_secret':
+            payload = {
+                'username': username,
+                'email': email,
+                'iat': int(datetime.now().timestamp()),
+                'exp': int((datetime.now() + EXP_DATE).timestamp())
+            }
 
-    elif secret == 'jwt_admin_secret':
-        payload = {
-            'username': username,
-            'iat': int(datetime.now().timestamp()),
-            'exp': int((datetime.now() + EXP_DATE).timestamp())
-        }
+        elif secret == 'jwt_admin_secret':
+            payload = {
+                'username': username,
+                'iat': int(datetime.now().timestamp()),
+                'exp': int((datetime.now() + EXP_DATE).timestamp())
+            }
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    return token
+        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        if token:
+            # print(f'RETURN token: {token}')
+            return token
+    except Exception as e:
+        logger.error(e)
+        return
+
+    # return False
+
+
+if __name__ == '__main__':
+    admin_login()
