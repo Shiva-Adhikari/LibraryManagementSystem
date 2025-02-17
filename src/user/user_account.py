@@ -54,6 +54,13 @@ def user_register():
 def user_login():
     whoami = 'User'
     access_token = 'SECRET_ACCESS_TOKEN_USER'
+    # username = 'user'
+    # password = 'user@123A'
     success_login = account_login(whoami, access_token)
+    # success_login = account_login(whoami, access_token, username, password)
     if success_login:
         return True
+
+
+if __name__ == '__main__':
+    user_login()
