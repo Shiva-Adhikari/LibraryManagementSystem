@@ -46,7 +46,6 @@ def logging_module():
 def get_user_login_details():
     """save user login session"""
     details = data_path('user')
-    # return details if os.path.exists(details) else False
     if not os.path.exists(details):
         return False
     try:
@@ -111,6 +110,8 @@ def logmeout():
 def decode_token(token, SECRET):
     SECRET_KEY = os.getenv(SECRET)
     try:
+        # print('admin')
+        # time.sleep(4)
         decoded = jwt.decode(
             token,
             SECRET_KEY,
@@ -135,44 +136,53 @@ def decode_token(token, SECRET):
         elif user:
             access_token = 'SECRET_ACCESS_TOKEN_USER'
             token = refresh_token(access_token)
-        time.sleep(1.1)
 
-        if token:
-            return True
-
-        return False
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
         click.echo('Your Token is invalid, Login Again')
         time.sleep(1.1)
-        return False
+        return
     except Exception as e:
         logger = logging_module()
         logger.debug(e)
         logout()
-        return False
+        return
 
 
 def verify_jwt_token():
+    # print('a')
+
     admin = get_admin_login_details()
     user = get_user_login_details()
+
     account = ''
 
-    if admin:
-        account = 'Admin'
-        SECRET = 'jwt_admin_secret'
-        token_data = decode_token(admin, SECRET)
-        if not token_data:  # if token not found
-            return False
-    elif user:
-        account = 'User'
-        SECRET = 'jwt_user_secret'
-        token_data = decode_token(user, SECRET)
-        if not token_data:  # if token not found
-            return False
-    else:
-        return '', ''
-    return token_data, account
+    try:
+        if admin:
+            # print('d')
+            account = 'Admin'
+            SECRET = 'jwt_admin_secret'
+            # print('e')
+            token_data = decode_token(admin, SECRET)
+            # print('f')
+            # if not token_data:  # if token not found
+            #     return False
+        elif user:
+            # print('user')
+            time.sleep(4)
+            account = 'User'
+            SECRET = 'jwt_user_secret'
+            token_data = decode_token(user, SECRET)
+            # if not token_data:  # if token not found
+            #     return False
+        else:
+            return '', ''
+        return token_data, account
+
+    except Exception as e:
+        logger = logging_module()
+        logger.error(e)
+        return
 
 
 def tqdm_progressbar():
@@ -197,50 +207,80 @@ def token_blacklist():
     if not token:
         return
 
-    verify, account = verify_jwt_token()
+    verify = verify_jwt_token()
     if not verify:
         return
 
     data_json = ''
 
-    if account == 'Admin':
+    admin = get_admin_login_details()
+    if not admin:
+        return
+
+    user = get_user_login_details()
+    if not user:
+        return
+
+    if admin:
         access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
         data_json = dencode_access_token(access_token)
-    elif account == 'User':
+        if not data_json:
+            return
+
+    elif user:
         access_token = 'SECRET_ACCESS_TOKEN_USER'
         data_json = dencode_access_token(access_token)
+        if not data_json:
+            return
+
+    else:
+        return
 
     id = data_json['id']
     account = data_json['account']
 
-    blacklist = db.Accounts.update_one(
-        {f'{account}.id': id},
-        {
-            '$push': {
-                f'{account}.$.TokenBlacklist': {
-                    'token': token
+    try:
+        blacklist = db.Accounts.update_one(
+            {f'{account}.id': id},
+            {
+                '$push': {
+                    f'{account}.$.TokenBlacklist': {
+                        'token': token
+                    }
                 }
             }
-        }
-    )
+        )
 
-    if blacklist.modified_count > 0:
-        return True
-    else:
-        return False
+        if blacklist.modified_count > 0:
+            return True
+        # else:
+        #     return False
+    except Exception as e:
+        logger = logging_module()
+        logger.error(e)
+        return
 
 
 # check token is available or not in database
 def validate_access_token():
-    verify, account = verify_jwt_token()
+    account = ''
+    admin = get_admin_login_details()
+    if admin:
+        account = 'Admin'
+    else:
+        return
 
-    if not verify:
+    user = get_user_login_details()
+    if user:
+        account = 'User'
+    else:
         return
 
     token = get_access_token()
 
     if not token:
         return
+
     check_token = db.Accounts.aggregate([
         {'$unwind': f'${account}'},
         {'$unwind': f'${account}.TokenBlacklist'},
@@ -257,8 +297,8 @@ def validate_access_token():
         is_data = list(check_token)
         if is_data and is_data[0]:
             return True
-        return False
+        # return False
     except IndexError as e:
         logger = logging_module()
         logger.error(e)
-        return False
+        return
