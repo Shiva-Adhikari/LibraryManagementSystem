@@ -101,6 +101,12 @@ def logout():
     remove_user_login_details()
 
 
+def logoutme():
+    remove_access_token()
+    remove_admin_login_details()
+    remove_user_login_details()
+
+
 def logmeout():
     remove_access_token()
     remove_admin_login_details()
@@ -207,37 +213,26 @@ def token_blacklist():
     if not token:
         return
 
-    verify = verify_jwt_token()
-    if not verify:
-        return
-
-    data_json = ''
-
     admin = get_admin_login_details()
-    if not admin:
-        return
-
     user = get_user_login_details()
-    if not user:
+    if not (admin or user):
         return
 
     if admin:
         access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
-        data_json = dencode_access_token(access_token)
-        if not data_json:
-            return
-
     elif user:
         access_token = 'SECRET_ACCESS_TOKEN_USER'
-        data_json = dencode_access_token(access_token)
-        if not data_json:
-            return
 
-    else:
+    data_json = dencode_access_token(access_token)
+    if not data_json:
         return
 
     id = data_json['id']
     account = data_json['account']
+
+    account_exists = db.Accounts.find_one({f'{account}.id': id})
+    if not account_exists:
+        return False
 
     try:
         blacklist = db.Accounts.update_one(
@@ -251,10 +246,9 @@ def token_blacklist():
             }
         )
 
-        if blacklist.modified_count > 0:
-            return True
-        # else:
-        #     return False
+        success = blacklist.modified_count > 0
+        return success
+
     except Exception as e:
         logger = logging_module()
         logger.error(e)
@@ -302,3 +296,7 @@ def validate_access_token():
         logger = logging_module()
         logger.error(e)
         return
+
+
+if __name__ == '__main__':
+    token_blacklist()
