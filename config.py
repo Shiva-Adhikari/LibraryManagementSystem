@@ -92,22 +92,6 @@ def remove_access_token():
 
 
 def logout():
-    token = validate_access_token()
-    if not token:
-        token_blacklist()
-
-    remove_access_token()
-    remove_admin_login_details()
-    remove_user_login_details()
-
-
-def logoutme():
-    remove_access_token()
-    remove_admin_login_details()
-    remove_user_login_details()
-
-
-def logmeout():
     remove_access_token()
     remove_admin_login_details()
     remove_user_login_details()
@@ -146,7 +130,7 @@ def decode_token(token, SECRET):
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
         click.echo('Your Token is invalid, Login Again')
-        time.sleep(1.1)
+        # time.sleep(1.1)
         return
     except Exception as e:
         logger = logging_module()
@@ -175,7 +159,7 @@ def verify_jwt_token():
             #     return False
         elif user:
             # print('user')
-            time.sleep(4)
+            # time.sleep(4)
             account = 'User'
             SECRET = 'jwt_user_secret'
             token_data = decode_token(user, SECRET)
@@ -262,12 +246,14 @@ def validate_access_token():
     if admin:
         account = 'Admin'
     else:
+        logout()
         return
 
     user = get_user_login_details()
     if user:
         account = 'User'
     else:
+        logout()
         return
 
     token = get_access_token()
