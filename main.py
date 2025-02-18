@@ -23,6 +23,7 @@ from config import get_admin_login_details
 from config import remove_user_login_details
 from config import remove_admin_login_details
 from config import validate_access_token
+from config import token_blacklist
 
 
 """global variable"""
@@ -208,13 +209,19 @@ def show_accounts(choose: int):
     match choose:
         case 1:
             admin_accounts()
+
         case 2:
             user_accounts()
+
         case 3:
+            token = validate_access_token()
+            if not token:
+                token_blacklist()
             logout()
             logged_as_user = False
             logged_as_admin = False
             click.echo('Logging out...')
+
         case 0:
             exit()
         case _:
@@ -244,12 +251,14 @@ def library(choose: int):
                     user_list_books()
                 elif logged_as_admin:
                     admin_list_books()
+
             else:
                 click.echo(
                         'You are not loggedin. Please login first'
                     )
                 logged_as_admin = False
                 logged_as_user = False
+
         case 0:
             exit()
         case _:
@@ -276,6 +285,7 @@ def main():
             is_it = validate_access_token()
             if is_it:
                 logout()
+
             else:
                 logged_as_user = False
                 logged_as_admin = False
