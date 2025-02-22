@@ -14,13 +14,15 @@ db = client.LibraryManagementSystem
 
 
 def delete_books() -> None:
-    """check book is empty or not"""
+    """Delete Books from database.
+    """
+    # check book is empty or not
     check_book = find_keys()
     if not check_book:
         click.echo('Books Not found, exiting...')
         time.sleep(2)
         return
-    """input books"""
+    # input books
     input_category = click.prompt('Enter book category', type=str).lower()
     input_book_name = click.prompt('Enter book name', type=str).lower()
     # verify identity
