@@ -11,6 +11,11 @@ db = client.LibraryManagementSystem
 
 
 def find_keys():
+    """check books available or not by searching Book Category
+
+    Returns:
+        str: return Books Category
+    """
     categories = db.Books.find()
     keys = [next(iter(data.keys() - {'_id'})) for data in categories]
     if not keys:
@@ -19,6 +24,8 @@ def find_keys():
 
 
 def stock_book():
+    """Search less than 5 Books and display.
+    """
     verify = verify_jwt_token()
     if not verify:
         time.sleep(1)
