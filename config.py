@@ -100,8 +100,6 @@ def logout():
 def decode_token(token, SECRET):
     SECRET_KEY = os.getenv(SECRET)
     try:
-        # print('admin')
-        # time.sleep(4)
         decoded = jwt.decode(
             token,
             SECRET_KEY,
@@ -127,10 +125,13 @@ def decode_token(token, SECRET):
             access_token = 'SECRET_ACCESS_TOKEN_USER'
             token = refresh_token(access_token)
 
+        if token:
+            return True
+
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
         click.echo('Your Token is invalid, Login Again')
-        # time.sleep(1.1)
+        time.sleep(1.1)
         return
     except Exception as e:
         logger = logging_module()
@@ -140,34 +141,26 @@ def decode_token(token, SECRET):
 
 
 def verify_jwt_token():
-    # print('a')
-
     admin = get_admin_login_details()
     user = get_user_login_details()
 
-    account = ''
+    # account = ''
 
     try:
         if admin:
-            # print('d')
-            account = 'Admin'
+            # account = 'Admin'
             SECRET = 'jwt_admin_secret'
-            # print('e')
             token_data = decode_token(admin, SECRET)
-            # print('f')
-            # if not token_data:  # if token not found
-            #     return False
+
         elif user:
-            # print('user')
-            # time.sleep(4)
-            account = 'User'
+            # account = 'User'
             SECRET = 'jwt_user_secret'
             token_data = decode_token(user, SECRET)
-            # if not token_data:  # if token not found
-            #     return False
+
         else:
-            return '', ''
-        return token_data, account
+            return ''
+
+        return token_data
 
     except Exception as e:
         logger = logging_module()
@@ -243,14 +236,10 @@ def token_blacklist():
 def validate_access_token():
     account = ''
     admin = get_admin_login_details()
+    user = get_user_login_details()
     if admin:
         account = 'Admin'
-    else:
-        logout()
-        return
-
-    user = get_user_login_details()
-    if user:
+    elif user:
         account = 'User'
     else:
         logout()
@@ -277,12 +266,8 @@ def validate_access_token():
         is_data = list(check_token)
         if is_data and is_data[0]:
             return True
-        # return False
+
     except IndexError as e:
         logger = logging_module()
         logger.error(e)
         return
-
-
-if __name__ == '__main__':
-    token_blacklist()

@@ -118,6 +118,8 @@ def validation(admin) -> tuple[str, str]:
 
 
 def admin_register():
+    """This is where admin login.
+    """
     whoami = 'Admin'
     account_register(whoami)
 
@@ -183,11 +185,18 @@ def admin_login():
 
 
 def account_login(whoami, access_token):
-    # get username and password
+    """User or Admin account login
+
+    Args:
+        whoami (str): This is where user or admin login
+        access_token (str): This is a text where it identifies User or Admin login and get secret key from .env file.
+
+    Returns:
+        bool: if successfully written in file it return True
+    """
     username = click.prompt('Enter username', type=str).strip().lower()
     password = click.prompt('Enter password', type=str)
 
-    """fetch from database"""
     try:
         account = db.Accounts.find_one(
             {f'{whoami}.username': username},
@@ -238,6 +247,11 @@ def account_login(whoami, access_token):
 
 # get macaddress from device
 def device_mac_address():
+    """Fetch macaddress from linux machine
+
+    Returns:
+        str: return macaddress.
+    """
     mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
@@ -246,6 +260,14 @@ def device_mac_address():
 
 
 def _count_accounts(category):
+    """Used to insert id.
+
+    Args:
+        category (str): Admin or User
+
+    Returns:
+        int: Assign the id.
+    """
     try:
         account = db.Accounts.aggregate([
             {
@@ -266,6 +288,15 @@ def _count_accounts(category):
 
 
 def encode_access_token(json_text, access_token):
+    """Convert Text to access_token
+
+    Args:
+        json_text (str): User credentials
+        access_token (str): it is a token where it fetch token from .env
+
+    Returns:
+        True: if encoded token is successfully written in file.
+    """
     SECRET_KEY = os.getenv(access_token)
     ALGORITHM = 'HS256'
 
@@ -278,6 +309,14 @@ def encode_access_token(json_text, access_token):
 
 
 def dencode_access_token(access_token):
+    """Decode access token which is get from file
+
+    Args:
+        access_token (str): This is a secret key to decode token
+
+    Returns:
+        str: if successfully decoded then it return decoded text
+    """
     from config import get_access_token
 
     SECRET_KEY = os.getenv(access_token)
@@ -313,6 +352,11 @@ def dencode_access_token(access_token):
 
 
 def refresh_token(access_token):
+    """A refresh token used to refresh the expired token
+
+    Args:
+        access_token (str): This is secret key to decode and encode.
+    """
     try:
         # decrypt token
         data_json = dencode_access_token(access_token)
@@ -363,6 +407,16 @@ def refresh_token(access_token):
 
 
 def generate_token(username, secret, email):
+    """This is used to create token used to encode user credentials i.e username and email
+
+    Args:
+        username (str): This is a username of User or Admin
+        secret (str): This is a secret key to encode
+        email (str): User email address
+
+    Returns:
+        str: if succesfully encoded then it return.
+    """
     SECRET_KEY = os.getenv(secret)
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(minutes=1)
@@ -390,7 +444,3 @@ def generate_token(username, secret, email):
     except Exception as e:
         logger.error(e)
         return
-
-
-if __name__ == '__main__':
-    admin_login()
