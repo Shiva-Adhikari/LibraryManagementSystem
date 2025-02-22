@@ -14,13 +14,15 @@ db = client.LibraryManagementSystem
 
 
 def update_books() -> None:
-    """check book list is empty or not"""
+    """Fetch and Update Books from database.
+    """
+    # check book list is empty or not
     check_book = find_keys()
     if not check_book:
         click.echo('Books Not found, exiting...')
         time.sleep(2)
         return
-    """input book"""
+    # input book
     input_category = click.prompt(
         'Enter book category to search',
         type=str).lower()
@@ -33,6 +35,7 @@ def update_books() -> None:
             {f'{input_category}.Title': input_book_name}
         ]
     }
+
     search_books = db.Books.find_one(query)
     if search_books:
         click.echo('Book Found Successfully\n')
@@ -42,11 +45,13 @@ def update_books() -> None:
             type=str
         )
         book_stock = click.prompt('How many books are in stock', type=int)
+
         verify = verify_jwt_token()
         if not verify:
             click.echo('Data is Discard, please insert again.')
             time.sleep(1)
             return
+
         update_query = {
             f'{input_category}.Title': input_book_name,
             }, {
@@ -57,6 +62,7 @@ def update_books() -> None:
                 }
         }
         result = db.Books.update_one(*update_query)
+
         if result.modified_count > 0:
             click.echo('successfully book updated')
         else:
