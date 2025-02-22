@@ -137,6 +137,7 @@ def decode_token(token, SECRET):
         logger = logging_module()
         logger.debug(e)
         logout()
+        click.echo('Your Token is invalid, Login Again')
         return
 
 
@@ -144,16 +145,12 @@ def verify_jwt_token():
     admin = get_admin_login_details()
     user = get_user_login_details()
 
-    # account = ''
-
     try:
         if admin:
-            # account = 'Admin'
             SECRET = 'jwt_admin_secret'
             token_data = decode_token(admin, SECRET)
 
         elif user:
-            # account = 'User'
             SECRET = 'jwt_user_secret'
             token_data = decode_token(user, SECRET)
 
