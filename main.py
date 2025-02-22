@@ -285,10 +285,9 @@ def main():
             is_it = validate_access_token()
             if is_it:
                 logout()
-
-            else:
                 logged_as_user = False
                 logged_as_admin = False
+
         else:
             logged_as_user = False
             logged_as_admin = False
