@@ -28,7 +28,12 @@ start_id = 0
     type=click.IntRange(min=1),
     default=1)
 def add_books(category, num_books):
-    """Write books in files"""
+    """Add book in database
+
+    Args:
+        category (str): Book type like (BCA, BBA, BBS)
+        num_books (int): How many books to add in Library.
+    """
     categories = {}
     # if list is empty then it create list
     if category not in categories:
@@ -77,6 +82,15 @@ def add_books(category, num_books):
 
 
 def count_books(auto_id, category):
+    """Get book id
+
+    Args:
+        auto_id (int): count list of books
+        category (str): Book Name
+
+    Returns:
+        int: return Number of Books
+    """
     global start_id
     try:
         count_book = db.Books.aggregate([
