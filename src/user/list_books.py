@@ -13,6 +13,11 @@ db = client.LibraryManagementSystem
 
 
 def connect_database():
+    """Get list of books
+
+    Returns:
+        list: return books in list.
+    """
     fetch_books = db.Books.find({}, {'_id': 0})
     for fetch_keys in fetch_books:
         books_keys.append(list(fetch_keys.keys()))
@@ -23,7 +28,16 @@ def connect_database():
 
 
 def list_view(category: str, page_no: int) -> bool:
-    """list books from database"""
+    """Display books in table view.
+
+    Args:
+        category (str): book category like (BCA, BBA, BBS)
+        page_no (int): page no.
+
+    Returns:
+        bool: if user input invalid page then return False or exit.
+    """
+    # list books from database
     count_books = db.Books.aggregate([
         {'$unwind': f'${category}'},
         {'$count': 'total'}
@@ -59,6 +73,8 @@ def list_view(category: str, page_no: int) -> bool:
 
 
 def list_books():
+    """Display list of Books.
+    """
     books_keys = connect_database()
     if not books_keys:
         click.echo('Books list is empty, exiting...')
