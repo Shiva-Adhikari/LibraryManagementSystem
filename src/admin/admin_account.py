@@ -29,6 +29,11 @@ db = client.LibraryManagementSystem
 
 
 def email_validation() -> str:
+    """Validate email address
+
+    Returns:
+        str: if email validate then return email.
+    """
     while True:
         try:
             email = click.prompt('Enter Email', type=str)
@@ -41,7 +46,14 @@ def email_validation() -> str:
 
 
 def password_validation(password: str):
-    """password validation"""
+    """Validate Combination of password
+
+    Args:
+        password (str): This is password to validate
+
+    Returns:
+        str: if combination password validate it return password.
+    """
     # creating PasswordValidator object
     validator = PasswordValidator()
     # Define the password rules
@@ -67,7 +79,11 @@ def password_validation(password: str):
 
 
 def confirm_password_validation() -> str:
-    """get password and return"""
+    """Validate 'password' and 'confirm password'
+
+    Returns:
+        str: Return password
+    """
     while True:
         while True:
             password = click.prompt('Enter password', type=str)
@@ -90,6 +106,15 @@ def confirm_password_validation() -> str:
 
 
 def check_accounts(account, username):
+    """Check Account whether Account is available or not
+
+    Args:
+        account (str): Admin or User account
+        username (str): username
+
+    Returns:
+        bool: if account match it return True.
+    """
     fetch_account = db.Accounts.aggregate([
         {'$unwind': f'${account}'},
         {'$match': {f'{account}.username': username}},
@@ -103,7 +128,14 @@ def check_accounts(account, username):
 
 
 def validation(admin) -> tuple[str, str]:
-    """get username and return with password"""
+    """Validate Account
+
+    Args:
+        admin (str): Try to fetch Credentials
+
+    Returns:
+        tuple[str, str]: Return Credentials ( username, password )
+    """
     while True:
         username = click.prompt('Enter Username', type=str).lower().strip()
         if len(username) > 3:
@@ -125,7 +157,11 @@ def admin_register():
 
 
 def account_register(whoami):
-    """save in database"""
+    """User and Admin account register
+
+    Args:
+        whoami (str): it define whether User or Admin try to register account.
+    """
     try:
         username, password = validation(whoami)
         client = MongoClient('localhost', 27017)
@@ -176,6 +212,11 @@ def account_register(whoami):
 
 
 def admin_login():
+    """Admin login
+
+    Returns:
+        bool: return True.
+    """
     whoami = 'Admin'
     access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
 
@@ -189,7 +230,8 @@ def account_login(whoami, access_token):
 
     Args:
         whoami (str): This is where user or admin login
-        access_token (str): This is a text where it identifies User or Admin login and get secret key from .env file.
+        access_token (str): This is a text where it identifies User or
+                            Admin login and get secret key from .env file.
 
     Returns:
         bool: if successfully written in file it return True
@@ -407,7 +449,8 @@ def refresh_token(access_token):
 
 
 def generate_token(username, secret, email):
-    """This is used to create token used to encode user credentials i.e username and email
+    """This is used to create token used to encode
+        user credentials i.e username and email
 
     Args:
         username (str): This is a username of User or Admin
