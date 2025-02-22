@@ -14,6 +14,8 @@ table = []
 
 
 def search_books() -> None:
+    """Search Books from database and display.
+    """
     categories = find_keys()
     if not categories:
         click.echo('Books Not found, exiting...')
@@ -57,5 +59,7 @@ def search_books() -> None:
 
 
 def display_books() -> None:
+    """Display Books in Table view.
+    """
     header = ['Category', 'Id', 'Title', 'Author', 'Available']
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
