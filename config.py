@@ -18,7 +18,14 @@ load_dotenv(env_path)
 
 
 def data_path(file_name):
-    """save login filepath"""
+    """get file from directory
+
+    Args:
+        file_name (str): user or admin or access_token file
+
+    Returns:
+        str: return filename.
+    """
     root_path = os.path.join(os.path.dirname(__file__))
     data_dir = os.path.join(root_path, 'data')
     os.makedirs(data_dir, exist_ok=True)
@@ -27,7 +34,12 @@ def data_path(file_name):
 
 
 def logging_module():
-    """Logging Module"""
+    """logging module
+
+    Returns:
+        str: return logger configuration and path.
+    """
+    # Logging Module
     root_path = os.path.join(os.path.dirname(__file__))
     log_dir = os.path.join(root_path, 'logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
@@ -44,7 +56,12 @@ def logging_module():
 
 
 def get_user_login_details():
-    """save user login session"""
+    """get user login details from file
+
+    Returns:
+        str: return user file details.
+    """
+    # save user login session
     details = data_path('user')
     if not os.path.exists(details):
         return False
@@ -58,14 +75,21 @@ def get_user_login_details():
 
 
 def remove_user_login_details():
-    """remove admin session"""
+    """remove user login file
+    """
+    # remove admin session
     path = data_path('user')
     if os.path.exists(path):
         os.remove(path)
 
 
 def get_admin_login_details():
-    """save admin login session"""
+    """get admin login details from file
+
+    Returns:
+        str: return admin file details.
+    """
+    # save admin login session
     details = data_path('admin')
     if not os.path.exists(details):
         return False
@@ -79,25 +103,39 @@ def get_admin_login_details():
 
 
 def remove_admin_login_details():
-    """remove admin session"""
+    """remove admin login file
+    """
     path = data_path('admin')
     if os.path.exists(path):
         os.remove(path)
 
 
 def remove_access_token():
+    """Remove access token.
+    """
     path = data_path('access_token')
     if os.path.exists(path):
         os.remove(path)
 
 
 def logout():
+    """Remove login details files.
+    """
     remove_access_token()
     remove_admin_login_details()
     remove_user_login_details()
 
 
 def decode_token(token, SECRET):
+    """Decode token to text
+
+    Args:
+        token (str): encoded token
+        SECRET (str): secret key to decode
+
+    Returns:
+        str: return decoded token i.e user or admin credentials.
+    """
     SECRET_KEY = os.getenv(SECRET)
     try:
         decoded = jwt.decode(
@@ -111,6 +149,7 @@ def decode_token(token, SECRET):
             })
         return decoded
     except jwt.exceptions.ExpiredSignatureError:
+        # if token is expired then it call refresh token to extend time.
         from src.admin.admin_account import refresh_token
 
         admin = get_admin_login_details()
@@ -141,6 +180,11 @@ def decode_token(token, SECRET):
 
 
 def verify_jwt_token():
+    """verify user token with file is available and valid or not
+
+    Returns:
+        str: if token is valid and successfully decoded then it return token.
+    """
     admin = get_admin_login_details()
     user = get_user_login_details()
 
@@ -165,11 +209,18 @@ def verify_jwt_token():
 
 
 def tqdm_progressbar():
+    """progress bar.
+    """
     for _ in tqdm(range(0, 100), desc='Loading..'):
         time.sleep(0.01)
 
 
 def get_access_token():
+    """get access token
+
+    Returns:
+        str: get token from file and return it.
+    """
     data_dir = data_path('access_token')
     try:
         with open(data_dir, 'r') as file:
@@ -180,6 +231,11 @@ def get_access_token():
 
 
 def token_blacklist():
+    """add token token to database to prevent, reuse of unused token.
+
+    Returns:
+        bool: token is already available and no need to set to blacklist.
+    """
     from src.admin.admin_account import dencode_access_token
 
     token = get_access_token()
@@ -228,8 +284,13 @@ def token_blacklist():
         return
 
 
-# check token is available or not in database
 def validate_access_token():
+    """check token is available or not in database
+
+    Returns:
+        bool: if token is available in dataase return true
+                i.e we don't readd again.
+    """
     account = ''
     admin = get_admin_login_details()
     user = get_user_login_details()
