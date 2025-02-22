@@ -124,7 +124,6 @@ def decode_token(token, SECRET):
         elif user:
             access_token = 'SECRET_ACCESS_TOKEN_USER'
             token = refresh_token(access_token)
-
         if token:
             return True
 

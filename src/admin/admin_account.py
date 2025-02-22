@@ -373,7 +373,7 @@ def dencode_access_token(access_token):
             algorithms=['HS256'],
             options={
                 'require': ['exp'],
-                'verify_exp': True
+                'verify_exp': ['exp']
             })
         return decoded
 
@@ -443,6 +443,7 @@ def refresh_token(access_token):
         # after condition check then save in file
         with open(data_dir, 'w') as file:
             json.dump(token, file)
+            return True
     except Exception as e:
         logger.error(e)
         return
