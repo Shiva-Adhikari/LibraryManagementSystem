@@ -15,6 +15,11 @@ db = client.LibraryManagementSystem
 
 
 def user_issue_books_list() -> None:
+    """display user issued books
+
+    Returns:
+        bool: if user issued books found then it return True.
+    """
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
@@ -27,8 +32,11 @@ def user_issue_books_list() -> None:
                 {'$match': {f'{category}.UserDetails.Username': username}}
         ])
         category_check_merge.append(list(check_book))
+
+    # if all get false, then exit
     if all(not check_detail for check_detail in category_check_merge):
         return False
+
     fetch_issue_books = []
     for category_keys in category_key:
         result = db.Books.aggregate([
@@ -49,6 +57,7 @@ def user_issue_books_list() -> None:
                 }
             }
         ])
+
         for book in result:
             fetch_issue_books.append({
                 'Category': category_keys,
@@ -56,6 +65,7 @@ def user_issue_books_list() -> None:
                 'Title': book['Title'],
                 'Author': book['Author']
             })
+
     table = []
     header = ['Categories', 'Id', 'Title', 'Author']
     for book in fetch_issue_books:
@@ -65,22 +75,31 @@ def user_issue_books_list() -> None:
             book['Title'].capitalize(),
             book['Author'].capitalize()
         ])
+
     click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
     return True
 
 
 def return_books() -> None:
+    """return books which is already issued by user
+
+    Returns:
+        bool: if issued books not available, exit.
+    """
     is_books_empty = user_issue_books_list()
     if not is_books_empty:
         click.echo('First Issue book, now exiting...')
         time.sleep(2)
         return
+
     input_categories = click.prompt('Enter Book Category', type=str).lower()
     input_book_id = click.prompt('Enter Book Id', type=int)
     user_details = verify_jwt_token()
+
     if not user_details:
         time.sleep(1)
         return
+
     username = user_details['username']
     email = user_details['email']
     # fetch data or remove data like this code
@@ -109,7 +128,3 @@ def return_books() -> None:
         click.echo('You Successfully return books')
     else:
         click.echo('Unable to return books, Books not found')
-
-
-if __name__ == '__main__':
-    user_issue_books_list()
