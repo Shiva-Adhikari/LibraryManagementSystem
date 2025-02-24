@@ -48,8 +48,8 @@ def admin_accounts(choose: int):
             else:
                 admin_register()
         case 2:
-            if logged_as_admin:
-                click.echo('You are already a Admin. Unable to login twice.')
+            if logged_as_admin or logged_as_user:
+                click.echo('You are already login. please logout first.')
             else:
                 check_login = admin_login()
                 if check_login:
@@ -81,8 +81,8 @@ def user_accounts(choose: int):
             else:
                 click.echo('You are not a Admin User to Create Account')
         case 2:
-            if logged_as_user:
-                click.echo('You are already a User. Unable to login twice.')
+            if logged_as_user or logged_as_admin:
+                click.echo('You are already login. please logout first.')
             else:
                 check_login = user_login()
                 if check_login:
