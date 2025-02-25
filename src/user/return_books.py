@@ -3,8 +3,8 @@ import click
 from tabulate import tabulate
 from pymongo import MongoClient
 
-from config import logging_module
-from config import verify_jwt_token
+from utils import logging_module
+from utils import verify_jwt_token
 from src.admin.stock_book import find_keys
 
 

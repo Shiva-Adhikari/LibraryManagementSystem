@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-from config import logging_module
+from utils import logging_module
 from src.admin.admin_account import account_login
 from src.admin.admin_account import account_register
 

@@ -3,7 +3,7 @@ import click
 from tabulate import tabulate
 from pymongo import MongoClient
 
-from config import verify_jwt_token
+from utils import verify_jwt_token
 
 
 books_keys = []

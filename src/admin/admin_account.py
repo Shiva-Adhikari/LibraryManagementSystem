@@ -13,9 +13,9 @@ from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
 
 # import from file
-from config import logout
-from config import data_path
-from config import logging_module
+from utils import logout
+from utils import data_path
+from utils import logging_module
 
 
 logger = logging_module()
@@ -359,7 +359,7 @@ def dencode_access_token(access_token):
     Returns:
         str: if successfully decoded then it return decoded text
     """
-    from config import get_access_token
+    from utils import get_access_token
 
     SECRET_KEY = os.getenv(access_token)
     token = get_access_token()

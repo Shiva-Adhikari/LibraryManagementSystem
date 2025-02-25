@@ -2,8 +2,8 @@ import time
 import click
 from typing import List
 from pymongo import MongoClient
-from config import logging_module
-from config import verify_jwt_token
+from utils import logging_module
+from utils import verify_jwt_token
 
 
 logger = logging_module()

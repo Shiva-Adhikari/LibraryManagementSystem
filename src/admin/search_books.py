@@ -4,7 +4,7 @@ from tabulate import tabulate
 from pymongo import MongoClient
 
 from src.admin.stock_book import find_keys
-from config import verify_jwt_token
+from utils import verify_jwt_token
 
 
 client = MongoClient('localhost', 27017)
