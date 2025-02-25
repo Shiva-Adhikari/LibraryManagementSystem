@@ -1,6 +1,10 @@
-import os
+# third party modules
 from dotenv import load_dotenv
 
+# built in modules
+import os
+
+# local modules
 from utils import logging_module
 from src.admin.admin_account import account_login
 from src.admin.admin_account import account_register

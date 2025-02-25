@@ -1,8 +1,11 @@
+# third party modules
+from concurrent.futures import ThreadPoolExecutor
+
+# built in modules
 import time
 import click
 
-from concurrent.futures import ThreadPoolExecutor
-
+# local modules
 from src.user.list_books import list_books
 from src.user.issue_books import issue_books
 from src.user.user_account import user_login
@@ -26,7 +29,7 @@ from utils import validate_access_token
 from utils import token_blacklist
 
 
-"""global variable"""
+# global variable
 logged_as_user = get_user_login_details()
 logged_as_admin = get_admin_login_details()
 

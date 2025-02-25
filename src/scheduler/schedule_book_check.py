@@ -1,13 +1,17 @@
+# third party modules
+from dotenv import load_dotenv
+from pymongo import MongoClient
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+# built in modules
 import os
 import ssl
 import smtplib
 from datetime import datetime
 from email.message import EmailMessage
-from src.admin.stock_book import find_keys
 
-from dotenv import load_dotenv
-from pymongo import MongoClient
-from apscheduler.schedulers.blocking import BlockingScheduler
+# local modules
+from src.admin.stock_book import find_keys
 
 
 client = MongoClient('localhost', 27017)

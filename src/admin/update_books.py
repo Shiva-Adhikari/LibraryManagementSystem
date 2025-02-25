@@ -1,9 +1,13 @@
-import time
+# third party modules
 import click
 from pymongo import MongoClient
+
+# built in modules
+import time
 from utils import logging_module
 from utils import verify_jwt_token
 
+# local modules
 from src.admin.stock_book import find_keys
 
 

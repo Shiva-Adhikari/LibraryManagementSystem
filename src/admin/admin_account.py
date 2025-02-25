@@ -1,9 +1,4 @@
-# this no need to install
-import os
-import json
-from datetime import datetime, timedelta  # combine is better
-
-# this need to install
+# third party modules
 import jwt
 import click
 import bcrypt
@@ -12,7 +7,12 @@ from pymongo import MongoClient
 from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
 
-# import from file
+# built in modules
+import os
+import json
+from datetime import datetime, timedelta  # combine is better
+
+# local modules
 from utils import logout
 from utils import data_path
 from utils import logging_module

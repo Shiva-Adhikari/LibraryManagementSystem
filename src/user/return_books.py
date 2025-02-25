@@ -1,8 +1,12 @@
-import time
+# third party modules
 import click
 from tabulate import tabulate
 from pymongo import MongoClient
 
+# built in modules
+import time
+
+# local modules
 from utils import logging_module
 from utils import verify_jwt_token
 from src.admin.stock_book import find_keys

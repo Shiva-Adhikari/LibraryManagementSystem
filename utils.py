@@ -1,12 +1,15 @@
-import os
+# third party modules
 import jwt
-import json
-import time
 import click
 import logging
 from tqdm import tqdm
 from dotenv import load_dotenv
 from pymongo import MongoClient
+
+# built in modules
+import os
+import json
+import time
 
 
 client = MongoClient('localhost', 27017)
