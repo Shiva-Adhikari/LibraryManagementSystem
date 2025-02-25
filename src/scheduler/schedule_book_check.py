@@ -19,8 +19,19 @@ db = client.LibraryManagementSystem
 
 
 def mail_box(user_username, subject_filled, body_filled):
+    """html and css is added to show to users in mail
+
+    Args:
+        user_username (str): username
+        subject_filled (str): subject of mail
+        body_filled (str): text body
+
+    Return:
+        subject (str): subject
+        body (str): html body
+    """
     subject = f'{subject_filled}'
-    body = f"""
+    body = f'''
     <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -43,11 +54,13 @@ def mail_box(user_username, subject_filled, body_filled):
     </div>
 </body>
 </html>
-    """
+    '''
     return subject, body
 
 
 def due_book_check():
+    """if date is 3 days left or due date it send email to users in mailbox.
+    """
     category_key = find_keys()
     today_date_ = datetime.now()
     today_date = datetime.date(today_date_)
@@ -91,6 +104,13 @@ def due_book_check():
 
 
 def send_email(user_username, user_email, due_text):
+    """this send message in mailbox
+
+    Args:
+        user_username (str): username
+        user_email (str): email
+        due_text (text): message to user
+    """
     load_dotenv()
     email_sender = os.getenv('sender_email')
     email_sender_password = os.getenv('sender_password')
