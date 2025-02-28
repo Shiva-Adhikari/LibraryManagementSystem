@@ -17,7 +17,7 @@ def admin_login():
         bool: return True.
     """
     whoami = 'Admin'
-    access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+    access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
 
     success_login = account_login(whoami, access_token)
     if success_login:

@@ -160,11 +160,11 @@ def decode_token(token, SECRET):
         token = ''
 
         if admin:
-            access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+            access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
             token = refresh_token(access_token)
 
         elif user:
-            access_token = 'SECRET_ACCESS_TOKEN_USER'
+            access_token = 'USER_SECRET_ACCESS_TOKEN'
             token = refresh_token(access_token)
         if token:
             return True
@@ -193,11 +193,11 @@ def verify_jwt_token():
 
     try:
         if admin:
-            SECRET = 'jwt_admin_secret'
+            SECRET = 'ADMIN_SECRET_JWT'
             token_data = decode_token(admin, SECRET)
 
         elif user:
-            SECRET = 'jwt_user_secret'
+            SECRET = 'USER_SECRET_JWT'
             token_data = decode_token(user, SECRET)
 
         else:
@@ -251,9 +251,9 @@ def token_blacklist():
         return
 
     if admin:
-        access_token = 'SECRET_ACCESS_TOKEN_ADMIN'
+        access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
     elif user:
-        access_token = 'SECRET_ACCESS_TOKEN_USER'
+        access_token = 'USER_SECRET_ACCESS_TOKEN'
 
     data_json = dencode_access_token(access_token)
     if not data_json:

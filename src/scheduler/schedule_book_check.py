@@ -112,8 +112,8 @@ def send_email(user_username, user_email, due_text):
         due_text (text): message to user
     """
     load_dotenv()
-    email_sender = os.getenv('sender_email')
-    email_sender_password = os.getenv('sender_password')
+    email_sender = os.getenv('SENDER_EMAIL')
+    email_sender_password = os.getenv('SENDER_PASSWORD')
     email_receiver = user_email
 
     if due_text == 'DueWarning':

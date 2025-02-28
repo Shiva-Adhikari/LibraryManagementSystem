@@ -17,7 +17,7 @@ def user_login():
         bool: if successfully login then it return True.
     """
     whoami = 'User'
-    access_token = 'SECRET_ACCESS_TOKEN_USER'
+    access_token = 'USER_SECRET_ACCESS_TOKEN'
     success_login = account_login(whoami, access_token)
     if success_login:
         return True
