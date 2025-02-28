@@ -1,6 +1,6 @@
 # local modules
-from src.admin.admin_account import account_login
-from src.admin.admin_account import account_register
+from src.account_manager import account_login
+from src.account_manager import account_register
 
 
 def user_register():
@@ -18,6 +18,7 @@ def user_login():
     """
     whoami = 'User'
     access_token = 'USER_SECRET_ACCESS_TOKEN'
+
     success_login = account_login(whoami, access_token)
     if success_login:
         return True

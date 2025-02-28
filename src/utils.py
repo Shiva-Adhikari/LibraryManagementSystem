@@ -29,8 +29,8 @@ def data_path(file_name):
     Returns:
         str: return filename.
     """
-    root_path = os.path.join(os.path.dirname(__file__))
-    data_dir = os.path.join(root_path, 'data')
+    # root_path = os.path.join(os.path.dirname(__file__))
+    data_dir = os.path.join('data')
     os.makedirs(data_dir, exist_ok=True)
     data_path = os.path.join(data_dir, f'{file_name}.json')
     return data_path
