@@ -7,8 +7,8 @@ import time
 from typing import List
 
 # local modules
-from utils import logging_module
-from utils import verify_jwt_token
+from src.utils import logging_module
+from src.utils import verify_jwt_token
 
 
 logger = logging_module()

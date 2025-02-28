@@ -7,8 +7,8 @@ from pymongo import MongoClient
 import time
 
 # local modules
-from utils import logging_module
-from utils import verify_jwt_token
+from src.utils import logging_module
+from src.utils import verify_jwt_token
 from src.admin.stock_book import find_keys
 
 

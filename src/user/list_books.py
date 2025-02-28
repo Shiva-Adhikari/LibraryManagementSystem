@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import time
 
 # local modules
-from utils import verify_jwt_token
+from src.utils import verify_jwt_token
 
 
 books_keys = []

@@ -8,7 +8,7 @@ import time
 
 # local modules
 from src.admin.stock_book import find_keys
-from utils import verify_jwt_token
+from src.utils import verify_jwt_token
 
 
 client = MongoClient('localhost', 27017)
