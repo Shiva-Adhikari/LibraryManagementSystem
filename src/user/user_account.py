@@ -1,20 +1,6 @@
-# third party modules
-from dotenv import load_dotenv
-
-# built in modules
-import os
-
 # local modules
-from utils import logging_module
 from src.admin.admin_account import account_login
 from src.admin.admin_account import account_register
-
-
-logger = logging_module()
-
-src_path = os.path.join('src')
-env_path = os.path.join(src_path, '.env')
-load_dotenv(env_path)
 
 
 def user_register():
