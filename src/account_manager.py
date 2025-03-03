@@ -409,13 +409,13 @@ def refresh_token(access_token):
         data_dir = ''
 
         if account == 'Admin':
-            secret = 'jwt_admin_secret'
+            secret = 'ADMIN_SECRET_JWT'
             data_dir = data_path('admin')
             email = ''
             token = generate_token(username, secret, email)
 
         elif account == 'User':
-            secret = 'jwt_user_secret'
+            secret = 'USER_SECRET_JWT'
             data_dir = data_path('user')
             email = accounts[account][0]['email']
             token = generate_token(username, secret, email)
@@ -437,7 +437,7 @@ def generate_token(username, secret, email):
         username (str): This is a username of User or Admin
         secret (str): This is a secret key to encode
         email (str): User email address
-
+p
     Returns:
         str: if succesfully encoded then it return.
     """
@@ -447,7 +447,7 @@ def generate_token(username, secret, email):
     payload = {}
 
     try:
-        if secret == 'jwt_user_secret':
+        if secret == 'USER_SECRET_JWT':
             payload = {
                 'username': username,
                 'email': email,
@@ -455,7 +455,7 @@ def generate_token(username, secret, email):
                 'exp': int((datetime.now() + EXP_DATE).timestamp())
             }
 
-        elif secret == 'jwt_admin_secret':
+        elif secret == 'ADMIN_SECRET_JWT':
             payload = {
                 'username': username,
                 'iat': int(datetime.now().timestamp()),
