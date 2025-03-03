@@ -17,7 +17,7 @@ from datetime import datetime, timedelta  # combine is better
 from src.utils import logout
 from src.utils import data_path
 from src.utils import logging_module
-from src.models.account_model import AccountRegisterModel
+from src.models.account import AccountRegisterModel
 
 
 logger = logging_module()
