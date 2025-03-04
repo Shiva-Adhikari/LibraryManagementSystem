@@ -1,10 +1,8 @@
 # third party modules
-from dotenv import load_dotenv
 from pymongo import MongoClient
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 # built in modules
-import os
 import ssl
 import smtplib
 from datetime import datetime
@@ -12,6 +10,7 @@ from email.message import EmailMessage
 
 # local modules
 from src.admin.stock_book import find_keys
+from src.models.settings import settings
 
 
 client = MongoClient('localhost', 27017)
@@ -111,9 +110,8 @@ def send_email(user_username, user_email, due_text):
         user_email (str): email
         due_text (text): message to user
     """
-    load_dotenv()
-    email_sender = os.getenv('SENDER_EMAIL')
-    email_sender_password = os.getenv('SENDER_PASSWORD')
+    SENDER_EMAIL = settings.SENDER_EMAIL.get_secret_value()
+    SENDER_PASSWORD = settings.SENDER_PASSWORD.get_secret_value()
     email_receiver = user_email
 
     if due_text == 'DueWarning':
@@ -127,7 +125,7 @@ def send_email(user_username, user_email, due_text):
         subject, body = mail_box(user_username, subject_filled, body_filled)
 
     em = EmailMessage()
-    em['From'] = email_sender
+    em['From'] = SENDER_EMAIL
     em['To'] = email_receiver
     em['Subject'] = subject
     em.set_content(body, subtype='html')
@@ -138,8 +136,8 @@ def send_email(user_username, user_email, due_text):
     try:
         # with help to properly close connection
         with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-            smtp.login(email_sender, email_sender_password)
-            smtp.sendmail(email_sender, email_receiver, em.as_string())
+            smtp.login(SENDER_EMAIL, SENDER_PASSWORD)
+            smtp.sendmail(SENDER_EMAIL, email_receiver, em.as_string())
     except smtplib.SMTPRecipientsRefused:
         # click.echo('Email not Valid')
         pass
