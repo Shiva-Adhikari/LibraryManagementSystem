@@ -3,7 +3,6 @@ import jwt
 import click
 import logging
 from tqdm import tqdm
-from dotenv import load_dotenv
 from pymongo import MongoClient
 
 # built in modules
@@ -17,10 +16,6 @@ from src.models.settings import settings
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
-
-src_path = os.path.join('src')
-env_path = os.path.join(src_path, '.env')
-load_dotenv(env_path)
 
 
 def data_path(file_name):

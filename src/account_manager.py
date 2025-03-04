@@ -2,14 +2,12 @@
 import jwt
 import click
 import bcrypt
-from dotenv import load_dotenv
 from pymongo import MongoClient
 from pydantic import ValidationError
 from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
 
 # built in modules
-import os
 import json
 from datetime import datetime, timedelta  # combine is better
 
@@ -22,10 +20,6 @@ from src.models.settings import settings
 
 
 logger = logging_module()
-
-src_path = os.path.join('src')
-env_path = os.path.join(src_path, '.env')
-load_dotenv(env_path)
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
