@@ -2,7 +2,6 @@
 import jwt
 import click
 import bcrypt
-from pymongo import MongoClient
 from pydantic import ValidationError
 from password_validator import PasswordValidator
 from email_validator import validate_email, EmailNotValidError
@@ -14,15 +13,9 @@ from datetime import datetime, timedelta  # combine is better
 # local modules
 from src.utils import logout
 from src.utils import data_path
-from src.utils import logging_module
+from src.utils import logger
 from src.models.account import AccountRegisterModel
-from src.models.settings import settings
-
-
-logger = logging_module()
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+from src.models.settings import settings, db
 
 
 def email_validation() -> str:
@@ -155,8 +148,6 @@ def account_register(whoami):
     try:
         username, password = validation(whoami)
         id = _count_accounts(whoami)
-        client = MongoClient('localhost', 27017)
-        db = client.LibraryManagementSystem
 
         account_data = {
             'username': username,

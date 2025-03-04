@@ -1,7 +1,7 @@
 # third party modules
 import click
 from tabulate import tabulate
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 # built in modules
 import time
@@ -9,10 +9,8 @@ import time
 # local modules
 from src.admin.stock_book import find_keys
 from src.utils import verify_jwt_token
+from src.models.settings import db
 
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
 
 table = []
 

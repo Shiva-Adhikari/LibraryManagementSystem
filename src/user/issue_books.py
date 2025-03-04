@@ -1,6 +1,6 @@
 # third party modules
 import click
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 # built in modules
 import time
@@ -8,14 +8,10 @@ from datetime import datetime
 from datetime import timedelta
 
 # local modules
-from src.utils import logging_module
+from src.utils import logger
 from src.utils import verify_jwt_token
 from src.admin.stock_book import find_keys
-
-logger = logging_module()
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+from src.models.settings import db
 
 
 def issue_books() -> None:

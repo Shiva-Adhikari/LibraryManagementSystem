@@ -1,17 +1,14 @@
 # third party modules
 import click
 from tabulate import tabulate
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 # built in modules
 import time
 
 # local modules
 from src.utils import verify_jwt_token
-
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+from src.models.settings import db
 
 
 def find_keys():

@@ -1,20 +1,15 @@
 # third party modules
 import click
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 # built in modules
 import time
-from src.utils import logging_module
+from src.utils import logger
 from src.utils import verify_jwt_token
 
 # local modules
 from src.admin.stock_book import find_keys
 
-
-logger = logging_module()
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
 
 
 def update_books() -> None:

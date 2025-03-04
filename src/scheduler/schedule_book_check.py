@@ -1,5 +1,4 @@
 # third party modules
-from pymongo import MongoClient
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 # built in modules
@@ -10,11 +9,7 @@ from email.message import EmailMessage
 
 # local modules
 from src.admin.stock_book import find_keys
-from src.models.settings import settings
-
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+from src.models.settings import settings, db
 
 
 def mail_box(user_username, subject_filled, body_filled):

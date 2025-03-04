@@ -1,6 +1,8 @@
 # third party model
 from pydantic_settings import BaseSettings
 from pydantic import SecretStr
+from pymongo import MongoClient
+
 
 # build in model
 import os
@@ -17,14 +19,15 @@ class Settings(BaseSettings):
     Args:
         BaseSettings: load enviroment variables
     """
+    # Email
     SENDER_EMAIL: SecretStr
     SENDER_PASSWORD: SecretStr
 
-    # jwt secret key
+    # JWT Secret Key
     ADMIN_SECRET_JWT: SecretStr
     USER_SECRET_JWT: SecretStr
 
-    # jwt secret access key
+    # JWT Access Token
     ADMIN_SECRET_ACCESS_TOKEN: SecretStr
     USER_SECRET_ACCESS_TOKEN: SecretStr
 
@@ -35,8 +38,25 @@ class Settings(BaseSettings):
         extra = 'allow'
 
 
-# instance
+# Instance
 settings = Settings()
 
-# example to call values
-# a = settings.SENDER_EMAIL.get_secret_value()
+
+class MongoConfig(BaseSettings):
+    # Mongo Config
+    HOST: str
+    PORT: int
+    DB: str
+    USER: str
+    PASSWORD: SecretStr
+
+    class Config:
+        env_file = env_path
+        env_file_encoding = 'utf-8'
+        extra = 'allow'
+
+
+# Instance
+mongo_config = MongoConfig()
+client = MongoClient(mongo_config.HOST, mongo_config.PORT)
+db = client[mongo_config.DB]

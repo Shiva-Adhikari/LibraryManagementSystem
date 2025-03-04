@@ -1,20 +1,19 @@
 # third party modules
-from pymongo import MongoClient
+# from pymongo import MongoClient
 import click
 
 # built in modules
 import time
 
 # local modules
-from src.utils import logging_module
+from src.utils import logger
 from src.utils import verify_jwt_token
 from src.admin.stock_book import find_keys
+from src.models.settings import db
 
 
-logger = logging_module()
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+# client = MongoClient('localhost', 27017)
+# db = client.LibraryManagementSystem
 
 
 def delete_books() -> None:

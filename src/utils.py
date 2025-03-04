@@ -3,7 +3,7 @@ import jwt
 import click
 import logging
 from tqdm import tqdm
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 # built in modules
 import os
@@ -11,11 +11,7 @@ import json
 import time
 
 # local modules
-from src.models.settings import settings
-
-
-client = MongoClient('localhost', 27017)
-db = client.LibraryManagementSystem
+from src.models.settings import settings, db
 
 
 def data_path(file_name):
@@ -52,6 +48,10 @@ def logging_module():
     )
     logger = logging.getLogger(__name__)
     return logger
+
+
+# Instance
+logger = logging_module()
 
 
 def get_user_login_details():
