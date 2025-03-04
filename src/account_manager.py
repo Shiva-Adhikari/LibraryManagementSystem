@@ -437,7 +437,7 @@ def generate_token(username, secret, email):
         username (str): This is a username of User or Admin
         secret (str): This is a secret key to encode
         email (str): User email address
-p
+
     Returns:
         str: if succesfully encoded then it return.
     """

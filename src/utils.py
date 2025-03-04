@@ -153,7 +153,7 @@ def decode_token(token, SECRET):
         return decoded
     except jwt.exceptions.ExpiredSignatureError:
         # if token is expired then it call refresh token to extend time.
-        from src.admin.admin_account import refresh_token
+        from src.account_manager import refresh_token
 
         admin = get_admin_login_details()
         user = get_user_login_details()
@@ -239,7 +239,7 @@ def token_blacklist():
     Returns:
         bool: token is already available and no need to set to blacklist.
     """
-    from src.admin.admin_account import dencode_access_token
+    from src.account_manager import dencode_access_token
 
     token = get_access_token()
     if not token:
