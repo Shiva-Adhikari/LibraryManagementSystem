@@ -32,8 +32,7 @@ def data_path(file_name):
     Returns:
         str: return filename.
     """
-    # root_path = os.path.join(os.path.dirname(__file__))
-    data_dir = os.path.join('data')
+    data_dir = os.path.abspath('data')
     os.makedirs(data_dir, exist_ok=True)
     data_path = os.path.join(data_dir, f'{file_name}.json')
     return data_path
@@ -46,8 +45,7 @@ def logging_module():
         str: return logger configuration and path.
     """
     # Logging Module
-    root_path = os.path.join(os.path.dirname(__file__))
-    log_dir = os.path.join(root_path, 'logs')
+    log_dir = os.path.abspath('logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
     log_path = os.path.join(log_dir, 'log_file.log')
     logging.basicConfig(
