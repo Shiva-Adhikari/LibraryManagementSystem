@@ -11,6 +11,9 @@ import os
 import json
 import time
 
+# local modules
+from src.models.settings import settings
+
 
 client = MongoClient('localhost', 27017)
 db = client.LibraryManagementSystem
@@ -139,7 +142,7 @@ def decode_token(token, SECRET):
     Returns:
         str: return decoded token i.e user or admin credentials.
     """
-    SECRET_KEY = os.getenv(SECRET)
+    SECRET_KEY = SECRET
     try:
         decoded = jwt.decode(
             token,
@@ -160,11 +163,11 @@ def decode_token(token, SECRET):
         token = ''
 
         if admin:
-            access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
+            access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
             token = refresh_token(access_token)
 
         elif user:
-            access_token = 'USER_SECRET_ACCESS_TOKEN'
+            access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
             token = refresh_token(access_token)
         if token:
             return True
@@ -193,11 +196,11 @@ def verify_jwt_token():
 
     try:
         if admin:
-            SECRET = 'ADMIN_SECRET_JWT'
+            SECRET = settings.ADMIN_SECRET_JWT.get_secret_value()
             token_data = decode_token(admin, SECRET)
 
         elif user:
-            SECRET = 'USER_SECRET_JWT'
+            SECRET = settings.USER_SECRET_JWT.get_secret_value()
             token_data = decode_token(user, SECRET)
 
         else:
@@ -251,9 +254,9 @@ def token_blacklist():
         return
 
     if admin:
-        access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
+        access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
     elif user:
-        access_token = 'USER_SECRET_ACCESS_TOKEN'
+        access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
 
     data_json = dencode_access_token(access_token)
     if not data_json:

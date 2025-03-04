@@ -1,6 +1,7 @@
 # local modules
 from src.account_manager import account_register
 from src.account_manager import account_login
+from src.models.settings import settings
 
 
 def admin_register():
@@ -17,7 +18,7 @@ def admin_login():
         bool: return True.
     """
     whoami = 'Admin'
-    access_token = 'ADMIN_SECRET_ACCESS_TOKEN'
+    access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
 
     success_login = account_login(whoami, access_token)
     if success_login:

@@ -18,6 +18,7 @@ from src.utils import logout
 from src.utils import data_path
 from src.utils import logging_module
 from src.models.account import AccountRegisterModel
+from src.models.settings import settings
 
 
 logger = logging_module()
@@ -319,7 +320,8 @@ def encode_access_token(json_text, access_token):
     Returns:
         True: if encoded token is successfully written in file.
     """
-    SECRET_KEY = os.getenv(access_token)
+    # SECRET_KEY = os.getenv(access_token)
+    SECRET_KEY = access_token
     ALGORITHM = 'HS256'
 
     encrypted_text = jwt.encode(json_text, SECRET_KEY, algorithm=ALGORITHM)
@@ -341,7 +343,8 @@ def dencode_access_token(access_token):
     """
     from src.utils import get_access_token
 
-    SECRET_KEY = os.getenv(access_token)
+    # SECRET_KEY = os.getenv(access_token)
+    SECRET_KEY = access_token
     token = get_access_token()
     if not token:
         return
@@ -409,16 +412,16 @@ def refresh_token(access_token):
         data_dir = ''
 
         if account == 'Admin':
-            secret = 'ADMIN_SECRET_JWT'
+            secret = settings.ADMIN_SECRET_JWT.get_secret_value()
             data_dir = data_path('admin')
             email = ''
-            token = generate_token(username, secret, email)
+            token = generate_token(username, secret, email, account)
 
         elif account == 'User':
-            secret = 'USER_SECRET_JWT'
+            secret = settings.USER_SECRET_JWT.get_secret_value()
             data_dir = data_path('user')
             email = accounts[account][0]['email']
-            token = generate_token(username, secret, email)
+            token = generate_token(username, secret, email, account)
 
         # after condition check then save in file
         with open(data_dir, 'w') as file:
@@ -429,7 +432,7 @@ def refresh_token(access_token):
         return
 
 
-def generate_token(username, secret, email):
+def generate_token(username, secret, email, account):
     """This is used to create token used to encode
         user credentials i.e username and email
 
@@ -441,13 +444,13 @@ def generate_token(username, secret, email):
     Returns:
         str: if succesfully encoded then it return.
     """
-    SECRET_KEY = os.getenv(secret)
+    SECRET_KEY = secret
     ALGORITHM = 'HS256'
     EXP_DATE = timedelta(minutes=1)
     payload = {}
 
     try:
-        if secret == 'USER_SECRET_JWT':
+        if account == 'User':
             payload = {
                 'username': username,
                 'email': email,
@@ -455,7 +458,7 @@ def generate_token(username, secret, email):
                 'exp': int((datetime.now() + EXP_DATE).timestamp())
             }
 
-        elif secret == 'ADMIN_SECRET_JWT':
+        elif account == 'Admin':
             payload = {
                 'username': username,
                 'iat': int(datetime.now().timestamp()),
