@@ -80,17 +80,20 @@ def confirm_password_validation() -> str:
             password = password_validation(password)
             if password:
                 break
+
         while True:
             confirm_password = click.prompt('Enter confirm password', type=str)
             confirm_password = password_validation(confirm_password)
             if confirm_password:
                 break
+
         if password == confirm_password:
             # create salt
             salt = bcrypt.gensalt(rounds=10)
             # convert password to hash with added salt
             password = bcrypt.hashpw(password.encode(), salt)
             return password
+
         else:
             click.echo('password not match')
 
@@ -161,6 +164,7 @@ def account_register(whoami):
             email = email_validation()
             if not email:
                 return
+
             account_data['email'] = email
 
         validated_data = AccountRegisterModel(**account_data)
@@ -180,6 +184,7 @@ def account_register(whoami):
 
         if add_accounts.modified_count > 0 or add_accounts.upserted_id:
             click.echo('Register Successfully')
+
         else:
             logger.error('Register Failed')
             click.echo('Register Failed')
@@ -283,8 +288,7 @@ def _count_accounts(category):
         account = db.Accounts.aggregate([
             {
                 '$match': {f'{category}': {'$exists': True}}
-            },
-            {
+            }, {
                 '$project': {
                     '_id': 0,
                     'count': {'$size': f'${category}'}
@@ -334,6 +338,7 @@ def dencode_access_token(access_token):
     token = get_access_token()
     if not token:
         return
+
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
         decoded = jwt.decode(
@@ -345,6 +350,7 @@ def dencode_access_token(access_token):
                 'verify_iat': ['iat'],
                 'verify_exp': ['exp']
             })
+
         return decoded
 
     except jwt.exceptions.ExpiredSignatureError:
@@ -411,6 +417,7 @@ def refresh_token(access_token):
         with open(data_dir, 'w') as file:
             json.dump(token, file)
             return True
+
     except Exception as e:
         logger.error(e)
         return
@@ -444,6 +451,7 @@ def generate_token(username, secret, email, account):
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         if token:
             return token
+
     except Exception as e:
         logger.error(e)
         return
