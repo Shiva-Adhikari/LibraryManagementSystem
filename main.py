@@ -48,21 +48,27 @@ def admin_accounts(choose: int):
         case 1:
             if logged_as_user:
                 click.echo('You are a USER, unable to register as Admin')
+
             else:
                 admin_register()
+
         case 2:
             if logged_as_admin or logged_as_user:
                 click.echo('You are already login. please logout first.')
+
             else:
                 check_login = admin_login()
                 if check_login:
                     remove_user_login_details()
                     logged_as_admin = True
                     logged_as_user = False
+
         case 0:
             exit()
+
         case _:
             click.echo("Invalid Input")
+
     time.sleep(2)
     click.clear()
     library()
@@ -83,19 +89,24 @@ def user_accounts(choose: int):
                 user_register()
             else:
                 click.echo('You are not a Admin User to Create Account')
+
         case 2:
             if logged_as_user or logged_as_admin:
                 click.echo('You are already login. please logout first.')
+
             else:
                 check_login = user_login()
                 if check_login:
                     remove_admin_login_details()
                     logged_as_user = True
                     logged_as_admin = False
+
         case 0:
             exit()
+
         case _:
             click.echo("Invalid Input")
+
     time.sleep(2)
     click.clear()
     library()
@@ -119,6 +130,7 @@ def admin_list_books(choose: int):
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 2:
             verify = verify_jwt_token()
             if verify:
@@ -126,6 +138,7 @@ def admin_list_books(choose: int):
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 3:
             verify = verify_jwt_token()
             if verify:
@@ -133,6 +146,7 @@ def admin_list_books(choose: int):
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 4:
             verify = verify_jwt_token()
             if verify:
@@ -140,6 +154,7 @@ def admin_list_books(choose: int):
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 5:
             verify = verify_jwt_token()
             if verify:
@@ -147,10 +162,13 @@ def admin_list_books(choose: int):
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 0:
             exit()
+
         case _:
             click.echo("Invalid Input")
+
     verify_jwt_token()
     time.sleep(1)
     click.clear()
@@ -190,8 +208,10 @@ def user_list_books(choose: int):
                 logged_as_user = False
         case 0:
             exit()
+
         case _:
             click.echo("Invalid Input")
+
     verify_jwt_token()
     time.sleep(1)
     click.clear()
@@ -227,8 +247,10 @@ def show_accounts(choose: int):
 
         case 0:
             exit()
+
         case _:
             click.echo("Invalid Input")
+
     time.sleep(2)
     click.clear()
     library()
@@ -247,6 +269,7 @@ def library(choose: int):
     match choose:
         case 1:
             show_accounts()
+
         case 2:
             verify = verify_jwt_token()
             if verify:
