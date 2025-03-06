@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # JWT Secret Key
     ADMIN_SECRET_JWT: SecretStr
     USER_SECRET_JWT: SecretStr
+    JWT_ALGORITHM: SecretStr
 
     # JWT Access Token
     ADMIN_SECRET_ACCESS_TOKEN: SecretStr

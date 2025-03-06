@@ -305,9 +305,8 @@ def encode_access_token(json_text, access_token):
     Returns:
         True: if encoded token is successfully written in file.
     """
-    # SECRET_KEY = os.getenv(access_token)
     SECRET_KEY = access_token
-    ALGORITHM = 'HS256'
+    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
 
     encrypted_text = jwt.encode(json_text, SECRET_KEY, algorithm=ALGORITHM)
     data_dir = data_path('access_token')
@@ -333,12 +332,12 @@ def dencode_access_token(access_token):
     token = get_access_token()
     if not token:
         return
-
+    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
         decoded = jwt.decode(
             token,
             SECRET_KEY,
-            algorithms=['HS256'],
+            algorithms=ALGORITHM,
             options={
                 'require': ['exp'],
                 'verify_exp': ['exp']
@@ -356,7 +355,6 @@ def dencode_access_token(access_token):
         return
 
     except Exception as e:
-        logger = logging_module()
         logger.debug(e)
         return
 
@@ -430,7 +428,7 @@ def generate_token(username, secret, email, account):
         str: if succesfully encoded then it return.
     """
     SECRET_KEY = secret
-    ALGORITHM = 'HS256'
+    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     EXP_DATE = timedelta(minutes=1)
     payload = {}
 
