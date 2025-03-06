@@ -392,8 +392,6 @@ def refresh_token(access_token):
 
         # get username
         username = accounts[account][0]['username']
-        token = ''
-        data_dir = ''
 
         if account == 'Admin':
             secret = settings.ADMIN_SECRET_JWT.get_secret_value()
@@ -434,20 +432,12 @@ def generate_token(username, secret, email, account):
     payload = {}
 
     try:
-        if account == 'User':
-            payload = {
-                'username': username,
-                'email': email,
-                'iat': int(datetime.now().timestamp()),
-                'exp': int((datetime.now() + EXP_DATE).timestamp())
-            }
-
-        elif account == 'Admin':
-            payload = {
-                'username': username,
-                'iat': int(datetime.now().timestamp()),
-                'exp': int((datetime.now() + EXP_DATE).timestamp())
-            }
+        payload = {
+            'username': username,
+            'email': email if account == 'User' else None,
+            'iat': int(datetime.now().timestamp()),
+            'exp': int((datetime.now() + EXP_DATE).timestamp())
+        }
 
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         if token:
