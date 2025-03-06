@@ -36,6 +36,7 @@ def add_books(category, num_books):
         category (str): Book type like (BCA, BBA, BBS)
         num_books (int): How many books to add in Library.
     """
+
     categories = {}
     # if list is empty then it create list
     if category not in categories:
@@ -93,6 +94,7 @@ def count_books(auto_id, category):
     Returns:
         int: return Number of Books
     """
+
     global start_id
     try:
         count_book = db.Books.aggregate([

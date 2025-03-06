@@ -7,6 +7,7 @@ from src.models.settings import settings
 def user_register():
     """This is where User Register.
     """
+
     whoami = 'User'
     account_register(whoami)
 
@@ -17,6 +18,7 @@ def user_login():
     Returns:
         bool: if successfully login then it return True.
     """
+
     whoami = 'User'
     access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
 

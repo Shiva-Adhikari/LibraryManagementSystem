@@ -19,6 +19,7 @@ from src.models.settings import db
 def delete_books() -> None:
     """Delete Books from database.
     """
+
     # check book is empty or not
     check_book = find_keys()
     if not check_book:

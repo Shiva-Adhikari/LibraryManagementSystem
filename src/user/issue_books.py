@@ -17,6 +17,7 @@ from src.models.settings import db
 def issue_books() -> None:
     """User issue book.
     """
+
     # check if books is empty or not
     check_books = find_keys()
     if not check_books:
@@ -92,6 +93,7 @@ def validate_user(input_categories, input_book_name, username):
     Returns:
         bool: return True if Book is found.
     """
+
     check_user = db.Books.aggregate([
         {'$unwind': f'${input_categories}'},
         {'$unwind': f'${input_categories}.UserDetails'},

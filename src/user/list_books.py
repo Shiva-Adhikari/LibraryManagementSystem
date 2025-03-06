@@ -19,6 +19,7 @@ def connect_database():
     Returns:
         list: return books in list.
     """
+
     fetch_books = db.Books.find({}, {'_id': 0})
     for fetch_keys in fetch_books:
         books_keys.append(list(fetch_keys.keys()))
@@ -38,6 +39,7 @@ def list_view(category: str, page_no: int) -> bool:
     Returns:
         bool: if user input invalid page then return False or exit.
     """
+
     # list books from database
     count_books = db.Books.aggregate([
         {'$unwind': f'${category}'},
@@ -76,6 +78,7 @@ def list_view(category: str, page_no: int) -> bool:
 def list_books():
     """Display list of Books.
     """
+
     books_keys = connect_database()
     if not books_keys:
         click.echo('Books list is empty, exiting...')

@@ -9,12 +9,13 @@ from src.utils import verify_jwt_token
 
 # local modules
 from src.admin.stock_book import find_keys
-
+from src.models.settings import db
 
 
 def update_books() -> None:
     """Fetch and Update Books from database.
     """
+
     # check book list is empty or not
     check_book = find_keys()
     if not check_book:

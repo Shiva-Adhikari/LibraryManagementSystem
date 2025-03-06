@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     Args:
         BaseSettings: load enviroment variables
     """
+
     # Email
     SENDER_EMAIL: SecretStr
     SENDER_PASSWORD: SecretStr

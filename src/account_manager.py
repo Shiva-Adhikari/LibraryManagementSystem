@@ -24,6 +24,7 @@ def email_validation() -> str:
     Returns:
         str: if email validate then return email.
     """
+
     while True:
         try:
             email = click.prompt('Enter Email', type=str)
@@ -44,6 +45,7 @@ def password_validation(password: str):
     Returns:
         str: if combination password validate it return password.
     """
+
     # creating PasswordValidator object
     validator = PasswordValidator()
     # Define the password rules
@@ -74,6 +76,7 @@ def confirm_password_validation() -> str:
     Returns:
         str: Return password
     """
+
     while True:
         while True:
             password = click.prompt('Enter password', type=str)
@@ -108,6 +111,7 @@ def check_accounts(account, username):
     Returns:
         bool: if account match it return True.
     """
+
     fetch_account = db.Accounts.aggregate([
         {'$unwind': f'${account}'},
         {'$match': {f'{account}.username': username}},
@@ -130,6 +134,7 @@ def validation(admin) -> tuple[str, str]:
     Returns:
         tuple[str, str]: Return Credentials ( username, password )
     """
+
     while True:
         username = click.prompt('Enter Username', type=str).lower().strip()
         if len(username) > 3:
@@ -151,6 +156,7 @@ def account_register(whoami):
     Args:
         whoami (str): it define whether User or Admin try to register account.
     """
+
     try:
         username, password = validation(whoami)
         id = _count_accounts(whoami)
@@ -210,6 +216,7 @@ def account_login(whoami, access_token):
     Returns:
         bool: if successfully written in file it return True
     """
+
     username = click.prompt('Enter username', type=str).strip().lower()
     password = click.prompt('Enter password', type=str)
 
@@ -268,6 +275,7 @@ def device_mac_address():
     Returns:
         str: return macaddress.
     """
+
     mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
@@ -284,6 +292,7 @@ def _count_accounts(category):
     Returns:
         int: Assign the id.
     """
+
     try:
         account = db.Accounts.aggregate([
             {
@@ -312,6 +321,7 @@ def encode_access_token(json_text, access_token):
     Returns:
         True: if encoded token is successfully written in file.
     """
+
     SECRET_KEY = access_token
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
 
@@ -332,6 +342,7 @@ def dencode_access_token(access_token):
     Returns:
         str: if successfully decoded then it return decoded text
     """
+
     from src.utils import get_access_token
 
     SECRET_KEY = access_token
@@ -374,6 +385,7 @@ def refresh_token(access_token):
     Args:
         access_token (str): This is secret key to decode and encode.
     """
+
     try:
         # decrypt token
         data_json = dencode_access_token(access_token)
@@ -435,6 +447,7 @@ def generate_token(username, secret, email, account):
     Returns:
         str: if succesfully encoded then it return.
     """
+
     SECRET_KEY = secret
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     EXP_DATE = timedelta(minutes=1)

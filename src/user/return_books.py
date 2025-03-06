@@ -18,6 +18,7 @@ def user_issue_books_list() -> None:
     Returns:
         bool: if user issued books found then it return True.
     """
+
     user_details = verify_jwt_token()
     username = user_details['username']
     email = user_details['email']
@@ -84,6 +85,7 @@ def return_books() -> None:
     Returns:
         bool: if issued books not available, exit.
     """
+
     is_books_empty = user_issue_books_list()
     if not is_books_empty:
         click.echo('First Issue book, now exiting...')

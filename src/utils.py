@@ -22,6 +22,7 @@ def data_path(file_name):
     Returns:
         str: return filename.
     """
+
     data_dir = os.path.abspath('data')
     os.makedirs(data_dir, exist_ok=True)
     data_path = os.path.join(data_dir, f'{file_name}.json')
@@ -34,6 +35,7 @@ def logging_module():
     Returns:
         str: return logger configuration and path.
     """
+
     # Logging Module
     log_dir = os.path.abspath('logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
@@ -59,6 +61,7 @@ def get_user_login_details():
     Returns:
         str: return user file details.
     """
+
     # save user login session
     details = data_path('user')
     if not os.path.exists(details):
@@ -75,6 +78,7 @@ def get_user_login_details():
 def remove_user_login_details():
     """remove user login file
     """
+
     # remove admin session
     path = data_path('user')
     if os.path.exists(path):
@@ -87,6 +91,7 @@ def get_admin_login_details():
     Returns:
         str: return admin file details.
     """
+
     # save admin login session
     details = data_path('admin')
     if not os.path.exists(details):
@@ -103,6 +108,7 @@ def get_admin_login_details():
 def remove_admin_login_details():
     """remove admin login file
     """
+
     path = data_path('admin')
     if os.path.exists(path):
         os.remove(path)
@@ -111,6 +117,7 @@ def remove_admin_login_details():
 def remove_access_token():
     """Remove access token.
     """
+
     path = data_path('access_token')
     if os.path.exists(path):
         os.remove(path)
@@ -119,6 +126,7 @@ def remove_access_token():
 def logout():
     """Remove login details files.
     """
+
     remove_access_token()
     remove_admin_login_details()
     remove_user_login_details()
@@ -134,6 +142,7 @@ def decode_token(token, SECRET):
     Returns:
         str: return decoded token i.e user or admin credentials.
     """
+
     SECRET_KEY = SECRET
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
@@ -186,6 +195,7 @@ def verify_jwt_token():
     Returns:
         str: if token is valid and successfully decoded then it return token.
     """
+
     admin = get_admin_login_details()
     user = get_user_login_details()
 
@@ -214,6 +224,7 @@ def verify_jwt_token():
 def tqdm_progressbar():
     """progress bar.
     """
+
     for _ in tqdm(range(0, 100), desc='Loading..'):
         time.sleep(0.01)
 
@@ -224,6 +235,7 @@ def get_access_token():
     Returns:
         str: get token from file and return it.
     """
+
     data_dir = data_path('access_token')
     if not os.path.exists(data_dir):
         logout()
@@ -243,6 +255,7 @@ def token_blacklist():
     Returns:
         bool: token is already available and no need to set to blacklist.
     """
+
     from src.account_manager import dencode_access_token
 
     token = get_access_token()
@@ -297,6 +310,7 @@ def validate_access_token():
         bool: if token is available in dataase return true
                 i.e we don't read again.
     """
+
     account = ''
     admin = get_admin_login_details()
     user = get_user_login_details()
