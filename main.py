@@ -87,6 +87,7 @@ def user_accounts(choose: int):
         case 1:
             if logged_as_admin:
                 user_register()
+
             else:
                 click.echo('You are not a Admin User to Create Account')
 
@@ -127,6 +128,7 @@ def admin_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 add_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
@@ -135,6 +137,7 @@ def admin_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 search_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
@@ -143,6 +146,7 @@ def admin_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 stock_book()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
@@ -151,6 +155,7 @@ def admin_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 update_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
@@ -159,6 +164,7 @@ def admin_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 delete_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
@@ -189,23 +195,29 @@ def user_list_books(choose: int):
             verify = verify_jwt_token()
             if verify:
                 issue_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 2:
             verify = verify_jwt_token()
             if verify:
                 list_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 3:
             verify = verify_jwt_token()
             if verify:
                 return_books()
+
             else:
                 logged_as_admin = False
                 logged_as_user = False
+
         case 0:
             exit()
 
@@ -240,6 +252,7 @@ def show_accounts(choose: int):
             token = validate_access_token()
             if not token:
                 token_blacklist()
+
             logout()
             logged_as_user = False
             logged_as_admin = False
@@ -275,6 +288,7 @@ def library(choose: int):
             if verify:
                 if logged_as_user:
                     user_list_books()
+
                 elif logged_as_admin:
                     admin_list_books()
 
