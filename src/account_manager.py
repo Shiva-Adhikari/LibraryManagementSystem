@@ -339,7 +339,8 @@ def dencode_access_token(access_token):
             SECRET_KEY,
             algorithms=ALGORITHM,
             options={
-                'require': ['exp'],
+                'require': ['iat', 'exp'],
+                'verify_iat': ['iat'],
                 'verify_exp': ['exp']
             })
         return decoded
