@@ -217,7 +217,7 @@ def account_login(whoami, access_token):
             }
 
             # check hash password
-            if bcrypt.checkpw(password.encode(), extract_password['password']):
+            if bcrypt.checkpw(password.encode(), extract_password['password'].encode('utf-8')):
                 click.echo('Login Successfully')
             else:
                 click.echo('please Enter correct password')
