@@ -3,7 +3,6 @@ import jwt
 import click
 import logging
 from tqdm import tqdm
-# from pymongo import MongoClient
 
 # built in modules
 import os
@@ -154,7 +153,9 @@ def decode_token(token, SECRET):
 
         admin = get_admin_login_details()
         user = get_user_login_details()
-        token = ''
+        if not (admin or user):
+            logout()
+            return
 
         if admin:
             access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
@@ -173,7 +174,6 @@ def decode_token(token, SECRET):
         time.sleep(1.1)
         return
     except Exception as e:
-        logger = logging_module()
         logger.debug(e)
         logout()
         click.echo('Your Token is invalid, Login Again')
@@ -189,6 +189,10 @@ def verify_jwt_token():
     admin = get_admin_login_details()
     user = get_user_login_details()
 
+    if not (admin or user):
+        logout()
+        return
+
     try:
         if admin:
             SECRET = settings.ADMIN_SECRET_JWT.get_secret_value()
@@ -198,10 +202,8 @@ def verify_jwt_token():
             SECRET = settings.USER_SECRET_JWT.get_secret_value()
             token_data = decode_token(user, SECRET)
 
-        else:
-            return ''
-
-        return token_data
+        if token_data:
+            return token_data
 
     except Exception as e:
         logger = logging_module()
@@ -223,6 +225,9 @@ def get_access_token():
         str: get token from file and return it.
     """
     data_dir = data_path('access_token')
+    if not os.path.exists(data_dir):
+        return
+
     try:
         with open(data_dir, 'r') as file:
             token = json.load(file)
@@ -280,7 +285,6 @@ def token_blacklist():
         return success
 
     except Exception as e:
-        logger = logging_module()
         logger.error(e)
         return
 
@@ -295,13 +299,14 @@ def validate_access_token():
     account = ''
     admin = get_admin_login_details()
     user = get_user_login_details()
+    if not (admin or user):
+        logout()
+        return
+
     if admin:
         account = 'Admin'
     elif user:
         account = 'User'
-    else:
-        logout()
-        return
 
     token = get_access_token()
 
@@ -326,6 +331,5 @@ def validate_access_token():
             return True
 
     except IndexError as e:
-        logger = logging_module()
         logger.error(e)
         return
