@@ -136,11 +136,12 @@ def decode_token(token, SECRET):
         str: return decoded token i.e user or admin credentials.
     """
     SECRET_KEY = SECRET
+    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
         decoded = jwt.decode(
             token,
             SECRET_KEY,
-            algorithms=['HS256'],
+            algorithms=ALGORITHM,
             options={
                 'require': ['iat', 'exp'],
                 'verify_iat': ['iat'],
@@ -162,6 +163,7 @@ def decode_token(token, SECRET):
         elif user:
             access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
             token = refresh_token(access_token)
+
         if token:
             return True
 
