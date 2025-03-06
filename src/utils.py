@@ -226,6 +226,7 @@ def get_access_token():
     """
     data_dir = data_path('access_token')
     if not os.path.exists(data_dir):
+        logout()
         return
 
     try:
@@ -294,7 +295,7 @@ def validate_access_token():
 
     Returns:
         bool: if token is available in dataase return true
-                i.e we don't readd again.
+                i.e we don't read again.
     """
     account = ''
     admin = get_admin_login_details()

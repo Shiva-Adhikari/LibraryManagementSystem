@@ -110,6 +110,7 @@ def check_accounts(account, username):
         {'$match': {f'{account}.username': username}},
         {'$project': {'username': f'${account}.username', '_id': 0}}
     ])
+
     check_account = list(fetch_account)
     if check_account:
         return True
@@ -133,8 +134,10 @@ def validation(admin) -> tuple[str, str]:
             if account:
                 click.echo("Username exits check another\n")
                 continue
+
             break
         click.echo('username must be more than 4 letter long\n')
+
     password = confirm_password_validation()
     return username, password
 
@@ -327,7 +330,6 @@ def dencode_access_token(access_token):
     """
     from src.utils import get_access_token
 
-    # SECRET_KEY = os.getenv(access_token)
     SECRET_KEY = access_token
     token = get_access_token()
     if not token:
