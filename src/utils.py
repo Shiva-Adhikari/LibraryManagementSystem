@@ -311,7 +311,7 @@ def validate_access_token():
                 i.e we don't read again.
     """
 
-    account = ''
+    # account = ''
     admin = get_admin_login_details()
     user = get_user_login_details()
     if not (admin or user):

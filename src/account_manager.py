@@ -276,7 +276,7 @@ def device_mac_address():
         str: return macaddress.
     """
 
-    mac_address = ''
+    # mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
         mac_address = file.readline().strip()
