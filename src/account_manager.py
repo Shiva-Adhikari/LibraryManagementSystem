@@ -3,7 +3,7 @@ import jwt
 import click
 import bcrypt
 from pydantic import ValidationError
-from password_validator import PasswordValidator
+from password_validator import PasswordValidator  # type: ignore
 from email_validator import validate_email, EmailNotValidError
 
 # built in modules
