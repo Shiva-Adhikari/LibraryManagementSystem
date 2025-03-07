@@ -1,6 +1,5 @@
 # third party modules
 import click
-# from pymongo import MongoClient
 
 # built in modules
 import time

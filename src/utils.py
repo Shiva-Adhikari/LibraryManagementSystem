@@ -169,7 +169,6 @@ def decode_token(token, SECRET):
         if admin:
             access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
             token = refresh_token(access_token)
-
         elif user:
             access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
             token = refresh_token(access_token)
@@ -216,7 +215,6 @@ def verify_jwt_token():
             return token_data
 
     except Exception as e:
-        logger = logging_module()
         logger.error(e)
         return
 
@@ -324,7 +322,6 @@ def validate_access_token():
         account = 'User'
 
     token = get_access_token()
-
     if not token:
         return
 

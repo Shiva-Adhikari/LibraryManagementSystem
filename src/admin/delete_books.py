@@ -1,5 +1,4 @@
 # third party modules
-# from pymongo import MongoClient
 import click
 
 # built in modules

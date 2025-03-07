@@ -1,6 +1,5 @@
 # third party modules
 import click
-# from pymongo import MongoClient
 
 # built in modules
 import time
@@ -109,10 +108,12 @@ def validate_user(input_categories, input_book_name, username):
             }
         }
     ])
+
     try:
         is_data = list(check_user)
         if is_data and is_data[0]:
             return True
         return False
+
     except IndexError:
         return False

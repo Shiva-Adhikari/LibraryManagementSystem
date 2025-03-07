@@ -1,7 +1,6 @@
 # third party modules
 import click
 from tabulate import tabulate
-# from pymongo import MongoClient
 
 # built in modules
 import time
