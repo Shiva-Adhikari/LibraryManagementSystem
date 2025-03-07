@@ -8,8 +8,8 @@ from datetime import datetime
 from email.message import EmailMessage
 
 # local modules
-from src.admin.stock_book import find_keys
-from src.models.settings import settings, db
+from src import find_keys
+from src.models import settings, db
 
 
 def mail_box(user_username, subject_filled, body_filled):
