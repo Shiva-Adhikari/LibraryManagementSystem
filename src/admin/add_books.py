@@ -3,7 +3,6 @@ import click
 
 # built in modules
 import time
-from typing import List
 
 # local modules
 from src import logger, verify_jwt_token
@@ -38,7 +37,7 @@ def add_books(category, num_books):
     categories = {}
     # if list is empty then it create list
     if category not in categories:
-        categories[category]: List = []
+        categories[category] = []
     for i in range(num_books):
         book_name = click.prompt(
             f'\nEnter "{category}" Book Name ({i+1}) '
