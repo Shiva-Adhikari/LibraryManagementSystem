@@ -10,7 +10,7 @@ import json
 import time
 
 # local modules
-from src.models.settings import settings, db
+from src.models import settings, db
 
 
 def data_path(file_name):
@@ -345,3 +345,17 @@ def validate_access_token():
     except IndexError as e:
         logger.error(e)
         return
+
+
+def find_keys():
+    """check books available or not by searching Book Category
+
+    Returns:
+        str: return Books Category
+    """
+
+    categories = db.Books.find()
+    keys = [next(iter(data.keys() - {'_id'})) for data in categories]
+    if not keys:
+        return False
+    return keys

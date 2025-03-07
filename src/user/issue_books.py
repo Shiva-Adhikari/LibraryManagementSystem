@@ -7,10 +7,8 @@ from datetime import datetime
 from datetime import timedelta
 
 # local modules
-from src.utils import logger
-from src.utils import verify_jwt_token
-from src.admin.stock_book import find_keys
-from src.models.settings import db
+from src import logger, find_keys, verify_jwt_token
+from src.models import db
 
 
 def issue_books() -> None:

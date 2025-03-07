@@ -1,7 +1,6 @@
 # local modules
-from src.account_manager import account_login
-from src.account_manager import account_register
-from src.models.settings import settings
+from src import account_register, account_login
+from src.models import settings
 
 
 def user_register():

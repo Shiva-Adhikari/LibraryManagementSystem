@@ -11,11 +11,8 @@ import json
 from datetime import datetime, timedelta  # combine is better
 
 # local modules
-from src.utils import logout
-from src.utils import data_path
-from src.utils import logger
-from src.models.account import AccountRegisterModel
-from src.models.settings import settings, db
+from src import data_path, logger, logout
+from src.models import AccountRegisterModel, settings, db
 
 
 def email_validation() -> str:

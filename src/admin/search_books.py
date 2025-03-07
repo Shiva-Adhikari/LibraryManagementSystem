@@ -6,9 +6,8 @@ from tabulate import tabulate
 import time
 
 # local modules
-from src.admin.stock_book import find_keys
-from src.utils import verify_jwt_token
-from src.models.settings import db
+from src import verify_jwt_token, find_keys
+from src.models import db
 
 
 table = []

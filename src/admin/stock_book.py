@@ -6,22 +6,8 @@ from tabulate import tabulate
 import time
 
 # local modules
-from src.utils import verify_jwt_token
-from src.models.settings import db
-
-
-def find_keys():
-    """check books available or not by searching Book Category
-
-    Returns:
-        str: return Books Category
-    """
-
-    categories = db.Books.find()
-    keys = [next(iter(data.keys() - {'_id'})) for data in categories]
-    if not keys:
-        return False
-    return keys
+from src import verify_jwt_token, find_keys
+from src.models import db
 
 
 def stock_book():

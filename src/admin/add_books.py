@@ -6,9 +6,8 @@ import time
 from typing import List
 
 # local modules
-from src.utils import logger
-from src.utils import verify_jwt_token
-from src.models.settings import db
+from src import logger, verify_jwt_token
+from src.models import db
 
 
 start_id = 0
