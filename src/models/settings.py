@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
 
 # Instance
-settings = Settings()
+settings = Settings()  # type: ignore
 
 
 class MongoConfig(BaseSettings):
@@ -59,6 +59,6 @@ class MongoConfig(BaseSettings):
 
 
 # Instance
-mongo_config = MongoConfig()
-client = MongoClient(mongo_config.HOST, mongo_config.PORT)
+mongo_config = MongoConfig()  # type: ignore
+client: MongoClient = MongoClient(mongo_config.HOST, mongo_config.PORT)
 db = client[mongo_config.DB]
