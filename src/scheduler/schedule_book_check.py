@@ -1,5 +1,5 @@
 # third party modules
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler  # type: ignore
 
 # built in modules
 import ssl

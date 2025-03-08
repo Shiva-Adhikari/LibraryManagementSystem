@@ -29,7 +29,7 @@ def connect_database():
         return False
 
 
-def list_view(category: str, page_no: int) -> bool:
+def list_view(category, page_no):
     """Display books in table view.
 
     Args:

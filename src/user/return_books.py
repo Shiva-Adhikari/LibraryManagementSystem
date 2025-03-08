@@ -10,7 +10,7 @@ from src.utils import find_keys, verify_jwt_token
 from src.models import db
 
 
-def user_issue_books_list() -> None:
+def user_issue_books_list() -> bool:
     """display user issued books
 
     Returns:
