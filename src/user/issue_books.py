@@ -7,7 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 
 # local modules
-from src import logger, find_keys, verify_jwt_token
+from src.utils import logger, find_keys, verify_jwt_token
 from src.models import db
 
 

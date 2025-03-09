@@ -5,7 +5,7 @@ import click
 import time
 
 # local modules
-from src import logger, verify_jwt_token
+from src.utils import logger, verify_jwt_token
 from src.admin.stock_book import find_keys
 from src.models.settings import db
 

@@ -11,7 +11,7 @@ import json
 from datetime import datetime, timedelta  # combine is better
 
 # local modules
-from src import data_path, logger, logout
+from src.utils import data_path, logger, logout
 from src.models import AccountRegisterModel, settings, db
 
 

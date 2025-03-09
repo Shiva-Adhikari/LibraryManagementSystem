@@ -6,7 +6,7 @@ from tabulate import tabulate
 import time
 
 # local modules
-from src import verify_jwt_token
+from src.utils import verify_jwt_token
 from src.models import db
 
 
