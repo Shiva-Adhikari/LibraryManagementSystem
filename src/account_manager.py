@@ -171,6 +171,7 @@ def account_register(whoami):
             account_data['email'] = email
 
         validated_data = AccountRegisterModel(**account_data)
+        _email = validated_data.email if whoami == 'User' else None
 
         add_accounts = db.Accounts.update_one(
             {f'{whoami}': {'$exists': True}},
@@ -178,7 +179,7 @@ def account_register(whoami):
                 f'{whoami}': {
                     'id': id,
                     'username': validated_data.username,
-                    'email': validated_data.email if whoami == 'User' else None,
+                    'email': _email,
                     'password': validated_data.password
                 }
             }},
@@ -227,9 +228,10 @@ def account_login(whoami, access_token):
             extract_password = {
                 'password': account[whoami][0]['password']
             }
+            _extract_password = extract_password['password'].encode('utf-8')
 
             # check hash password
-            if bcrypt.checkpw(password.encode(), extract_password['password'].encode('utf-8')):
+            if bcrypt.checkpw(password.encode(), _extract_password):
                 click.echo('Login Successfully')
             else:
                 click.echo('please Enter correct password')
