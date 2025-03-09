@@ -6,18 +6,18 @@ import time
 import click
 
 # local modules
-from src.user.list_books import list_books
-from src.user.issue_books import issue_books
-from src.user.user_account import user_login
-from src.user.return_books import return_books
-from src.user.user_account import user_register
-from src.admin.add_books import add_books
-from src.admin.stock_book import stock_book
-from src.admin.search_books import search_books
-from src.admin.update_books import update_books
-from src.admin.delete_books import delete_books
-from src.admin.admin_account import admin_login
-from src.admin.admin_account import admin_register
+from src.user import list_books
+from src.user import issue_books
+from src.user import user_login
+from src.user import return_books
+from src.user import user_register
+from src.admin import add_books
+from src.admin import stock_book
+from src.admin import search_books
+from src.admin import update_books
+from src.admin import delete_books
+from src.admin import admin_login
+from src.admin import admin_register
 from src.utils import logout
 from src.utils import tqdm_progressbar
 from src.utils import verify_jwt_token
