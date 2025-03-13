@@ -5,8 +5,8 @@ import click
 import time
 
 # local modules
-from src.utils import logger, verify_jwt_token
-from src.models import db
+from src.utils import logger, insert_books, verify_jwt_token
+from src.models import db, BookCategories
 
 
 start_id = 0
@@ -26,7 +26,7 @@ start_id = 0
         ).lower(),
     type=click.IntRange(min=1),
     default=1)
-def add_books(category, num_books):
+def add_books(category: str, num_books: int):
     """Add book in database
 
     Args:
@@ -34,10 +34,10 @@ def add_books(category, num_books):
         num_books (int): How many books to add in Library.
     """
 
-    categories = {}
+    categories: dict[int | str, list[int | str]] = {}
     # if list is empty then it create list
     if category not in categories:
-        no_books = []
+        no_books: list[int | str] = []
     for i in range(num_books):
         book_name = click.prompt(
             f'\nEnter "{category}" Book Name ({i+1}) '
@@ -48,7 +48,11 @@ def add_books(category, num_books):
         book_stock = click.prompt(
             f'How many stock are there {category}',
             type=int)
+
+        # count books
         auto_id = len(no_books)
+
+        # get id
         id = count_books(auto_id, category)
         book_info = {
             'Id': id,
@@ -56,22 +60,29 @@ def add_books(category, num_books):
             'Author': author_name,
             'Available': book_stock
         }
-        no_books.append(book_info)    # append in dictionary
+
+        # check in model
+        n_books = BookCategories(
+            Id=book_info['Id'],
+            Title=book_info['Title'],
+            Author=book_info['Author'],
+            Available=book_info['Available'],
+        ).to_mongo()
+        no_books.append(n_books)    # append in dictionary
+
     try:
         verify = verify_jwt_token()
         if not verify:
             click.echo('Data is Discard, please insert again.')
             time.sleep(1)
             return
-        insert_doc = db.Books.update_one(
-            {category: {'$exists': True}},
-            {'$push': {category: {'$each': no_books}}},
-            upsert=True
-        )
-        if insert_doc.modified_count > 0 or insert_doc.upserted_id:
+
+        # call function from utils/mongo
+        check_book = insert_books(category, no_books)
+        if check_book:
             click.echo('Books successfully added')
         else:
-            logger.error('Failed to add books')
+            logger.debug('Failed to add books')
             click.echo('Failed to add books')
     except Exception as e:
         logger.error(
@@ -81,7 +92,7 @@ def add_books(category, num_books):
     time.sleep(1)
 
 
-def count_books(auto_id, category):
+def count_books(auto_id: int, category: str):
     """Get book id
 
     Args:
