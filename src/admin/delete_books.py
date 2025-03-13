@@ -5,12 +5,7 @@ import click
 import time
 
 # local modules
-from src.utils import logger, verify_jwt_token, find_keys
-from src.models import db
-
-
-# client = MongoClient('localhost', 27017)
-# db = client.LibraryManagementSystem
+from src.utils import verify_jwt_token, find_keys, _delete_books
 
 
 def delete_books() -> None:
@@ -32,20 +27,10 @@ def delete_books() -> None:
         click.echo('Data is Discard, please insert again.')
         time.sleep(1)
         return
-    query = {
-            f'{input_category}.Title': input_book_name,
-            f'{input_category}.$': 1
-    }
-    search_books = db.Books.find(query)
-    if search_books:
-        result = db.Books.update_one(
-            {f'{input_category}.Title': input_book_name},
-            {'$pull': {
-                input_category: {'Title': input_book_name}
-            }}
-        )
-        if result.modified_count > 0:
-            click.echo('successfully book deleted')
-        else:
-            logger.error('Unable to delete book')
-            click.echo('unable to delete book')
+
+    # call function to delete books
+    books = _delete_books(input_category, input_book_name)
+    if books:
+        click.echo('Successfully Deleted Book')
+    else:
+        click.echo('Books not Found')
