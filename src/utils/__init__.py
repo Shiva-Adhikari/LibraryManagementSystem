@@ -13,7 +13,7 @@ from src.utils.utils_ import (
     token_blacklist,
     get_access_token,
 )
-from src.utils.mongo import insert_books
+from src.utils.mongo import _find_books, insert_books, _delete_books
 
 __all__ = [
     'data_path',
@@ -30,5 +30,5 @@ __all__ = [
     'token_blacklist',
     'get_access_token',
 
-    'insert_books'
+    'insert_books', '_find_books', '_delete_books'
 ]
