@@ -42,7 +42,6 @@ def _find_books(department_name: str, book_name: str):
         f'{department_name}__exists': True,
         f'{department_name}__match': {'Title': book_name}
     })
-
     if is_exists:
         return is_exists
 
