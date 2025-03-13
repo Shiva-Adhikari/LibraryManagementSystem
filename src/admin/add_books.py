@@ -37,7 +37,7 @@ def add_books(category, num_books):
     categories = {}
     # if list is empty then it create list
     if category not in categories:
-        categories[category] = []
+        no_books = []
     for i in range(num_books):
         book_name = click.prompt(
             f'\nEnter "{category}" Book Name ({i+1}) '
@@ -48,7 +48,7 @@ def add_books(category, num_books):
         book_stock = click.prompt(
             f'How many stock are there {category}',
             type=int)
-        auto_id = len(categories[category])
+        auto_id = len(no_books)
         id = count_books(auto_id, category)
         book_info = {
             'Id': id,
@@ -56,7 +56,7 @@ def add_books(category, num_books):
             'Author': author_name,
             'Available': book_stock
         }
-        categories[category].append(book_info)    # append in dictionary
+        no_books.append(book_info)    # append in dictionary
     try:
         verify = verify_jwt_token()
         if not verify:
@@ -65,7 +65,7 @@ def add_books(category, num_books):
             return
         insert_doc = db.Books.update_one(
             {category: {'$exists': True}},
-            {'$push': {category: {'$each': categories[category]}}},
+            {'$push': {category: {'$each': no_books}}},
             upsert=True
         )
         if insert_doc.modified_count > 0 or insert_doc.upserted_id:
