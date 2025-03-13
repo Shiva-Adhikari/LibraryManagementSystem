@@ -11,8 +11,9 @@ from src.utils.utils_ import (
     remove_admin_login_details,
     validate_access_token,
     token_blacklist,
-    get_access_token
+    get_access_token,
 )
+from src.utils.mongo import insert_books
 
 __all__ = [
     'data_path',
@@ -27,5 +28,7 @@ __all__ = [
     'remove_admin_login_details',
     'validate_access_token',
     'token_blacklist',
-    'get_access_token'
+    'get_access_token',
+
+    'insert_books'
 ]
