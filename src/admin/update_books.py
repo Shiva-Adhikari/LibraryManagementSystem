@@ -5,8 +5,11 @@ import click
 import time
 
 # local modules
-from src.utils import logger, find_keys, verify_jwt_token
-from src.models import db
+from src.utils import (
+    logger, find_keys, verify_jwt_token,
+    _find_books, _update_books
+)
+from src.models import BookCategories
 
 
 def update_books() -> None:
@@ -21,19 +24,11 @@ def update_books() -> None:
         return
     # input book
     input_category = click.prompt(
-        'Enter book category to search',
-        type=str).lower()
+        'Enter book category to search', type=str).lower()
     input_book_name = click.prompt(
-        'Enter book name to search',
-        type=str).lower()
-    query = {
-        '$and': [
-            {input_category: {'$exists': True}},
-            {f'{input_category}.Title': input_book_name}
-        ]
-    }
+        'Enter book name to search', type=str).lower()
 
-    search_books = db.Books.find_one(query)
+    search_books = _find_books(input_category, input_book_name)
     if search_books:
         click.echo('Book Found Successfully\n')
         book_name = click.prompt('Enter book name to update', type=str)
@@ -49,21 +44,19 @@ def update_books() -> None:
             time.sleep(1)
             return
 
-        update_query = {
-            f'{input_category}.Title': input_book_name,
-            }, {
-                '$set': {
-                    f'{input_category}.$.Title': book_name,
-                    f'{input_category}.$.Author': book_author,
-                    f'{input_category}.$.Available': book_stock
-                }
-        }
-        result = db.Books.update_one(*update_query)
+        # Mongo Model
+        new_book: BookCategories = BookCategories(
+            Title=book_name,
+            Author=book_author,
+            Available=book_stock
+        )
 
-        if result.modified_count > 0:
-            click.echo('successfully book updated')
+        res = _update_books(input_category, input_book_name, new_book)
+        if res:
+            print('Updated Books Successfully')
         else:
-            logger.error('Unable to update book')
-            click.echo('unable to update book')
+            print('Failed to Update')
+            logger.debug('Failed to Update')
+
     else:
         click.echo('Book Not Found')
