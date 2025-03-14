@@ -5,7 +5,7 @@ import click
 import time
 
 # local modules
-from src.utils import logger, insert_books, verify_jwt_token
+from src.utils import logger, _insert_books, verify_jwt_token
 from src.models import db, BookCategories
 
 
@@ -62,7 +62,7 @@ def add_books(category: str, num_books: int):
         }
 
         # check in model
-        n_books = BookCategories(
+        n_books: BookCategories = BookCategories(
             Id=book_info['Id'],
             Title=book_info['Title'],
             Author=book_info['Author'],
@@ -78,7 +78,7 @@ def add_books(category: str, num_books: int):
             return
 
         # call function from utils/mongo
-        check_book = insert_books(category, no_books)
+        check_book = _insert_books(category, no_books)
         if check_book:
             click.echo('Books successfully added')
         else:
