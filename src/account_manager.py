@@ -13,10 +13,10 @@ from datetime import datetime, timedelta  # combine is better
 # local modules
 from src.utils import (
     data_path, logger, logout,
-    _parse_post_data, _send_response
+    _read_json, _send_response
 )
 from src.models import AccountRegisterModel, settings, db
-# from main import _send_response, _parse_post_data
+# from main import _send_response, _read_json
 
 
 def email_validation(handler, _email):
@@ -170,7 +170,7 @@ def account_register(handler, whoami):
     """
 
     try:
-        data = _parse_post_data(handler)
+        data = _read_json(handler)
         _username = data.get('username', '')
         _password = data.get('password', '')
         _email = data.get('email', '')
