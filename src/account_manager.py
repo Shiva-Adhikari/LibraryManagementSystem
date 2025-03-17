@@ -217,7 +217,7 @@ def account_register(handler, whoami):
         return
 
 
-def account_login(whoami, access_token):
+def account_login(handler, whoami, access_token):
     """User or Admin account login
 
     Args:
@@ -229,8 +229,9 @@ def account_login(whoami, access_token):
         bool: if successfully written in file it return True
     """
 
-    username = click.prompt('Enter username', type=str).strip().lower()
-    password = click.prompt('Enter password', type=str)
+    data = _read_json(handler)
+    username = data.get('username', '')
+    password = data.get('password', '')
 
     try:
         account = db.Accounts.find_one(
@@ -246,9 +247,16 @@ def account_login(whoami, access_token):
 
             # check hash password
             if bcrypt.checkpw(password.encode(), _extract_password):
-                click.echo('Login Successfully')
+                response = {
+                    'message': 'Successfully Login Account',
+                    'account': username,
+                }
+                _send_response(handler, response, 200)
             else:
-                click.echo('please Enter correct password')
+                response = {
+                    'error': 'please enter correct password'
+                }
+                _send_response(handler, response, 500)
                 # if password not match exit
                 return
 
@@ -268,16 +276,17 @@ def account_login(whoami, access_token):
             if not check:
                 return
 
-            refresh_token(access_token)
+            refresh_token(handler, access_token)
             return True
         else:
-            click.echo('Account not found')
+            response = {
+                'error': 'Account not found'
+            }
+            _send_response(handler, response, 500)
             return
-    except KeyboardInterrupt:
-        click.echo('exiting...')
+
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in login: {e}')
         return
 
 
@@ -289,7 +298,6 @@ def device_mac_address():
         str: return macaddress.
     """
 
-    # mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
         mac_address = file.readline().strip()
@@ -392,7 +400,7 @@ def dencode_access_token(access_token):
         return
 
 
-def refresh_token(access_token):
+def refresh_token(handler, access_token):
     """A refresh token used to refresh the expired token
 
     Args:
@@ -411,7 +419,10 @@ def refresh_token(access_token):
         address = device_mac_address()
         if device != address:
             logout()
-            click.echo('Your Token is Invalid')
+            response = {
+                'error': 'Your Token is Invalid'
+            }
+            _send_response(handler, response, 500)
             return
 
         # check whose access token is it (admin/user)
