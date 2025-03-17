@@ -1,7 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from src.admin import admin_register
 from src.utils import _send_response
-# import json
 
 
 class MainServer(BaseHTTPRequestHandler):
