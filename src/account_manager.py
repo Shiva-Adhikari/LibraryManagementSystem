@@ -80,6 +80,8 @@ def confirm_password_validation(handler, _password):
     """
 
     password = password_validation(handler, _password)
+    if not password:
+        return
 
     if password:
         # create salt
@@ -87,11 +89,6 @@ def confirm_password_validation(handler, _password):
         # convert password to hash with added salt
         password = bcrypt.hashpw(password.encode(), salt)
         return password
-
-    else:
-        response = {'error': 'Password not valid'}
-        _send_response(handler, response, 500)
-        return
 
 
 def check_accounts(account, username):
