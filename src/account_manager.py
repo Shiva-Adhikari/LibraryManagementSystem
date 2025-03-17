@@ -16,7 +16,6 @@ from src.utils import (
     _read_json, _send_response
 )
 from src.models import AccountRegisterModel, settings, db
-# from main import _send_response, _read_json
 
 
 def email_validation(handler, _email):
@@ -26,17 +25,15 @@ def email_validation(handler, _email):
         str: if email validate then return email.
     """
 
-    # while True:
     try:
-        # email = click.prompt('Enter Email', type=str)
         email = validate_email(_email, check_deliverability=False)
         email = email.normalized
         return email
     except EmailNotValidError as e:
-        # click.echo(str(e))
-            # continue
-        response = {'message': f'Email not Valid {str(e)}'}
+
+        response = {'error': f'Email not Valid {str(e)}'}
         _send_response(handler, response, 500)
+        return
 
 
 def password_validation(handler, password: str):
@@ -64,15 +61,13 @@ def password_validation(handler, password: str):
         if validator.validate(password):
             return password
         else:
-            # click.echo(
-            #     'Password must be 8+ characters with upper, lower, '
-            #     'digit, and special symbols.'
-            # )
-            response = {'message': 'Password must be 8+ characters with upper, lower, digit, and special symbols.'}
+            messages = 'Password must be 8+ characters with upper, lower, '
+            'digit, and special symbols.'
+            response = {'error': messages}
             _send_response(handler, response, 500)
+            return
     except Exception as e:
-        # click.echo(f'Password not valid: {str(e)}')
-        response = {'message': f'Password not valid: {str(e)}'}
+        response = {'error': f'Password not valid: {str(e)}'}
         _send_response(handler, response, 500)
         return None
 
@@ -84,18 +79,7 @@ def confirm_password_validation(handler, _password):
         str: Return password
     """
 
-    # while True:
-        # while True:
-            # password = click.prompt('Enter password', type=str)
     password = password_validation(handler, _password)
-            # if password:
-                # break
-
-        # while True:
-            # confirm_password = click.prompt('Enter confirm password', type=str)
-            # confirm_password = password_validation(confirm_password)
-            # if confirm_password:
-                # break
 
     if password:
         # create salt
@@ -105,9 +89,9 @@ def confirm_password_validation(handler, _password):
         return password
 
     else:
-            # click.echo('password not match')
-        response = {'message': f'Password not valid: {str(e)}'}
+        response = {'error': 'Password not valid'}
         _send_response(handler, response, 500)
+        return
 
 
 def check_accounts(account, username):
@@ -134,7 +118,7 @@ def check_accounts(account, username):
         return False
 
 
-def validation(handler, admin, username, _password) -> tuple[str, str]:
+def validation(handler, admin, username, _password):
     """Validate Account
 
     Args:
@@ -144,22 +128,22 @@ def validation(handler, admin, username, _password) -> tuple[str, str]:
         tuple[str, str]: Return Credentials ( username, password )
     """
 
-    # while True:
-    # username = click.prompt('Enter Username', type=str).lower().strip()
     if len(username) > 3:
         account = check_accounts(admin, username)
         if account:
-            # click.echo("Username exits check another\n")
-            response = {'message': 'Username exits check another'}
+            response = {'error': 'Username exits check another'}
             _send_response(handler, response, 500)
-            # continue
-        # break
-    # click.echo('username must be more than 4 letter long\n')
-    response = {'message': 'username must be more than 4 letter long'}
-    _send_response(handler, response, 500)
+            return
+    else:
+        response = {'error': 'username must be more than 4 letter long'}
+        check = _send_response(handler, response, 500)
+        if not check:
+            return
 
     password = confirm_password_validation(handler, _password)
-    return username, password
+    if not password:
+        return
+    return username.lower(), password
 
 
 def account_register(handler, whoami):
@@ -207,34 +191,32 @@ def account_register(handler, whoami):
         )
 
         if add_accounts.modified_count > 0 or add_accounts.upserted_id:
-            # click.echo('Register Successfully')
             response = {
                 'message': 'Successfully Registered Account',
                 'account': username,
             }
             _send_response(handler, response, 200)
+            return True
 
         else:
-            logger.error('Register Failed')
-            # click.echo('Register Failed')
+            logger.debug('Register Failed')
             response = {
-                'message': 'Register Failed',
+                'error': 'Register Failed',
                 'account': username,
             }
             _send_response(handler, response, 500)
             return
 
     except ValidationError as ve:
-        # click.echo(f'Invalid Input: {ve}')
         response = {
-            'message': f'Invalid Input: {ve}',
+            'error': f'Invalid Input: {ve}',
             'account': username,
         }
         _send_response(handler, response, 500)
+        return
 
     except Exception as e:
         logger.error(e)
-        # click.echo(f'Got Exception in register: {e}')
         return
 
 
