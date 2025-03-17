@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from src.admin import admin_register
+from src.admin import admin_register, admin_login
 from src.utils import _send_response
+from src.user import user_register, user_login
 
 
 class MainServer(BaseHTTPRequestHandler):
@@ -8,15 +9,11 @@ class MainServer(BaseHTTPRequestHandler):
         if self.path == '/api/admin/register':
             admin_register(self)
         elif self.path == '/api/admin/login':
-            # from src.admin import admin_login
-            # admin_login()
-            pass
+            admin_login(self)
         elif self.path == '/api/user/register':
-            # self._account_register()
-            pass
+            user_register(self)
         elif self.path == '/api/user/login':
-            # self._account_login()
-            pass
+            user_login(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
             _send_response(self, response, 404)
