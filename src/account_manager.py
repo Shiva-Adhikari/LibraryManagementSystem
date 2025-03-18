@@ -151,9 +151,9 @@ def account_register(handler, whoami):
 
     try:
         data = _read_json(handler)
-        _username = data.get('username', '')
-        _password = data.get('password', '')
-        _email = data.get('email', '')
+        _username = data.get('username').lower().strip()
+        _password = data.get('password')
+        _email = data.get('email', '').lower().strip()
 
         username, password = validation(handler, whoami, _username, _password)
         id = _count_accounts(whoami)
@@ -229,8 +229,8 @@ def account_login(handler, whoami, access_token):
     """
 
     data = _read_json(handler)
-    username = data.get('username', '')
-    password = data.get('password', '')
+    username = data.get('username').lower().strip()
+    password = data.get('password')
 
     try:
         account = db.Accounts.find_one(
