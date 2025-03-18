@@ -6,7 +6,7 @@ from src.admin import (
 from src.utils import _send_response
 from src.user import (
     user_register, user_login,
-    issue_books
+    issue_books, return_books
 )
 
 
@@ -42,6 +42,8 @@ class MainServer(BaseHTTPRequestHandler):
     def do_PUT(self):
         if self.path == '/api/admin/update-books':
             update_books(self)
+        elif self.path == '/api/user/return-books':
+            return_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
             _send_response(self, response, 404)
