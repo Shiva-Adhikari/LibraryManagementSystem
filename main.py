@@ -1,13 +1,17 @@
+# built in modules
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# local modules
 from src.admin import (
     admin_register, admin_login,
     add_books, delete_books, update_books, search_books, stock_book
 )
-from src.utils import _send_response
 from src.user import (
     user_register, user_login,
     issue_books, return_books, list_books
 )
+from src.utils import _send_response
+from src.models import mongo_config
 
 
 class MainServer(BaseHTTPRequestHandler):
@@ -53,8 +57,8 @@ class MainServer(BaseHTTPRequestHandler):
 
 class Server:
     def __init__(self):
-        self.HOST = 'localhost'
-        self.PORT = 9999
+        self.HOST = mongo_config.HOST
+        self.PORT = mongo_config.PORT
 
     def __enter__(self):
         self.server = HTTPServer((self.HOST, self.PORT), MainServer)
