@@ -4,7 +4,10 @@ from src.admin import (
     add_books, delete_books, update_books, search_books, stock_book
 )
 from src.utils import _send_response
-from src.user import user_register, user_login
+from src.user import (
+    user_register, user_login,
+    issue_books
+)
 
 
 class MainServer(BaseHTTPRequestHandler):
@@ -23,6 +26,8 @@ class MainServer(BaseHTTPRequestHandler):
             search_books(self)
         elif self.path == '/api/admin/stock-books':
             stock_book(self)
+        elif self.path == '/api/user/issue-books':
+            issue_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
             _send_response(self, response, 404)
