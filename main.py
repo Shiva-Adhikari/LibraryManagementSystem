@@ -51,11 +51,25 @@ class MainServer(BaseHTTPRequestHandler):
             _send_response(self, response, 404)
 
 
+class Server:
+    def __init__(self):
+        self.HOST = 'localhost'
+        self.PORT = 9999
+
+    def __enter__(self):
+        self.server = HTTPServer((self.HOST, self.PORT), MainServer)
+        print("Server is Running...")
+        return self.server
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.server:
+            self.server.server_close()
+            print('Server Stopped.')
+
+
 if __name__ == '__main__':
-    HOST = 'localhost'
-    PORT = 9999
-    server = HTTPServer((HOST, PORT), MainServer)
-    print("Server is Running...")
-    server.serve_forever()
-    server.server_close()
-    print('Server Stopped.')
+    with Server() as server:
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print('server interrupted by user.')
