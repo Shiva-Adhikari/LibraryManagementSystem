@@ -10,17 +10,18 @@ def stock_book(handler):
     """Search less than 5 Books and display.
     """
 
-    # verify = verify_jwt_token()
-    # if not verify:
-        # return
+    verify = verify_jwt_token(handler)
+    if not verify:
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
+        return
 
     category_key = find_keys()
     if not category_key:
-        # click.echo('Books Not found, exiting...')
-        # time.sleep(2)
         response = {'error': 'Books Not found, Add book first'}
         _send_response(handler, response, 500)
         return
+
     append_result = []
     for category in category_key:
         results = db.Books.aggregate([

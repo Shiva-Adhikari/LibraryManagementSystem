@@ -15,15 +15,15 @@ def delete_books(handler):
         return
 
     data = _read_json(handler)
-    category = data.get('category')
-    book_name = data.get('book_name')
+    category = data.get('category').lower().strip()
+    book_name = data.get('book_name').lower().strip()
 
     # verify identity
-    # verify = verify_jwt_token()
-    # if not verify:
-        # response = {'error': 'Data is Discarded, please login first.'}
-        # _send_response(handler, response, 500)
-        # return
+    verify = verify_jwt_token(handler)
+    if not verify:
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
+        return
 
     # call function to delete books
     books = _delete_books(category, book_name)

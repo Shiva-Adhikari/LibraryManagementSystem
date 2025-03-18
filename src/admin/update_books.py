@@ -17,26 +17,27 @@ def update_books(handler):
         response = {'error': 'Book Not found, Add books first'}
         _send_response(handler, response, 500)
         return
+
     data = _read_json(handler)
-    category = data.get('category')
-    old_book_name = data.get('old_book_name')
+    category = data.get('category').lower().strip()
+    old_book_name = data.get('old_book_name').lower().strip()
     new_book = data.get('new_book')
 
     search_books = _find_books(category, old_book_name)
     if search_books:
         book_info = {}
-        # for book in new_book:
+
         book_info = {
-            'Title': new_book.get('title').lower(),
-            'Author': new_book.get('author').lower(),
+            'Title': new_book.get('title').lower().strip(),
+            'Author': new_book.get('author').lower().strip(),
             'Available': new_book.get('available')
         }
 
-        # verify = verify_jwt_token()
-        # if not verify:
-            # response = {'error': 'Data is Discarded, please login first.'}
-            # _send_response(handler, response, 500)
-            # return
+        verify = verify_jwt_token(handler)
+        if not verify:
+            response = {'error': 'Data is Discarded, please login first.'}
+            _send_response(handler, response, 500)
+            return
 
         # Mongo Model
         book = BookCategories(

@@ -18,6 +18,7 @@ def user_issue_books_list(handler):
     email = user_details['email']
     category_check_merge = []
     category_key = find_keys()
+
     for category in category_key:
         check_book = db.Books.aggregate([
                 {'$unwind': f'${category}'},
@@ -77,7 +78,7 @@ def return_books(handler) -> None:
         return
 
     data = _read_json(handler)
-    category = data.get('category')
+    category = data.get('category').lower().strip()
     book_id = data.get('book_id')
 
     user_details = verify_jwt_token(handler)

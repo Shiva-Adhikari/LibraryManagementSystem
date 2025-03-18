@@ -17,11 +17,13 @@ def search_books(handler):
         return
 
     data = _read_json(handler)
-    book_name = data.get('book_name')
+    book_name = data.get('book_name').lower().strip()
 
-    # verify = verify_jwt_token()
-    # if not verify:
-        # return
+    verify = verify_jwt_token(handler)
+    if not verify:
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
+        return
 
     table = []
 
