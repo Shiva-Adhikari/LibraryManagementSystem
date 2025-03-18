@@ -1,6 +1,5 @@
 # third party modules
 import jwt
-import click
 import bcrypt
 from pydantic import ValidationError
 from password_validator import PasswordValidator  # type: ignore
@@ -253,9 +252,7 @@ def account_login(handler, whoami, access_token):
                 }
                 _send_response(handler, response, 200)
             else:
-                response = {
-                    'error': 'please enter correct password'
-                }
+                response = {'error': 'please enter correct password'}
                 _send_response(handler, response, 500)
                 # if password not match exit
                 return
@@ -279,9 +276,7 @@ def account_login(handler, whoami, access_token):
             refresh_token(handler, access_token)
             return True
         else:
-            response = {
-                'error': 'Account not found'
-            }
+            response = {'error': 'Account not found'}
             _send_response(handler, response, 500)
             return
 
@@ -354,7 +349,7 @@ def encode_access_token(json_text, access_token):
         return True
 
 
-def dencode_access_token(access_token):
+def dencode_access_token(handler, access_token):
     """Decode access token which is get from file
 
     Args:
@@ -386,12 +381,14 @@ def dencode_access_token(access_token):
         return decoded
 
     except jwt.exceptions.ExpiredSignatureError:
-        click.echo('Your Token is Expired, Login Again..')
+        response = {'token error': 'Your Token is Expired, Login Again.'}
+        _send_response(handler, response, 400)
         logout()
         return
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
-        click.echo('Your Token is invalid, Login Again..')
+        response = {'token error': 'Your Token is invalid, Login Again.'}
+        _send_response(handler, response, 400)
         logout()
         return
 
@@ -409,7 +406,7 @@ def refresh_token(handler, access_token):
 
     try:
         # decrypt token
-        data_json = dencode_access_token(access_token)
+        data_json = dencode_access_token(handler, access_token)
 
         if not data_json:
             return
@@ -419,9 +416,7 @@ def refresh_token(handler, access_token):
         address = device_mac_address()
         if device != address:
             logout()
-            response = {
-                'error': 'Your Token is Invalid'
-            }
+            response = {'error': 'Your Token is Invalid'}
             _send_response(handler, response, 500)
             return
 
@@ -441,18 +436,18 @@ def refresh_token(handler, access_token):
             secret = settings.ADMIN_SECRET_JWT.get_secret_value()
             data_dir = data_path('admin')
             email = ''
-            token = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, secret, email, account)
 
         elif account == 'User':
             secret = settings.USER_SECRET_JWT.get_secret_value()
             data_dir = data_path('user')
             email = accounts[account][0]['email']
-            token = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, secret, email, account)
 
         # after condition check then save in file
         with open(data_dir, 'w') as file:
             json.dump(token, file)
-            return True
+            return payload
 
     except Exception as e:
         logger.error(e)
@@ -487,7 +482,7 @@ def generate_token(username, secret, email, account):
 
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         if token:
-            return token
+            return token, payload
 
     except Exception as e:
         logger.error(e)

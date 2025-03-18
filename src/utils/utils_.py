@@ -1,6 +1,5 @@
 # third party modules
 import jwt
-import click
 import logging
 from tqdm import tqdm
 
@@ -11,6 +10,7 @@ import time
 
 # local modules
 from src.models import settings, db
+from src.utils.http_server import _send_response
 
 
 def data_path(file_name):
@@ -132,7 +132,7 @@ def logout():
     remove_user_login_details()
 
 
-def decode_token(token, SECRET):
+def decode_token(handler, token, SECRET):
     """Decode token to text
 
     Args:
@@ -168,27 +168,28 @@ def decode_token(token, SECRET):
 
         if admin:
             access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
-            token = refresh_token(access_token)
+            token = refresh_token(handler, access_token)
         elif user:
             access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
-            token = refresh_token(access_token)
+            token = refresh_token(handler, access_token)
 
         if token:
-            return True
+            return token
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         logout()
-        click.echo('Your Token is invalid, Login Again')
-        time.sleep(1.1)
+        response = {'token error': 'Your Token is invalid, Login Again.'}
+        _send_response(handler, response, 400)
         return
     except Exception as e:
         logger.debug(e)
         logout()
-        click.echo('Your Token is invalid, Login Again')
+        response = {'exception': f'Your Token is invalid, Login Again. {str(e)}'}
+        _send_response(handler, response, 400)
         return
 
 
-def verify_jwt_token():
+def verify_jwt_token(handler):
     """verify user token with file is available and valid or not
 
     Returns:
@@ -205,14 +206,16 @@ def verify_jwt_token():
     try:
         if admin:
             SECRET = settings.ADMIN_SECRET_JWT.get_secret_value()
-            token_data = decode_token(admin, SECRET)
+            token_data = decode_token(handler, admin, SECRET)
 
         elif user:
             SECRET = settings.USER_SECRET_JWT.get_secret_value()
-            token_data = decode_token(user, SECRET)
+            token_data = decode_token(handler, user, SECRET)
 
-        if token_data:
-            return token_data
+        if not token_data:
+            return
+
+        return token_data
 
     except Exception as e:
         logger.error(e)
@@ -247,7 +250,7 @@ def get_access_token():
         return
 
 
-def token_blacklist():
+def token_blacklist(handler):
     """add token token to database to prevent, reuse of unused token.
 
     Returns:
@@ -270,7 +273,7 @@ def token_blacklist():
     elif user:
         access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
 
-    data_json = dencode_access_token(access_token)
+    data_json = dencode_access_token(handler, access_token)
     if not data_json:
         return
 
