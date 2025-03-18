@@ -1,10 +1,9 @@
 # local modules
-from src.utils import logger, _insert_books, verify_jwt_token
-from src.models import db, BookCategories
-from src.utils import _read_json, _send_response
-
-
-start_id = 0
+from src.utils import (
+    logger, _insert_books, verify_jwt_token, count_books,
+    _read_json, _send_response
+)
+from src.models import BookCategories
 
 
 def add_books(handler):
@@ -27,7 +26,10 @@ def add_books(handler):
 
     for category, categories in data.items():
         for books in categories:
+            auto_id = len(no_books)
+            # call count_books function from utils_
             id = count_books(auto_id, category)
+
             book_info = {
                 'Id': id,
                 'Title': books['Title'].lower(),
@@ -45,10 +47,11 @@ def add_books(handler):
             no_books.append(n_books)    # append in dictionary
 
     try:
-        # verify = verify_jwt_token()
-        # if not verify:
-            # click.echo('Data is Discarded, please login first.')
-            # return
+        verify = verify_jwt_token(handler)
+        if not verify:
+            response = {'message': 'Data is Discarded, please login first.'}
+            _send_response(handler, response, 500)
+            return
 
         # call function from utils/mongo
         check_book = _insert_books(category, no_books)
@@ -65,41 +68,3 @@ def add_books(handler):
             exc_info=True)
         response = {'exception': 'Failed to add books'}
         _send_response(handler, response, 500)
-
-
-def count_books(auto_id: int, category: str):
-    """Get book id
-
-    Args:
-        auto_id (int): count list of books
-        category (str): Book Name
-
-    Returns:
-        int: return Number of Books
-    """
-
-    global start_id
-    try:
-        count_book = db.Books.aggregate([
-            {
-                '$match': {category: {'$exists': True}}
-            },
-            {
-                '$project': {
-                    '_id': 0,
-                    'count': {
-                        '$add': [
-                            {'$size': f'${category}'},
-                            1
-                        ]
-                    }
-                }
-            }
-        ]).next()['count']
-        if start_id == 0:
-            start_id = count_book
-        else:
-            start_id += 1
-        return start_id
-    except StopIteration:
-        return auto_id + 1

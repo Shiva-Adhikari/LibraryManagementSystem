@@ -362,3 +362,41 @@ def find_keys():
     if not keys:
         return False
     return keys
+
+
+start_id = 0
+def count_books(auto_id: int, category: str):
+    """Get book id
+
+    Args:
+        auto_id (int): count list of books
+        category (str): Book Name
+
+    Returns:
+        int: return Number of Books
+    """
+
+    global start_id
+    try:
+        count_book = db.Books.aggregate([
+            {
+                '$match': {category: {'$exists': True}}
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'count': {
+                        '$add': [
+                            {'$size': f'${category}'},
+                            1
+                        ]
+                    }
+                }
+            }
+        ]).next()['count']
+
+        start_id = count_book + auto_id
+        return start_id
+    except StopIteration:
+        start_id = auto_id + 1
+        return start_id
