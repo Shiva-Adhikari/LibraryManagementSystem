@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 # local modules
 from src.utils import (
-    logger, find_keys, verify_jwt_token,
+    logger, find_keys, verify_jwt_token, validate_user,
     _send_response, _read_json
 )
 from src.models import db
@@ -21,12 +21,11 @@ def issue_books(handler) -> None:
         return
 
     data = _read_json(handler)
-    category = data.get('category').lower()
-    book_name = data.get('book_name').lower()
+    category = data.get('category').lower().strip()
+    book_name = data.get('book_name').lower().strip()
     to_date = data.get('days')
 
     try:
-        # category = category.lower()
         issue_date = datetime.now()
         warning_to_date = to_date - 3
         due_warning = issue_date + timedelta(days=warning_to_date)
@@ -41,6 +40,7 @@ def issue_books(handler) -> None:
         username = user_detail['username']
         email = user_detail['email']
 
+        # call validate_user from utils_
         does_exist = validate_user(category, book_name, username)
         if does_exist:
             response = {'error': 'Book already Issued, unable to issue again'}
@@ -90,36 +90,3 @@ def issue_books(handler) -> None:
         logger.error(e)
         response = {'exception': f'Unable to get book, Try Again. as {str(e)}'}
         _send_response(handler, response, 500)
-
-
-def validate_user(category, book_name, username):
-    """check book is available or not in Database
-
-    Args:
-        category (str): Book Category
-        book_name (str): user input Book Name
-        username (str): user username
-
-    Returns:
-        bool: return True if Book is found.
-    """
-
-    check_user = db.Books.aggregate([
-        {'$unwind': f'${category}'},
-        {'$unwind': f'${category}.UserDetails'},
-        {
-            '$match': {
-                f'{category}.UserDetails.Username': username,
-                f'{category}.Title': book_name
-            }
-        }, {
-            '$project': {
-                '_id': 0,
-                'username': f'${category}.UserDetails.Username'
-            }
-        }
-    ])
-
-    is_data = list(check_user)
-
-    return bool(is_data)
