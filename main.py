@@ -58,7 +58,7 @@ class MainServer(BaseHTTPRequestHandler):
 class Server:
     def __init__(self):
         self.HOST = mongo_config.HOST
-        self.PORT = mongo_config.PORT
+        self.PORT = 9999
 
     def __enter__(self):
         self.server = HTTPServer((self.HOST, self.PORT), MainServer)
