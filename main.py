@@ -11,7 +11,7 @@ from src.user import (
     issue_books, return_books, list_books
 )
 from src.utils import _send_response
-from src.models import mongo_config
+from src.models import mongo_config, http_server
 
 
 class MainServer(BaseHTTPRequestHandler):
@@ -58,7 +58,7 @@ class MainServer(BaseHTTPRequestHandler):
 class Server:
     def __init__(self):
         self.HOST = mongo_config.HOST
-        self.PORT = 9999
+        self.PORT = http_server.HTTPSERVER_PORT
 
     def __enter__(self):
         self.server = HTTPServer((self.HOST, self.PORT), MainServer)
