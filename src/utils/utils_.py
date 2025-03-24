@@ -1,12 +1,10 @@
 # third party modules
 import jwt
 import logging
-from tqdm import tqdm
 
 # built in modules
 import os
 import json
-import time
 
 # local modules
 from src.models import settings, db
@@ -75,64 +73,7 @@ def get_user_login_details():
         return False
 
 
-def remove_user_login_details():
-    """remove user login file
-    """
-
-    # remove admin session
-    path = data_path('user')
-    if os.path.exists(path):
-        os.remove(path)
-
-
-def get_admin_login_details():
-    """get admin login details from file
-
-    Returns:
-        str: return admin file details.
-    """
-
-    # save admin login session
-    details = data_path('admin')
-    if not os.path.exists(details):
-        return False
-    try:
-        with open(details) as file:
-            get_details = json.load(file)
-            if get_details:
-                return get_details
-    except json.decoder.JSONDecodeError:
-        return False
-
-
-def remove_admin_login_details():
-    """remove admin login file
-    """
-
-    path = data_path('admin')
-    if os.path.exists(path):
-        os.remove(path)
-
-
-def remove_access_token():
-    """Remove access token.
-    """
-
-    path = data_path('access_token')
-    if os.path.exists(path):
-        os.remove(path)
-
-
-def logout():
-    """Remove login details files.
-    """
-
-    remove_access_token()
-    remove_admin_login_details()
-    remove_user_login_details()
-
-
-def decode_token(handler, token, SECRET):
+def decode_token(handler, token, SECRET_KEY, whoami):
     """Decode token to text
 
     Args:
@@ -143,7 +84,7 @@ def decode_token(handler, token, SECRET):
         str: return decoded token i.e user or admin credentials.
     """
 
-    SECRET_KEY = SECRET
+    # SECRET_KEY = SECRET
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
         decoded = jwt.decode(
@@ -155,199 +96,62 @@ def decode_token(handler, token, SECRET):
                 'verify_iat': ['iat'],
                 'verify_exp': ['exp']
             })
-        return decoded
-    except jwt.exceptions.ExpiredSignatureError:
-        # if token is expired then it call refresh token to extend time.
+        if decoded:
+            return decoded
+
+    except (
+            jwt.exceptions.ExpiredSignatureError,
+            jwt.exceptions.InvalidTokenError, jwt.DecodeError):
+
+        # # if token is expired then it call refresh token to extend time.
+        from .http_server import _input_access_token
         from src.account_manager import refresh_token
 
-        admin = get_admin_login_details()
-        user = get_user_login_details()
-        if not (admin or user):
-            logout()
+        input_access_token = _input_access_token(handler)
+
+        if not input_access_token:
             return
 
-        if admin:
-            access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
-            token = refresh_token(handler, access_token)
-        elif user:
-            access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
-            token = refresh_token(handler, access_token)
+        # how to know user or admin secret key
+        if whoami == 'Admin':
+            SECRET = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
+        elif whoami == 'User':
+            SECRET = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
 
+        token = refresh_token(handler, input_access_token, SECRET)
         if token:
-            return token
+            response = {
+                'message': 'Refresh Token Key.',
+                'token': token
+            }
+            _send_response(handler, response, 200)
 
-    except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
-        logout()
-        response = {'token error': 'Your Token is invalid, Login Again.'}
-        _send_response(handler, response, 400)
-        return
     except Exception as e:
         logger.debug(e)
-        logout()
-        response = {'exception': f'Your Token is invalid, Login Again. {str(e)}'}
+        response = {'exception': f'Token is invalid, Login Again.{str(e)}'}
         _send_response(handler, response, 400)
         return
 
 
-def verify_jwt_token(handler):
-    """verify user token with file is available and valid or not
+def _verify_refresh_token(handler, whoami):
+    from .http_server import _input_refresh_token
 
-    Returns:
-        str: if token is valid and successfully decoded then it return token.
-    """
-
-    admin = get_admin_login_details()
-    user = get_user_login_details()
-
-    if not (admin or user):
-        logout()
-        return
-
-    try:
-        if admin:
-            SECRET = settings.ADMIN_SECRET_JWT.get_secret_value()
-            token_data = decode_token(handler, admin, SECRET)
-
-        elif user:
-            SECRET = settings.USER_SECRET_JWT.get_secret_value()
-            token_data = decode_token(handler, user, SECRET)
-
-        if not token_data:
-            return
-
-        return token_data
-
-    except Exception as e:
-        logger.error(e)
-        return
-
-
-def tqdm_progressbar():
-    """progress bar.
-    """
-
-    for _ in tqdm(range(0, 100), desc='Loading..'):
-        time.sleep(0.01)
-
-
-def get_access_token():
-    """get access token
-
-    Returns:
-        str: get token from file and return it.
-    """
-
-    data_dir = data_path('access_token')
-    if not os.path.exists(data_dir):
-        logout()
-        return
-
-    try:
-        with open(data_dir, 'r') as file:
-            token = json.load(file)
-            return token
-    except FileNotFoundError:
-        return
-
-
-def token_blacklist(handler):
-    """add token token to database to prevent, reuse of unused token.
-
-    Returns:
-        bool: token is already available and no need to set to blacklist.
-    """
-
-    from src.account_manager import dencode_access_token
-
-    token = get_access_token()
+    token = _input_refresh_token(handler)
     if not token:
         return
 
-    admin = get_admin_login_details()
-    user = get_user_login_details()
-    if not (admin or user):
+    if whoami == 'Admin':
+        SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
+        token_data = decode_token(handler, token, SECRET_KEY, whoami)
+
+    elif whoami == 'User':
+        SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
+        token_data = decode_token(handler, token, SECRET_KEY, whoami)
+
+    if not token_data:
         return
 
-    if admin:
-        access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
-    elif user:
-        access_token = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
-
-    data_json = dencode_access_token(handler, access_token)
-    if not data_json:
-        return
-
-    id = data_json['id']
-    account = data_json['account']
-
-    account_exists = db.Accounts.find_one({f'{account}.id': id})
-    if not account_exists:
-        return False
-
-    try:
-        blacklist = db.Accounts.update_one(
-            {f'{account}.id': id},
-            {
-                '$push': {
-                    f'{account}.$.TokenBlacklist': {
-                        'token': token
-                    }
-                }
-            }
-        )
-
-        success = blacklist.modified_count > 0
-        return success
-
-    except Exception as e:
-        logger.error(e)
-        return
-
-
-def validate_access_token():
-    """check token is available or not in database
-
-    Returns:
-        bool: if token is available in dataase return true
-                i.e we don't read again.
-    """
-
-    # account = ''
-    admin = get_admin_login_details()
-    user = get_user_login_details()
-    if not (admin or user):
-        logout()
-        return
-
-    if admin:
-        account = 'Admin'
-    elif user:
-        account = 'User'
-
-    token = get_access_token()
-    if not token:
-        return
-
-    check_token = db.Accounts.aggregate([
-        {'$unwind': f'${account}'},
-        {'$unwind': f'${account}.TokenBlacklist'},
-        {'$match': {f'{account}.TokenBlacklist.token': token}},
-        {
-            '$project': {
-                'username': f'${account}.username',
-                'token': f'${account}.TokenBlacklist.token'
-            }
-        }
-    ])
-
-    try:
-        is_data = list(check_token)
-        if is_data and is_data[0]:
-            return True
-
-    except IndexError as e:
-        logger.error(e)
-        return
+    return token_data
 
 
 def find_keys():
@@ -365,6 +169,8 @@ def find_keys():
 
 
 start_id = 0
+
+
 def count_books(auto_id: int, category: str):
     """Get book id
 
