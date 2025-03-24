@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 
 # local modules
 from src.utils import (
-    logger, find_keys, verify_jwt_token, validate_user,
-    _send_response, _read_json
+    logger, find_keys, validate_user,
+    _send_response, _read_json, _verify_refresh_token
 )
 from src.models import db
 
@@ -31,7 +31,7 @@ def issue_books(handler) -> None:
         due_warning = issue_date + timedelta(days=warning_to_date)
         due_date = issue_date + timedelta(days=to_date)
 
-        user_detail = verify_jwt_token(handler)
+        user_detail = _verify_refresh_token(handler, whoami='User')
         if not user_detail:
             response = {'error': 'Data is Discarded, please login first.'}
             _send_response(handler, response, 500)
