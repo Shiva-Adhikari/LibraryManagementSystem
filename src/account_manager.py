@@ -6,12 +6,11 @@ from password_validator import PasswordValidator  # type: ignore
 from email_validator import validate_email, EmailNotValidError
 
 # built in modules
-import json
 from datetime import datetime, timedelta  # combine is better
 
 # local modules
 from src.utils import (
-    data_path, logger, logout,
+    logger,
     _read_json, _send_response
 )
 from src.models import AccountRegisterModel, settings, db
@@ -108,10 +107,8 @@ def check_accounts(account, username):
     ])
 
     check_account = list(fetch_account)
-    if check_account:
-        return True
-    else:
-        return False
+
+    return bool(check_account)
 
 
 def validation(handler, admin, username, _password):
@@ -132,9 +129,7 @@ def validation(handler, admin, username, _password):
             return
     else:
         response = {'error': 'username must be more than 4 letter long'}
-        check = _send_response(handler, response, 500)
-        if not check:
-            return
+        _send_response(handler, response, 500)
 
     password = confirm_password_validation(handler, _password)
     if not password:
@@ -216,7 +211,7 @@ def account_register(handler, whoami):
         return
 
 
-def account_login(handler, whoami, access_token):
+def account_login(handler, whoami, SECRET_KEY):
     """User or Admin account login
 
     Args:
@@ -245,16 +240,9 @@ def account_login(handler, whoami, access_token):
             _extract_password = extract_password['password'].encode('utf-8')
 
             # check hash password
-            if bcrypt.checkpw(password.encode(), _extract_password):
-                response = {
-                    'message': 'Successfully Login Account',
-                    'account': username,
-                }
-                _send_response(handler, response, 200)
-            else:
+            if not bcrypt.checkpw(password.encode(), _extract_password):
                 response = {'error': 'please enter correct password'}
                 _send_response(handler, response, 500)
-                # if password not match exit
                 return
 
             mac_address = device_mac_address()
@@ -269,11 +257,24 @@ def account_login(handler, whoami, access_token):
             }
 
             # encrypt access_token
-            check = encode_access_token(payload, access_token)
-            if not check:
+            _access_token = encode_access_token(handler, payload, SECRET_KEY)
+            if not _access_token:
+                logger.error()
                 return
 
-            refresh_token(handler, access_token)
+            _, _refresh_token = refresh_token(handler, _access_token, SECRET_KEY)
+            if not _refresh_token:
+                logger.error()
+                return
+
+            response = {
+                'status': 'success',
+                'account': username,
+                'access token': _access_token,
+                'refresh token': _refresh_token
+            }
+            _send_response(handler, response, 200)
+
             return True
         else:
             response = {'error': 'Account not found'}
@@ -327,7 +328,7 @@ def _count_accounts(category):
         return 1
 
 
-def encode_access_token(json_text, access_token):
+def encode_access_token(handler, json_text, SECRET_KEY):
     """Convert Text to access_token
 
     Args:
@@ -338,38 +339,28 @@ def encode_access_token(json_text, access_token):
         True: if encoded token is successfully written in file.
     """
 
-    SECRET_KEY = access_token
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
 
     encrypted_text = jwt.encode(json_text, SECRET_KEY, algorithm=ALGORITHM)
-    data_dir = data_path('access_token')
-
-    with open(data_dir, 'w') as file:
-        json.dump(encrypted_text, file)
-        return True
+    
+    if encrypted_text:
+        return encrypted_text
 
 
-def dencode_access_token(handler, access_token):
+def dencode_access_token(handler, encoded_access_token, SECRET_KEY):
     """Decode access token which is get from file
 
     Args:
-        access_token (str): This is a secret key to decode token
+        SECRET_KEY (str): This is a secret key to decode token
 
     Returns:
         str: if successfully decoded then it return decoded text
     """
 
-    from src.utils import get_access_token
-
-    SECRET_KEY = access_token
-    token = get_access_token()
-    if not token:
-        return
-
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
         decoded = jwt.decode(
-            token,
+            encoded_access_token,
             SECRET_KEY,
             algorithms=ALGORITHM,
             options={
@@ -378,26 +369,22 @@ def dencode_access_token(handler, access_token):
                 'verify_exp': ['exp']
             })
 
-        return decoded
+        if decoded:
+            return decoded
 
     except jwt.exceptions.ExpiredSignatureError:
         response = {'token error': 'Your Token is Expired, Login Again.'}
         _send_response(handler, response, 400)
-        logout()
-        return
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         response = {'token error': 'Your Token is invalid, Login Again.'}
         _send_response(handler, response, 400)
-        logout()
-        return
 
     except Exception as e:
         logger.debug(e)
-        return
 
 
-def refresh_token(handler, access_token):
+def refresh_token(handler, encoded_access_token, SECRET_KEY):
     """A refresh token used to refresh the expired token
 
     Args:
@@ -405,18 +392,16 @@ def refresh_token(handler, access_token):
     """
 
     try:
-        # decrypt token
-        data_json = dencode_access_token(handler, access_token)
+        data_json = dencode_access_token(handler, encoded_access_token, SECRET_KEY)
 
         if not data_json:
+            logger.error()
             return
 
-        # check mac of device is same or not
         device = data_json['device']
         address = device_mac_address()
         if device != address:
-            logout()
-            response = {'error': 'Your Token is Invalid'}
+            response = {'mac-address': 'Your Token is Invalid'}
             _send_response(handler, response, 500)
             return
 
@@ -433,28 +418,24 @@ def refresh_token(handler, access_token):
         username = accounts[account][0]['username']
 
         if account == 'Admin':
-            secret = settings.ADMIN_SECRET_JWT.get_secret_value()
-            data_dir = data_path('admin')
+            SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
             email = ''
-            token, payload = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, SECRET_KEY, email, account)
 
         elif account == 'User':
-            secret = settings.USER_SECRET_JWT.get_secret_value()
-            data_dir = data_path('user')
+            SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
             email = accounts[account][0]['email']
-            token, payload = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, SECRET_KEY, email, account)
 
-        # after condition check then save in file
-        with open(data_dir, 'w') as file:
-            json.dump(token, file)
-            return payload
+        if (payload or token):
+            return payload, token
 
     except Exception as e:
         logger.error(e)
         return
 
 
-def generate_token(username, secret, email, account):
+def generate_token(username, SECRET_KEY, email, account):
     """This is used to create token used to encode
         user credentials i.e username and email
 
@@ -467,7 +448,6 @@ def generate_token(username, secret, email, account):
         str: if succesfully encoded then it return.
     """
 
-    SECRET_KEY = secret
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     EXP_DATE = timedelta(minutes=1)
     payload = {}
@@ -486,4 +466,3 @@ def generate_token(username, secret, email, account):
 
     except Exception as e:
         logger.error(e)
-        return
