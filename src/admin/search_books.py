@@ -1,36 +1,36 @@
 # third party modules
-import click
 from tabulate import tabulate
 
-# built in modules
-import time
-
 # local modules
-from src.utils import verify_jwt_token, find_keys
+from src.utils import verify_jwt_token, find_keys, _send_response, _read_json
 from src.models import db
 
 
-table = []
-
-
-def search_books() -> None:
+def search_books(handler):
     """Search Books from database and display.
     """
 
     categories = find_keys()
     if not categories:
-        click.echo('Books Not found, exiting...')
-        time.sleep(2)
+        response = {'error': 'Books is Empty, add books first'}
+        _send_response(handler, response, 500)
         return
-    input_book_name = click.prompt('Enter Book Name', type=str).lower()
-    verify = verify_jwt_token()
+
+    data = _read_json(handler)
+    book_name = data.get('book_name').lower().strip()
+
+    verify = verify_jwt_token(handler)
     if not verify:
-        time.sleep(1)
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
         return
+
+    table = []
+
     for category in categories:
         fetch_books = db.Books.find(
                     {f"{category}.Title": {
-                        "$regex": input_book_name,
+                        "$regex": book_name,
                         "$options": "i"}},
                     {category: {"$cond": {
                         "if": {"$isArray": f"${category}"},
@@ -38,7 +38,7 @@ def search_books() -> None:
                             "input": f"${category}",
                             "cond": {"$regexMatch": {
                                 "input": "$$this.Title",
-                                "regex": input_book_name,
+                                "regex": book_name,
                                 "options": "i"
                             }}
                         }},
@@ -55,13 +55,14 @@ def search_books() -> None:
                     book['Author'].capitalize(),
                     'Yes' if book['Available'] else 'No'
                 ])
-    display_books()
-    input('Press Any Key...')
+    display_books(handler, table)
 
 
-def display_books() -> None:
+def display_books(handler, table) -> None:
     """Display Books in Table view.
     """
 
     header = ['Category', 'Id', 'Title', 'Author', 'Available']
-    click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
+    _table = (tabulate(table, headers=header, tablefmt='grid'))
+    response = {'books': _table}
+    _send_response(handler, response, 200)

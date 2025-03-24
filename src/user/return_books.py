@@ -1,27 +1,24 @@
-# third party modules
-import click
-from tabulate import tabulate
-
-# built in modules
-import time
-
 # local modules
-from src.utils import find_keys, verify_jwt_token
+from src.utils import (
+    find_keys, verify_jwt_token,
+    _send_response, _read_json
+)
 from src.models import db
 
 
-def user_issue_books_list() -> bool:
+def user_issue_books_list(handler):
     """display user issued books
 
     Returns:
         bool: if user issued books found then it return True.
     """
 
-    user_details = verify_jwt_token()
+    user_details = verify_jwt_token(handler)
     username = user_details['username']
     email = user_details['email']
     category_check_merge = []
     category_key = find_keys()
+
     for category in category_key:
         check_book = db.Books.aggregate([
                 {'$unwind': f'${category}'},
@@ -63,39 +60,32 @@ def user_issue_books_list() -> bool:
                 'Author': book['Author']
             })
 
-    table = []
-    header = ['Categories', 'Id', 'Title', 'Author']
-    for book in fetch_issue_books:
-        table.append([
-            book['Category'].capitalize(),
-            book['Id'],
-            book['Title'].capitalize(),
-            book['Author'].capitalize()
-        ])
-
-    click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
-    return True
+    if fetch_issue_books:
+        return True
 
 
-def return_books() -> None:
+def return_books(handler) -> None:
     """return books which is already issued by user
 
     Returns:
         bool: if issued books not available, exit.
     """
 
-    is_books_empty = user_issue_books_list()
+    is_books_empty = user_issue_books_list(handler)
     if not is_books_empty:
-        click.echo('First Issue book, now exiting...')
-        time.sleep(2)
+        response = {'error': 'Your Issue list is empty. First Issue Book'}
+        _send_response(handler, response, 500)
         return
 
-    input_categories = click.prompt('Enter Book Category', type=str).lower()
-    input_book_id = click.prompt('Enter Book Id', type=int)
-    user_details = verify_jwt_token()
+    data = _read_json(handler)
+    category = data.get('category').lower().strip()
+    book_id = data.get('book_id')
+
+    user_details = verify_jwt_token(handler)
 
     if not user_details:
-        time.sleep(1)
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
         return
 
     username = user_details['username']
@@ -104,25 +94,32 @@ def return_books() -> None:
     # don't use other method to remove this type of nested data.
     result = db.Books.update_one(
         {
-            f'{input_categories}.Id': input_book_id,
-            f'{input_categories}.UserDetails.Username': username,
-            f'{input_categories}.UserDetails.Email': email,
+            f'{category}.Id': book_id,
+            f'{category}.UserDetails.Username': username,
+            f'{category}.UserDetails.Email': email,
         }, {
             # remove data from nested database
             '$pull': {
-                f'{input_categories}.$.UserDetails': {
+                # [elem] is used to find that particular user detail
+                f'{category}.$[elem].UserDetails': {
                     'Username': username,
                     'Email': email
                 }
             },
             # increase Available book by 1
             '$inc': {
-                f'{input_categories}.$.Available': 1
+                f'{category}.$[elem].Available': 1
             }
-        }
+        },
+        # and we need this arrary_filter when using [elem]
+        array_filters=[
+            {f'elem.Id': book_id}
+        ]
     )
 
     if result.modified_count > 0:
-        click.echo('You Successfully return books')
+        response = {'message': 'You Successfully return books'}
+        _send_response(handler, response, 200)
     else:
-        click.echo('Unable to return books, Books not found')
+        response = {'error': 'Unable to return books, Books not found.'}
+        _send_response(handler, response, 500)

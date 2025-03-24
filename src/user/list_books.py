@@ -1,12 +1,11 @@
 # third party modules
-import click
 from tabulate import tabulate
 
-# built in modules
-import time
-
 # local modules
-from src.utils import verify_jwt_token
+from src.utils import (
+    verify_jwt_token,
+    _send_response, _read_json
+)
 from src.models import db
 
 
@@ -29,7 +28,7 @@ def connect_database():
         return False
 
 
-def list_view(category, page_no):
+def list_view(handler, category, page_no):
     """Display books in table view.
 
     Args:
@@ -45,11 +44,15 @@ def list_view(category, page_no):
         {'$unwind': f'${category}'},
         {'$count': 'total'}
     ]).next()['total']
+
     page_size = 5  # Number of elements per page
     total_pages = (count_books + page_size - 1) // page_size
+
     if page_no < 1 or page_no > total_pages:
-        click.echo(f'Invalid page, Available pages up to {total_pages}')
-        return False
+        response = {'invalid': f'Invalid page, Available pages up to {total_pages}'}
+        _send_response(handler, response, 500)
+        return
+
     skip_line = (page_no - 1) * page_size     # Calculate skip value
     pipeline = [
         {'$match': {category: {'$exists': True}}},
@@ -57,6 +60,7 @@ def list_view(category, page_no):
         {'$skip': skip_line},
         {'$limit': page_size}
     ]
+
     find_books_page_1 = list(db.Books.aggregate(pipeline))
 
     header = ['Id', 'Title', 'Author', 'Available']
@@ -68,44 +72,36 @@ def list_view(category, page_no):
             extract[category]['Author'].capitalize(),
             'Yes' if extract[category]['Available'] else 'No'
         ])
-    click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
-    click.echo(f'\nPage {page_no} of {total_pages}')
+
+    _table = (tabulate(table, headers=header, tablefmt='grid'))
+    response = {
+        'message': _table,
+        'page': f'Page {page_no} of {total_pages}'
+    }
+    _send_response(handler, response, 200)
 
     global books_keys
     books_keys = []
 
 
-def list_books():
+def list_books(handler):
     """Display list of Books.
     """
 
     books_keys = connect_database()
     if not books_keys:
-        click.echo('Books list is empty, exiting...')
-        time.sleep(2)
+        response = {'error': 'Books Not found, Library is Empty'}
+        _send_response(handler, response, 500)
         return
-    category = click.prompt(
-        'Enter book category',
-        type=str,
-        default=books_keys
-    )
-    page_no = click.prompt(
-        'Enter page number',
-        type=click.IntRange(min=1),
-        default=1
-    )
-    verify = verify_jwt_token()
+
+    data = _read_json(handler)
+    category = data.get('category').lower()
+    page_no = data.get('page')
+
+    verify = verify_jwt_token(handler)
     if not verify:
-        time.sleep(1)
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
         return
-    check_true = True
-    while True:
-        check_true = list_view(category, page_no)
-        if check_true is False:
-            break
-        ask = input('next page? (yes/No)\n-> ').strip().lower()
-        if ask == 'yes':
-            page_no += 1
-            continue
-        else:
-            break
+
+    list_view(handler, category, page_no)

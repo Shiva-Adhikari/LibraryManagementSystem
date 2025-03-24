@@ -1,28 +1,27 @@
 # third party modules
-import click
 from tabulate import tabulate
 
-# built in modules
-import time
-
 # local modules
-from src.utils import verify_jwt_token, find_keys
+from src.utils import verify_jwt_token, find_keys, _send_response
 from src.models import db
 
 
-def stock_book():
+def stock_book(handler):
     """Search less than 5 Books and display.
     """
 
-    verify = verify_jwt_token()
+    verify = verify_jwt_token(handler)
     if not verify:
-        time.sleep(1)
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
         return
+
     category_key = find_keys()
     if not category_key:
-        click.echo('Books Not found, exiting...')
-        time.sleep(2)
+        response = {'error': 'Books Not found, Add book first'}
+        _send_response(handler, response, 500)
         return
+
     append_result = []
     for category in category_key:
         results = db.Books.aggregate([
@@ -53,5 +52,6 @@ def stock_book():
             result['Available']
         ])
     header = ['Category', 'Title', 'Available']
-    click.echo(tabulate(table, headers=header, tablefmt='mixed_grid'))
-    input('\nPress Any Key...')
+    _table = (tabulate(table, headers=header, tablefmt='grid'))
+    response = {'books': _table}
+    _send_response(handler, response, 200)

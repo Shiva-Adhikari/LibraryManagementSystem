@@ -1,6 +1,5 @@
 # third party modules
 import jwt
-import click
 import bcrypt
 from pydantic import ValidationError
 from password_validator import PasswordValidator  # type: ignore
@@ -11,29 +10,32 @@ import json
 from datetime import datetime, timedelta  # combine is better
 
 # local modules
-from src.utils import data_path, logger, logout
+from src.utils import (
+    data_path, logger, logout,
+    _read_json, _send_response
+)
 from src.models import AccountRegisterModel, settings, db
 
 
-def email_validation() -> str:
+def email_validation(handler, _email):
     """Validate email address
 
     Returns:
         str: if email validate then return email.
     """
 
-    while True:
-        try:
-            email = click.prompt('Enter Email', type=str)
-            email = validate_email(email, check_deliverability=False)
-            email = email.normalized
-            return email
-        except EmailNotValidError as e:
-            click.echo(str(e))
-            continue
+    try:
+        email = validate_email(_email, check_deliverability=False)
+        email = email.normalized
+        return email
+    except EmailNotValidError as e:
+
+        response = {'error': f'Email not Valid {str(e)}'}
+        _send_response(handler, response, 500)
+        return
 
 
-def password_validation(password: str):
+def password_validation(handler, password: str):
     """Validate Combination of password
 
     Args:
@@ -58,44 +60,34 @@ def password_validation(password: str):
         if validator.validate(password):
             return password
         else:
-            click.echo(
-                'Password must be 8+ characters with upper, lower, '
-                'digit, and special symbols.'
-            )
+            messages = 'Password must be 8+ characters with upper, lower, '
+            'digit, and special symbols.'
+            response = {'error': messages}
+            _send_response(handler, response, 500)
+            return
     except Exception as e:
-        click.echo(f'Password not valid: {str(e)}')
+        response = {'error': f'Password not valid: {str(e)}'}
+        _send_response(handler, response, 500)
         return None
 
 
-def confirm_password_validation() -> str:
+def confirm_password_validation(handler, _password):
     """Validate 'password' and 'confirm password'
 
     Returns:
         str: Return password
     """
 
-    while True:
-        while True:
-            password = click.prompt('Enter password', type=str)
-            password = password_validation(password)
-            if password:
-                break
+    password = password_validation(handler, _password)
+    if not password:
+        return
 
-        while True:
-            confirm_password = click.prompt('Enter confirm password', type=str)
-            confirm_password = password_validation(confirm_password)
-            if confirm_password:
-                break
-
-        if password == confirm_password:
-            # create salt
-            salt = bcrypt.gensalt(rounds=10)
-            # convert password to hash with added salt
-            password = bcrypt.hashpw(password.encode(), salt)
-            return password
-
-        else:
-            click.echo('password not match')
+    if password:
+        # create salt
+        salt = bcrypt.gensalt(rounds=10)
+        # convert password to hash with added salt
+        password = bcrypt.hashpw(password.encode(), salt)
+        return password
 
 
 def check_accounts(account, username):
@@ -122,7 +114,7 @@ def check_accounts(account, username):
         return False
 
 
-def validation(admin) -> tuple[str, str]:
+def validation(handler, admin, username, _password):
     """Validate Account
 
     Args:
@@ -132,22 +124,25 @@ def validation(admin) -> tuple[str, str]:
         tuple[str, str]: Return Credentials ( username, password )
     """
 
-    while True:
-        username = click.prompt('Enter Username', type=str).lower().strip()
-        if len(username) > 3:
-            account = check_accounts(admin, username)
-            if account:
-                click.echo("Username exits check another\n")
-                continue
+    if len(username) > 3:
+        account = check_accounts(admin, username)
+        if account:
+            response = {'error': 'Username exits check another'}
+            _send_response(handler, response, 500)
+            return
+    else:
+        response = {'error': 'username must be more than 4 letter long'}
+        check = _send_response(handler, response, 500)
+        if not check:
+            return
 
-            break
-        click.echo('username must be more than 4 letter long\n')
+    password = confirm_password_validation(handler, _password)
+    if not password:
+        return
+    return username.lower(), password
 
-    password = confirm_password_validation()
-    return username, password
 
-
-def account_register(whoami):
+def account_register(handler, whoami):
     """User and Admin account register
 
     Args:
@@ -155,7 +150,12 @@ def account_register(whoami):
     """
 
     try:
-        username, password = validation(whoami)
+        data = _read_json(handler)
+        _username = data.get('username').lower().strip()
+        _password = data.get('password')
+        _email = data.get('email', '').lower().strip()
+
+        username, password = validation(handler, whoami, _username, _password)
         id = _count_accounts(whoami)
 
         account_data = {
@@ -164,7 +164,7 @@ def account_register(whoami):
         }
 
         if whoami == 'User':
-            email = email_validation()
+            email = email_validation(handler, _email)
             if not email:
                 return
 
@@ -187,23 +187,36 @@ def account_register(whoami):
         )
 
         if add_accounts.modified_count > 0 or add_accounts.upserted_id:
-            click.echo('Register Successfully')
+            response = {
+                'message': 'Successfully Registered Account',
+                'account': username,
+            }
+            _send_response(handler, response, 200)
+            return True
 
         else:
-            logger.error('Register Failed')
-            click.echo('Register Failed')
+            logger.debug('Register Failed')
+            response = {
+                'error': 'Register Failed',
+                'account': username,
+            }
+            _send_response(handler, response, 500)
             return
 
     except ValidationError as ve:
-        click.echo(f'Invalid Input: {ve}')
+        response = {
+            'error': f'Invalid Input: {ve}',
+            'account': username,
+        }
+        _send_response(handler, response, 500)
+        return
 
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in register: {e}')
         return
 
 
-def account_login(whoami, access_token):
+def account_login(handler, whoami, access_token):
     """User or Admin account login
 
     Args:
@@ -215,8 +228,9 @@ def account_login(whoami, access_token):
         bool: if successfully written in file it return True
     """
 
-    username = click.prompt('Enter username', type=str).strip().lower()
-    password = click.prompt('Enter password', type=str)
+    data = _read_json(handler)
+    username = data.get('username').lower().strip()
+    password = data.get('password')
 
     try:
         account = db.Accounts.find_one(
@@ -232,9 +246,14 @@ def account_login(whoami, access_token):
 
             # check hash password
             if bcrypt.checkpw(password.encode(), _extract_password):
-                click.echo('Login Successfully')
+                response = {
+                    'message': 'Successfully Login Account',
+                    'account': username,
+                }
+                _send_response(handler, response, 200)
             else:
-                click.echo('please Enter correct password')
+                response = {'error': 'please enter correct password'}
+                _send_response(handler, response, 500)
                 # if password not match exit
                 return
 
@@ -254,16 +273,15 @@ def account_login(whoami, access_token):
             if not check:
                 return
 
-            refresh_token(access_token)
+            refresh_token(handler, access_token)
             return True
         else:
-            click.echo('Account not found')
+            response = {'error': 'Account not found'}
+            _send_response(handler, response, 500)
             return
-    except KeyboardInterrupt:
-        click.echo('exiting...')
+
     except Exception as e:
         logger.error(e)
-        click.echo(f'Got Exception in login: {e}')
         return
 
 
@@ -275,7 +293,6 @@ def device_mac_address():
         str: return macaddress.
     """
 
-    # mac_address = ''
     device = '/sys/class/net/enp1s0/address'
     with open(device, 'r') as file:
         mac_address = file.readline().strip()
@@ -332,7 +349,7 @@ def encode_access_token(json_text, access_token):
         return True
 
 
-def dencode_access_token(access_token):
+def dencode_access_token(handler, access_token):
     """Decode access token which is get from file
 
     Args:
@@ -364,12 +381,14 @@ def dencode_access_token(access_token):
         return decoded
 
     except jwt.exceptions.ExpiredSignatureError:
-        click.echo('Your Token is Expired, Login Again..')
+        response = {'token error': 'Your Token is Expired, Login Again.'}
+        _send_response(handler, response, 400)
         logout()
         return
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
-        click.echo('Your Token is invalid, Login Again..')
+        response = {'token error': 'Your Token is invalid, Login Again.'}
+        _send_response(handler, response, 400)
         logout()
         return
 
@@ -378,7 +397,7 @@ def dencode_access_token(access_token):
         return
 
 
-def refresh_token(access_token):
+def refresh_token(handler, access_token):
     """A refresh token used to refresh the expired token
 
     Args:
@@ -387,7 +406,7 @@ def refresh_token(access_token):
 
     try:
         # decrypt token
-        data_json = dencode_access_token(access_token)
+        data_json = dencode_access_token(handler, access_token)
 
         if not data_json:
             return
@@ -397,7 +416,8 @@ def refresh_token(access_token):
         address = device_mac_address()
         if device != address:
             logout()
-            click.echo('Your Token is Invalid')
+            response = {'error': 'Your Token is Invalid'}
+            _send_response(handler, response, 500)
             return
 
         # check whose access token is it (admin/user)
@@ -416,18 +436,18 @@ def refresh_token(access_token):
             secret = settings.ADMIN_SECRET_JWT.get_secret_value()
             data_dir = data_path('admin')
             email = ''
-            token = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, secret, email, account)
 
         elif account == 'User':
             secret = settings.USER_SECRET_JWT.get_secret_value()
             data_dir = data_path('user')
             email = accounts[account][0]['email']
-            token = generate_token(username, secret, email, account)
+            token, payload = generate_token(username, secret, email, account)
 
         # after condition check then save in file
         with open(data_dir, 'w') as file:
             json.dump(token, file)
-            return True
+            return payload
 
     except Exception as e:
         logger.error(e)
@@ -462,7 +482,7 @@ def generate_token(username, secret, email, account):
 
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         if token:
-            return token
+            return token, payload
 
     except Exception as e:
         logger.error(e)

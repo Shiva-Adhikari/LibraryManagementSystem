@@ -12,6 +12,8 @@ from src.utils.utils_ import (
     validate_access_token,
     token_blacklist,
     get_access_token,
+    count_books,
+    validate_user
 )
 from src.utils.mongo import (
     _find_books,
@@ -19,6 +21,10 @@ from src.utils.mongo import (
     _delete_books,
     _update_books
 )
+from src.utils.http_server import (
+    _send_response, _read_json
+)
+
 
 __all__ = [
     'data_path',
@@ -34,6 +40,10 @@ __all__ = [
     'validate_access_token',
     'token_blacklist',
     'get_access_token',
+    'count_books',
+    'validate_user',
 
-    '_insert_books', '_find_books', '_delete_books', '_update_books'
+    '_insert_books', '_find_books', '_delete_books', '_update_books',
+
+    '_send_response', '_read_json'
 ]

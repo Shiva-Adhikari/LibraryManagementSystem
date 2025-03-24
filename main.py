@@ -1,325 +1,79 @@
-# third party modules
-from concurrent.futures import ThreadPoolExecutor
-
 # built in modules
-import time
-import click
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # local modules
-from src.user import list_books
-from src.user import issue_books
-from src.user import user_login
-from src.user import return_books
-from src.user import user_register
-from src.admin import add_books
-from src.admin import stock_book
-from src.admin import search_books
-from src.admin import update_books
-from src.admin import delete_books
-from src.admin import admin_login
-from src.admin import admin_register
-from src.utils import logout
-from src.utils import tqdm_progressbar
-from src.utils import verify_jwt_token
-from src.utils import get_user_login_details
-from src.utils import get_admin_login_details
-from src.utils import remove_user_login_details
-from src.utils import remove_admin_login_details
-from src.utils import validate_access_token
-from src.utils import token_blacklist
-
-
-# global variable
-logged_as_user = get_user_login_details()
-logged_as_admin = get_admin_login_details()
-
-
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Register Admin Account\n2. Login Admin Account\n0. Exit\n',
-    type=int
+from src.admin import (
+    admin_register, admin_login,
+    add_books, delete_books, update_books, search_books, stock_book
 )
-def admin_accounts(choose: int):
-    click.clear()
-    global logged_as_user
-    global logged_as_admin
-    match choose:
-        case 1:
-            if logged_as_user:
-                click.echo('You are a USER, unable to register as Admin')
-            else:
-                admin_register()
-
-        case 2:
-            if logged_as_admin or logged_as_user:
-                click.echo('You are already login. please logout first.')
-            else:
-                check_login = admin_login()
-                if check_login:
-                    remove_user_login_details()
-                    logged_as_admin = True
-                    logged_as_user = False
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    time.sleep(2)
-    click.clear()
-    library()
-
-
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Register User Account\n2. Login User Account\n0. Exit\n',
-    type=int
+from src.user import (
+    user_register, user_login,
+    issue_books, return_books, list_books
 )
-def user_accounts(choose: int):
-    global logged_as_admin
-    global logged_as_user
-    match choose:
-        case 1:
-            if logged_as_admin:
-                user_register()
-            else:
-                click.echo('You are not a Admin User to Create Account')
-
-        case 2:
-            if logged_as_user or logged_as_admin:
-                click.echo('You are already login. please logout first.')
-            else:
-                check_login = user_login()
-                if check_login:
-                    remove_admin_login_details()
-                    logged_as_user = True
-                    logged_as_admin = False
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    time.sleep(2)
-    click.clear()
-    library()
+from src.utils import _send_response
+from src.models import mongo_config, http_server
 
 
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Create Books\n2. Search Books\n3. Stock Books\n'
-    '4. Update Books\n5. Remove Books\n0. Exit\n',
-    type=int
-)
-def admin_list_books(choose: int):
-    global logged_as_admin
-    global logged_as_user
-    match choose:
-        case 1:
-            verify = verify_jwt_token()
-            if verify:
-                add_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 2:
-            verify = verify_jwt_token()
-            if verify:
-                search_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 3:
-            verify = verify_jwt_token()
-            if verify:
-                stock_book()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 4:
-            verify = verify_jwt_token()
-            if verify:
-                update_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 5:
-            verify = verify_jwt_token()
-            if verify:
-                delete_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    verify_jwt_token()
-    time.sleep(1)
-    click.clear()
-    library()
-
-
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Issue Books\n2. List Books\n3. Return Books\n0. Exit\n',
-    type=int
-)
-def user_list_books(choose: int):
-    global logged_as_admin
-    global logged_as_user
-    match choose:
-        case 1:
-            verify = verify_jwt_token()
-            if verify:
-                issue_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 2:
-            verify = verify_jwt_token()
-            if verify:
-                list_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 3:
-            verify = verify_jwt_token()
-            if verify:
-                return_books()
-            else:
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    verify_jwt_token()
-    time.sleep(1)
-    click.clear()
-    library()
-
-
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Admin Account\n2. User Account\n3. LogOut\n0. Exit\n',
-    type=int
-)
-def show_accounts(choose: int):
-    """Show Admin, User Accounts"""
-    global logged_as_admin
-    global logged_as_user
-    click.clear()
-    match choose:
-        case 1:
-            admin_accounts()
-
-        case 2:
-            user_accounts()
-
-        case 3:
-            token = validate_access_token()
-            if not token:
-                token_blacklist()
-            logout()
-            logged_as_user = False
-            logged_as_admin = False
-            click.echo('Logging out...')
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    time.sleep(2)
-    click.clear()
-    library()
-
-
-@click.command()
-@click.option(
-    '--choose',
-    prompt='1. Manage Account\n2. View Books\n0. Exit\n',
-    type=int
-)
-def library(choose: int):
-    click.clear()
-    global logged_as_admin
-    global logged_as_user
-    match choose:
-        case 1:
-            show_accounts()
-
-        case 2:
-            verify = verify_jwt_token()
-            if verify:
-                if logged_as_user:
-                    user_list_books()
-                elif logged_as_admin:
-                    admin_list_books()
-
-            else:
-                click.echo(
-                        'You are not loggedin. Please login first'
-                    )
-                logged_as_admin = False
-                logged_as_user = False
-
-        case 0:
-            exit()
-
-        case _:
-            click.echo("Invalid Input")
-
-    time.sleep(2)
-    click.clear()
-    library()
-
-
-def run():
-    click.clear()
-    tqdm_progressbar()
-    click.clear()
-    library()
-
-
-def main():
-    global logged_as_user
-    global logged_as_admin
-    with ThreadPoolExecutor() as executor:
-        executor.submit(run)
-        verify = executor.submit(verify_jwt_token)
-        if verify.result():
-            is_it = validate_access_token()
-            if is_it:
-                logout()
-                logged_as_user = False
-                logged_as_admin = False
-
+class MainServer(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == '/api/admin/register':
+            admin_register(self)
+        elif self.path == '/api/admin/login':
+            admin_login(self)
+        elif self.path == '/api/user/register':
+            user_register(self)
+        elif self.path == '/api/user/login':
+            user_login(self)
+        elif self.path == '/api/admin/add-books':
+            add_books(self)
+        elif self.path == '/api/admin/search-books':
+            search_books(self)
+        elif self.path == '/api/admin/stock-books':
+            stock_book(self)
+        elif self.path == '/api/user/issue-books':
+            issue_books(self)
+        elif self.path == '/api/user/list-books':
+            list_books(self)
         else:
-            logged_as_user = False
-            logged_as_admin = False
+            response = {'error': 'mistake is in path, /api/account/?'}
+            _send_response(self, response, 404)
+
+    def do_DELETE(self):
+        if self.path == '/api/admin/delete-books':
+            delete_books(self)
+        else:
+            response = {'error': 'mistake is in path, /api/account/?'}
+            _send_response(self, response, 404)
+
+    def do_PUT(self):
+        if self.path == '/api/admin/update-books':
+            update_books(self)
+        elif self.path == '/api/user/return-books':
+            return_books(self)
+        else:
+            response = {'error': 'mistake is in path, /api/account/?'}
+            _send_response(self, response, 404)
+
+
+class Server:
+    def __init__(self):
+        self.HOST = mongo_config.HOST
+        self.PORT = http_server.HTTPSERVER_PORT
+
+    def __enter__(self):
+        self.server = HTTPServer((self.HOST, self.PORT), MainServer)
+        print("Server is Running...")
+        return self.server
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.server:
+            self.server.server_close()
+            print('Server Stopped.')
 
 
 if __name__ == '__main__':
-    main()
+    with Server() as server:
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print('server interrupted by user.')

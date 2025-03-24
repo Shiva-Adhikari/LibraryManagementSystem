@@ -62,3 +62,17 @@ class MongoConfig(BaseSettings):
 mongo_config = MongoConfig()  # type: ignore
 client: MongoClient = MongoClient(mongo_config.HOST, mongo_config.PORT)
 db = client[mongo_config.DB]
+
+
+class HttpServer(BaseSettings):
+    # HttpServer
+    HTTPSERVER_PORT: int
+
+    class Config:
+        env_file = env_path
+        env_file_encoding = 'utf-8'
+        extra = 'allow'
+
+
+# Instance
+http_server = HttpServer()

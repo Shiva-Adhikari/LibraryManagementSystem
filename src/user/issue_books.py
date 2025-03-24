@@ -1,61 +1,71 @@
-# third party modules
-import click
-
 # built in modules
-import time
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 # local modules
-from src.utils import logger, find_keys, verify_jwt_token
+from src.utils import (
+    logger, find_keys, verify_jwt_token, validate_user,
+    _send_response, _read_json
+)
 from src.models import db
 
 
-def issue_books() -> None:
+def issue_books(handler) -> None:
     """User issue book.
     """
 
     # check if books is empty or not
     check_books = find_keys()
     if not check_books:
-        click.echo('Books Not found, exiting...')
-        time.sleep(2)
+        response = {'error': 'Books Not found, Library is Empty'}
+        _send_response(handler, response, 500)
         return
-    # user input
-    input_categories = click.prompt('Enter Book Category', type=str).lower()
-    input_book_name = click.prompt('Enter Book Name', type=str).lower()
-    to_date = click.prompt('For how many days you need', type=int)
+
+    data = _read_json(handler)
+    category = data.get('category').lower().strip()
+    book_name = data.get('book_name').lower().strip()
+    to_date = data.get('days')
 
     try:
-        input_categories = input_categories.lower()
         issue_date = datetime.now()
         warning_to_date = to_date - 3
         due_warning = issue_date + timedelta(days=warning_to_date)
         due_date = issue_date + timedelta(days=to_date)
 
-        user_detail = verify_jwt_token()
+        user_detail = verify_jwt_token(handler)
         if not user_detail:
-            time.sleep(1)
+            response = {'error': 'Data is Discarded, please login first.'}
+            _send_response(handler, response, 500)
             return
 
         username = user_detail['username']
         email = user_detail['email']
 
-        does_exist = validate_user(input_categories, input_book_name, username)
+        # call validate_user from utils_
+        does_exist = validate_user(category, book_name, username)
         if does_exist:
-            click.echo('Book is already Issue, unable to issue again.')
-            time.sleep(2)
+            response = {'error': 'Book already Issued, unable to issue again'}
+            _send_response(handler, response, 500)
+            return
+
+        # Ensure book is available before issuing
+        book_info = db.Books.find_one(
+            {f'{category}.Title': book_name, f'{category}.Available': {"$gt": 0}},
+            {f'{category}.$': 1}
+        )
+        if not book_info:
+            response = {'error': 'Book not available or not found'}
+            _send_response(handler, response, 500)
             return
 
         result = db.Books.update_one(
-            {f'{input_categories}.Title': input_book_name},
+            {f'{category}.Title': book_name},
             {
                 '$inc': {
-                    f'{input_categories}.$.Available': -1
+                    f'{category}.$.Available': -1
                 },
 
                 '$push': {
-                    f'{input_categories}.$.UserDetails':
+                    f'{category}.$.UserDetails':
                         {
                             'Username': username,
                             'Email': email,
@@ -70,48 +80,13 @@ def issue_books() -> None:
         )
 
         if result.modified_count > 0:
-            click.echo('You got book')
+            response = {'message': 'You got book.'}
+            _send_response(handler, response, 200)
         else:
-            click.echo('Unable to get book, Try Again.')
+            response = {'error': 'Unable to get book, Try Again.'}
+            _send_response(handler, response, 500)
 
     except Exception as e:
         logger.error(e)
-        click.echo(f"got exception as {str(e)}")
-
-
-def validate_user(input_categories, input_book_name, username):
-    """check book is available or not in Database
-
-    Args:
-        input_categories (str): Book Category
-        input_book_name (str): user input Book Name
-        username (str): user username
-
-    Returns:
-        bool: return True if Book is found.
-    """
-
-    check_user = db.Books.aggregate([
-        {'$unwind': f'${input_categories}'},
-        {'$unwind': f'${input_categories}.UserDetails'},
-        {
-            '$match': {
-                f'{input_categories}.UserDetails.Username': username,
-                f'{input_categories}.Title': input_book_name
-            }
-        }, {
-            '$project': {
-                '_id': 0,
-                'username': f'${input_categories}.UserDetails.Username'
-            }
-        }
-    ])
-
-    try:
-        is_data = list(check_user)
-        if is_data and is_data[0]:
-            return True
-        return False
-
-    except IndexError:
-        return False
+        response = {'exception': f'Unable to get book, Try Again. as {str(e)}'}
+        _send_response(handler, response, 500)
