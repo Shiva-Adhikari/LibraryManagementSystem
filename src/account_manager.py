@@ -81,12 +81,11 @@ def confirm_password_validation(handler, _password):
     if not password:
         return
 
-    if password:
-        # create salt
-        salt = bcrypt.gensalt(rounds=10)
-        # convert password to hash with added salt
-        password = bcrypt.hashpw(password.encode(), salt)
-        return password
+    # create salt
+    salt = bcrypt.gensalt(rounds=10)
+    # convert password to hash with added salt
+    password = bcrypt.hashpw(password.encode(), salt)
+    return password
 
 
 def check_accounts(account, username):
@@ -262,7 +261,8 @@ def account_login(handler, whoami, SECRET_KEY):
                 logger.error()
                 return
 
-            _, _refresh_token = refresh_token(handler, _access_token, SECRET_KEY)
+            _, _refresh_token = refresh_token(
+                handler, _access_token, SECRET_KEY)
             if not _refresh_token:
                 logger.error()
                 return
@@ -342,7 +342,7 @@ def encode_access_token(handler, json_text, SECRET_KEY):
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
 
     encrypted_text = jwt.encode(json_text, SECRET_KEY, algorithm=ALGORITHM)
-    
+
     if encrypted_text:
         return encrypted_text
 
@@ -392,10 +392,11 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
     """
 
     try:
-        data_json = dencode_access_token(handler, encoded_access_token, SECRET_KEY)
+        data_json = dencode_access_token(
+            handler, encoded_access_token, SECRET_KEY)
 
         if not data_json:
-            logger.error()
+            logger.error('unable to decode_access_token')
             return
 
         device = data_json['device']
@@ -420,12 +421,14 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
         if account == 'Admin':
             SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
             email = ''
-            token, payload = generate_token(username, SECRET_KEY, email, account)
+            token, payload = generate_token(
+                username, SECRET_KEY, email, account)
 
         elif account == 'User':
             SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
             email = accounts[account][0]['email']
-            token, payload = generate_token(username, SECRET_KEY, email, account)
+            token, payload = generate_token(
+                username, SECRET_KEY, email, account)
 
         if (payload or token):
             return payload, token
@@ -449,7 +452,7 @@ def generate_token(username, SECRET_KEY, email, account):
     """
 
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
-    EXP_DATE = timedelta(minutes=1)
+    EXP_DATE = timedelta(days=5)
     payload = {}
 
     try:

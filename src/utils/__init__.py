@@ -2,7 +2,8 @@ from src.utils.utils_ import (
     logger,
     find_keys,
     count_books,
-    validate_user
+    validate_user,
+    _verify_refresh_token
 )
 from src.utils.mongo import (
     _find_books,
@@ -20,6 +21,7 @@ __all__ = [
     'find_keys',
     'count_books',
     'validate_user',
+    '_verify_refresh_token',
 
     '_insert_books', '_find_books', '_delete_books', '_update_books',
 

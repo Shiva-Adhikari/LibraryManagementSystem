@@ -1,6 +1,3 @@
-# third party modules
-from tabulate import tabulate
-
 # local modules
 from src.utils import (
     _send_response, _read_json, _verify_refresh_token

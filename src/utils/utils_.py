@@ -4,27 +4,10 @@ import logging
 
 # built in modules
 import os
-import json
 
 # local modules
 from src.models import settings, db
-from src.utils.http_server import _send_response
-
-
-def data_path(file_name):
-    """get file from directory
-
-    Args:
-        file_name (str): user or admin or access_token file
-
-    Returns:
-        str: return filename.
-    """
-
-    data_dir = os.path.abspath('data')
-    os.makedirs(data_dir, exist_ok=True)
-    data_path = os.path.join(data_dir, f'{file_name}.json')
-    return data_path
+from .http_server import _send_response, _input_access_token
 
 
 def logging_module():
@@ -45,32 +28,12 @@ def logging_module():
         filename=log_path,
         filemode='a'
     )
-    logger = logging.getLogger(__name__)
-    return logger
+
+    return logging.getLogger(__name__)
 
 
 # Instance
 logger = logging_module()
-
-
-def get_user_login_details():
-    """get user login details from file
-
-    Returns:
-        str: return user file details.
-    """
-
-    # save user login session
-    details = data_path('user')
-    if not os.path.exists(details):
-        return False
-    try:
-        with open(details) as file:
-            get_details = json.load(file)
-            if get_details:
-                return get_details
-    except json.decoder.JSONDecodeError:
-        return False
 
 
 def decode_token(handler, token, SECRET_KEY, whoami):
@@ -87,6 +50,7 @@ def decode_token(handler, token, SECRET_KEY, whoami):
     # SECRET_KEY = SECRET
     ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
     try:
+        # this is used by professional, remember this for future
         decoded = jwt.decode(
             token,
             SECRET_KEY,
@@ -103,16 +67,14 @@ def decode_token(handler, token, SECRET_KEY, whoami):
             jwt.exceptions.ExpiredSignatureError,
             jwt.exceptions.InvalidTokenError, jwt.DecodeError):
 
+        from src import refresh_token
+
         # # if token is expired then it call refresh token to extend time.
-        from .http_server import _input_access_token
-        from src.account_manager import refresh_token
 
         input_access_token = _input_access_token(handler)
-
         if not input_access_token:
             return
 
-        # how to know user or admin secret key
         if whoami == 'Admin':
             SECRET = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
         elif whoami == 'User':
@@ -138,6 +100,7 @@ def _verify_refresh_token(handler, whoami):
 
     token = _input_refresh_token(handler)
     if not token:
+        logger.error('token not found from header')
         return
 
     if whoami == 'Admin':
@@ -236,6 +199,4 @@ def validate_user(category, book_name, username):
         }
     ])
 
-    is_data = list(check_user)
-
-    return bool(is_data)
+    return bool(list(check_user))
