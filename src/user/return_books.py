@@ -1,7 +1,7 @@
 # local modules
 from src.utils import (
-    find_keys, verify_jwt_token,
-    _send_response, _read_json
+    find_keys,
+    _send_response, _read_json, _verify_refresh_token
 )
 from src.models import db
 
@@ -13,7 +13,13 @@ def user_issue_books_list(handler):
         bool: if user issued books found then it return True.
     """
 
-    user_details = verify_jwt_token(handler)
+    # user_details = verify_jwt_token(handler)
+    user_details = _verify_refresh_token(handler, whoami='User')
+    if not user_details:
+        response = {'error': 'Data is Discarded, please login first.'}
+        _send_response(handler, response, 500)
+        return
+
     username = user_details['username']
     email = user_details['email']
     category_check_merge = []
@@ -81,8 +87,7 @@ def return_books(handler) -> None:
     category = data.get('category').lower().strip()
     book_id = data.get('book_id')
 
-    user_details = verify_jwt_token(handler)
-
+    user_details = _verify_refresh_token(handler, whoami='User')
     if not user_details:
         response = {'error': 'Data is Discarded, please login first.'}
         _send_response(handler, response, 500)

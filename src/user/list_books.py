@@ -3,8 +3,7 @@ from tabulate import tabulate
 
 # local modules
 from src.utils import (
-    verify_jwt_token,
-    _send_response, _read_json
+    _send_response, _read_json, _verify_refresh_token
 )
 from src.models import db
 
@@ -22,10 +21,9 @@ def connect_database():
     fetch_books = db.Books.find({}, {'_id': 0})
     for fetch_keys in fetch_books:
         books_keys.append(list(fetch_keys.keys()))
+
     if books_keys:
         return books_keys
-    else:
-        return False
 
 
 def list_view(handler, category, page_no):
@@ -63,19 +61,17 @@ def list_view(handler, category, page_no):
 
     find_books_page_1 = list(db.Books.aggregate(pipeline))
 
-    header = ['Id', 'Title', 'Author', 'Available']
     table = []
     for extract in find_books_page_1:
-        table.append([
-            extract[category]['Id'],
-            extract[category]['Title'].capitalize(),
-            extract[category]['Author'].capitalize(),
-            'Yes' if extract[category]['Available'] else 'No'
-        ])
+        table.append({
+            'Id': extract[category]['Id'],
+            'Book Name': extract[category]['Title'].capitalize(),
+            'Author': extract[category]['Author'].capitalize(),
+            'Available': 'Yes' if extract[category]['Available'] else 'No'
+        })
 
-    _table = (tabulate(table, headers=header, tablefmt='grid'))
     response = {
-        'message': _table,
+        'Book List': table,
         'page': f'Page {page_no} of {total_pages}'
     }
     _send_response(handler, response, 200)
@@ -98,8 +94,8 @@ def list_books(handler):
     category = data.get('category').lower()
     page_no = data.get('page')
 
-    verify = verify_jwt_token(handler)
-    if not verify:
+    user_detail = _verify_refresh_token(handler, whoami='User')
+    if not user_detail:
         response = {'error': 'Data is Discarded, please login first.'}
         _send_response(handler, response, 500)
         return
