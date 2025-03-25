@@ -1,8 +1,5 @@
-# third party modules
-from tabulate import tabulate
-
 # local modules
-from src.utils import verify_jwt_token, find_keys, _send_response
+from src.utils import find_keys, _send_response, _verify_refresh_token
 from src.models import db
 
 
@@ -10,7 +7,7 @@ def stock_book(handler):
     """Search less than 5 Books and display.
     """
 
-    verify = verify_jwt_token(handler)
+    verify = _verify_refresh_token(handler, whoami='Admin')
     if not verify:
         response = {'error': 'Data is Discarded, please login first.'}
         _send_response(handler, response, 500)
@@ -46,12 +43,11 @@ def stock_book(handler):
             })
     table = []
     for result in append_result:
-        table.append([
-            result['Category'].capitalize(),
-            result['Title'].capitalize(),
-            result['Available']
-        ])
-    header = ['Category', 'Title', 'Available']
-    _table = (tabulate(table, headers=header, tablefmt='grid'))
-    response = {'books': _table}
+        table.append({
+            'Category': result['Category'].capitalize(),
+            'Title': result['Title'].capitalize(),
+            'Available': result['Available']
+        })
+
+    response = {'Books List': table}
     _send_response(handler, response, 200)

@@ -1,10 +1,10 @@
 # local modules
 from src.utils import (
-    logger, find_keys, verify_jwt_token,
+    logger, find_keys,
     _find_books, _update_books
 )
 from src.models import BookCategories
-from src.utils import _read_json, _send_response
+from src.utils import _read_json, _send_response, _verify_refresh_token
 
 
 def update_books(handler):
@@ -33,7 +33,7 @@ def update_books(handler):
             'Available': new_book.get('available')
         }
 
-        verify = verify_jwt_token(handler)
+        verify = _verify_refresh_token(handler, whoami='Admin')
         if not verify:
             response = {'error': 'Data is Discarded, please login first.'}
             _send_response(handler, response, 500)

@@ -1,6 +1,6 @@
 # local modules
-from src.utils import verify_jwt_token, find_keys, _delete_books
-from src.utils import _send_response, _read_json
+from src.utils import find_keys, _delete_books
+from src.utils import _send_response, _read_json, _verify_refresh_token
 
 
 def delete_books(handler):
@@ -18,8 +18,7 @@ def delete_books(handler):
     category = data.get('category').lower().strip()
     book_name = data.get('book_name').lower().strip()
 
-    # verify identity
-    verify = verify_jwt_token(handler)
+    verify = _verify_refresh_token(handler, whoami='Admin')
     if not verify:
         response = {'error': 'Data is Discarded, please login first.'}
         _send_response(handler, response, 500)

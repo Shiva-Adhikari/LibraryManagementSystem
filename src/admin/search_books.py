@@ -1,8 +1,8 @@
-# third party modules
-from tabulate import tabulate
-
 # local modules
-from src.utils import verify_jwt_token, find_keys, _send_response, _read_json
+from src.utils import (
+    find_keys, _send_response, _read_json,
+    _verify_refresh_token
+)
 from src.models import db
 
 
@@ -19,7 +19,7 @@ def search_books(handler):
     data = _read_json(handler)
     book_name = data.get('book_name').lower().strip()
 
-    verify = verify_jwt_token(handler)
+    verify = _verify_refresh_token(handler, whoami='Admin')
     if not verify:
         response = {'error': 'Data is Discarded, please login first.'}
         _send_response(handler, response, 500)
@@ -48,21 +48,15 @@ def search_books(handler):
         for extract in fetch_books:
             keys = next(iter(extract.keys() - {'_id'}))
             for book in extract[keys]:
-                table.append([
-                    keys.capitalize(),
-                    book['Id'],
-                    book['Title'].capitalize(),
-                    book['Author'].capitalize(),
-                    'Yes' if book['Available'] else 'No'
-                ])
-    display_books(handler, table)
+                table.append({
+                    'Category': keys.capitalize(),
+                    'Id': book['Id'],
+                    'Book Name': book['Title'].capitalize(),
+                    'Author': book['Author'].capitalize(),
+                    'Available': 'Yes' if book['Available'] else 'No'
+                })
 
-
-def display_books(handler, table) -> None:
-    """Display Books in Table view.
-    """
-
-    header = ['Category', 'Id', 'Title', 'Author', 'Available']
-    _table = (tabulate(table, headers=header, tablefmt='grid'))
-    response = {'books': _table}
+    response = {
+        'Book List': table
+    }
     _send_response(handler, response, 200)

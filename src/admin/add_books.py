@@ -1,7 +1,7 @@
 # local modules
 from src.utils import (
-    logger, _insert_books, verify_jwt_token, count_books,
-    _read_json, _send_response
+    logger, _insert_books, count_books,
+    _read_json, _send_response, _verify_refresh_token
 )
 from src.models import BookCategories
 
@@ -47,7 +47,7 @@ def add_books(handler):
             no_books.append(n_books)    # append in dictionary
 
     try:
-        verify = verify_jwt_token(handler)
+        verify = _verify_refresh_token(handler, whoami='Admin')
         if not verify:
             response = {'message': 'Data is Discarded, please login first.'}
             _send_response(handler, response, 500)
