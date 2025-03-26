@@ -16,12 +16,12 @@ def _insert_books(department_name: str, new_books: list[int | str]):
 
     try:
         is_exists = f'{department_name}__exists'
-        books = Books.objects(**{is_exists: True}).update_one(
+
+        return Books.objects(**{is_exists: True}).update_one(
             **{f'push_all__{department_name}': new_books},
             upsert=True
             )
-        if books:
-            return books
+
     except Exception as e:
         logger.error(f'Failed to insert books {e}', exc_info=True)
         print(f'Failed to insert books...: {e}')
@@ -37,14 +37,12 @@ def _delete_books(department_name: str, book_name: str):
     Returns:
         int: it return 1, mean successfully deleted book
     """
-    is_exists = Books.objects(**{
+    return Books.objects(**{
         f'{department_name}__exists': True,
         f'{department_name}__match': {'Title': book_name}
         }).update_one(
         **{f'pull__{department_name}': {'Title': book_name}}
         )
-    if is_exists:
-        return is_exists
 
 
 def _find_books(department_name: str, book_name: str):
@@ -57,37 +55,38 @@ def _find_books(department_name: str, book_name: str):
     Returns:
         int: it return 1, mean successfully find book
     """
-    is_exists = Books.objects(**{
+    return Books.objects(**{
         f'{department_name}__exists': True,
         f'{department_name}__match': {'Title': book_name}
     })
-    if is_exists:
-        return is_exists
 
 
 def _update_books(
         department_name: str, old_book_name: str, new_books: BookCategories):
-    """to update books
 
-    Args:
-        department_name (str): book category
-        old_book_name (str): previous book name
-        new_books (_type_): BookCategory Model Instance
-
-    Returns:
-        int: 1 mean successfully updated book
-    """
-    is_exists = Books.objects(**{
+    books = Books.objects(**{
         f'{department_name}__exists': True,
         f'{department_name}__match': {'Title': old_book_name}
-    }).update_one(
-        __raw__={
-            '$set': {
-                f'{department_name}.$.Title': new_books.Title,
-                f'{department_name}.$.Author': new_books.Author,
-                f'{department_name}.$.Available': new_books.Available
-            }
-        }
-    )
-    if is_exists:
-        return is_exists
+    }).first()
+
+    if not books:
+        return
+
+    current_books = getattr(books, department_name, [])
+
+    update_books = [
+        {
+            'Id': book.get('Id', new_books.Id),
+            'Title': new_books.Title if book.get('Title', '').lower() == old_book_name.lower() else book['Title'],
+            'Author': new_books.Author if book.get('Title', '').lower() == old_book_name.lower() else book['Author'],
+            'Available': new_books.Available if book.get('Title', '').lower() == old_book_name.lower() else book['Available'],
+        } for book in current_books
+    ]
+
+    setattr(books, department_name, update_books)
+
+    try:
+        books.save()
+        return True
+    except Exception:
+        return
