@@ -1,70 +1,40 @@
 # local modules
-from src.utils import (
-    logger, _insert_books, count_books,
-    _read_json, _send_response, _verify_refresh_token
-)
-from src.models import BookCategories
+from src.utils import _read_json
+from src.models import Department, Books_
 
 
 def add_books(handler):
     """Add book in database
 
     Args:
-        category (str): Book type like (BCA, BBA, BBS)
-        num_books (int): How many books to add in Library.
+        handler: The request handler containing the JSON data
     """
 
     data = _read_json(handler)
 
-    # categories: dict[int | str, list[int | str]] = {}
-    categories = {}
-    category = ''
-    no_books = []
+    for category_name, book_list in data.items():
+        # check if department exists
+        existing_department = Department.objects(name=category_name).first()
 
-    # count books
-    auto_id = 0
-
-    for category, categories in data.items():
-        for books in categories:
-            auto_id = len(no_books)
-            # call count_books function from utils_
-            id = count_books(auto_id, category)
-
-            book_info = {
-                'Id': id,
-                'Title': books['Title'].lower(),
-                'Author': books['Author'].lower(),
-                'Available': books['Available']
-            }
-
-            # check in model
-            n_books = BookCategories(
-                Id=book_info['Id'],
-                Title=book_info['Title'],
-                Author=book_info['Author'],
-                Available=book_info['Available'],
-            ).to_mongo()
-            no_books.append(n_books)    # append in dictionary
-
-    try:
-        verify = _verify_refresh_token(handler, whoami='Admin')
-        if not verify:
-            response = {'message': 'Data is Discarded, please login first.'}
-            _send_response(handler, response, 500)
-            return
-
-        # call function from utils/mongo
-        check_book = _insert_books(category, no_books)
-        if check_book:
-            response = {'message': 'Books successfully added'}
-            _send_response(handler, response, 200)
+        if existing_department:
+            # if exists just add book to it
+            department = existing_department
         else:
-            logger.debug('Failed to add books')
-            response = {'error': 'Failed to add books'}
-            _send_response(handler, response, 500)
-    except Exception as e:
-        logger.error(
-            f'Failed to save books: {str(e)}',
-            exc_info=True)
-        response = {'exception': 'Failed to add books'}
-        _send_response(handler, response, 500)
+            # create new department
+            department = Department(name=category_name, books=[])
+            department.save()
+
+        # now add each book and update the department
+        for book_data in book_list:
+            new_book = Books_(
+                title=book_list['title'].lower(),
+                author=book_list['author'].lower(),
+                available=book_list['available']
+            ).save()
+
+            # add this book in the department's books list
+            department.books.append(new_book)
+
+        # save the department with all new books
+        department.save()
+        print('Added Books Successfully')
