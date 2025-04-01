@@ -27,9 +27,9 @@ def add_books(handler):
         # now add each book and update the department
         for book_data in book_list:
             new_book = Books_(
-                title=book_list['title'].lower(),
-                author=book_list['author'].lower(),
-                available=book_list['available']
+                title=book_data['title'].lower().strip(),
+                author=book_data['author'].lower().strip(),
+                available=book_data['available']
             ).save()
 
             # add this book in the department's books list
