@@ -1,6 +1,6 @@
 # local modules
-from src.utils import _read_json
 from src.models import Department, Books_
+from src.utils import _read_json, _send_response
 
 
 def add_books(handler):
@@ -37,4 +37,8 @@ def add_books(handler):
 
         # save the department with all new books
         department.save()
-        print('Added Books Successfully')
+        response = {
+            'status': 'success',
+            'message': 'Added Books Successfully'
+        }
+        _send_response(handler, response, 500)
