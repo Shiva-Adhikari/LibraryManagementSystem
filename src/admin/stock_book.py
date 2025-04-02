@@ -1,53 +1,39 @@
 # local modules
-from src.utils import find_keys, _send_response, _verify_refresh_token
-from src.models import db
+from src.utils import _send_response
+from src.models import Books_, Department
 
 
 def stock_book(handler):
-    """Search less than 5 Books and display.
-    """
+    """Search for books with less than 5 available copies
+    and find their department."""
 
-    verify = _verify_refresh_token(handler, whoami='Admin')
-    if not verify:
-        response = {'error': 'Data is Discarded, please login first.'}
-        _send_response(handler, response, 500)
-        return
+    low_stock_book = Books_.objects(available__lt=5)
 
-    category_key = find_keys()
-    if not category_key:
-        response = {'error': 'Books Not found, Add book first'}
-        _send_response(handler, response, 500)
-        return
+    if not low_stock_book:
+        response = {
+            'status': 'error',
+            'message': 'books not found with low stock'
+        }
+        return _send_response(handler, response, 500)
 
-    append_result = []
-    for category in category_key:
-        results = db.Books.aggregate([
-            {'$unwind': f'${category}'},
-            {
-                '$match': {
-                    f'{category}.Available': {'$lt': 5}
-                }
-            }, {
-                '$project': {
-                    'Title': f'${category}.Title',
-                    'Available': f'${category}.Available',
-                    '_id': 0
-                }
-            }
-        ])
-        for result in results:
-            append_result.append({
-                'Category': category,
-                'Title': result['Title'],
-                'Available': result['Available'],
-            })
-    table = []
-    for result in append_result:
-        table.append({
-            'Category': result['Category'].capitalize(),
-            'Title': result['Title'].capitalize(),
-            'Available': result['Available']
-        })
+    books_list = []
+    for book in low_stock_book:
+        book_info = {
+            'title': book.title.capitalize(),
+            'author': book.author.capitalize(),
+            'available': book.available
+        }
 
-    response = {'Books List': table}
-    _send_response(handler, response, 200)
+        department = Department.objects(books=book.id).first()
+        if department:
+            book_info['Department'] = department.name.capitalize()
+        else:
+            book_info['Department'] = 'Unknown'
+
+        books_list.append(book_info)
+
+    response = {
+        'status': 'success',
+        'message': books_list
+    }
+    return _send_response(handler, response, 200)
