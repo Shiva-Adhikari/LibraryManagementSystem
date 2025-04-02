@@ -1,62 +1,46 @@
+# built in module
+import re
+
 # local modules
-from src.utils import (
-    find_keys, _send_response, _read_json,
-    _verify_refresh_token
-)
-from src.models import db
+from src.utils import _send_response, _read_json
+from src.models import Books_
 
 
 def search_books(handler):
-    """Search Books from database and display.
-    """
-
-    categories = find_keys()
-    if not categories:
-        response = {'error': 'Books is Empty, add books first'}
-        _send_response(handler, response, 500)
-        return
-
     data = _read_json(handler)
-    book_name = data.get('book_name').lower().strip()
+    book_name = data.get('book_name', '').strip()
 
-    verify = _verify_refresh_token(handler, whoami='Admin')
-    if not verify:
-        response = {'error': 'Data is Discarded, please login first.'}
-        _send_response(handler, response, 500)
-        return
+    if not book_name:
+        response = {
+            'status': 'error',
+            'message': 'missing book name'
+        }
+        return _send_response(handler, response, 500)
 
-    table = []
+    matching_books = Books_.objects(title__regex=f"(?i).*{re.escape(book_name)}.*")
+    if not matching_books:
+        response = {
+            'status': 'error',
+            'message': 'no books found'
+        }
+        return _send_response(handler, response, 500)
 
-    for category in categories:
-        fetch_books = db.Books.find(
-                    {f"{category}.Title": {
-                        "$regex": book_name,
-                        "$options": "i"}},
-                    {category: {"$cond": {
-                        "if": {"$isArray": f"${category}"},
-                        "then": {"$filter": {
-                            "input": f"${category}",
-                            "cond": {"$regexMatch": {
-                                "input": "$$this.Title",
-                                "regex": book_name,
-                                "options": "i"
-                            }}
-                        }},
-                        "else": f"${category}"
-                    }}}
-                )
-        for extract in fetch_books:
-            keys = next(iter(extract.keys() - {'_id'}))
-            for book in extract[keys]:
-                table.append({
-                    'Category': keys.capitalize(),
-                    'Id': book['Id'],
-                    'Book Name': book['Title'].capitalize(),
-                    'Author': book['Author'].capitalize(),
-                    'Available': 'Yes' if book['Available'] else 'No'
-                })
+    '''
+    # # using list comprehension
+    # books_list = [{'title': book.title, 'author': book.author} for book in matching_books]
+    '''
+
+    # # without using list comprehension
+    books_list = []
+    for book in matching_books:
+        books = {
+            'title': book.title,
+            'author': book.author
+        }
+        books_list.append(books)
 
     response = {
-        'Book List': table
-    }
-    _send_response(handler, response, 200)
+            'status': 'success',
+            'message': books_list
+        }
+    return _send_response(handler, response, 200)
