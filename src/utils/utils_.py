@@ -169,34 +169,3 @@ def count_books(auto_id: int, category: str):
     except StopIteration:
         start_id = auto_id + 1
         return start_id
-
-
-def validate_user(category, book_name, username):
-    """check book is available or not in Database
-
-    Args:
-        category (str): Book Category
-        book_name (str): user input Book Name
-        username (str): user username
-
-    Returns:
-        bool: return True if Book is found.
-    """
-
-    check_user = db.Books.aggregate([
-        {'$unwind': f'${category}'},
-        {'$unwind': f'${category}.UserDetails'},
-        {
-            '$match': {
-                f'{category}.UserDetails.Username': username,
-                f'{category}.Title': book_name
-            }
-        }, {
-            '$project': {
-                '_id': 0,
-                'username': f'${category}.UserDetails.Username'
-            }
-        }
-    ])
-
-    return bool(list(check_user))
