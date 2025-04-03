@@ -1,10 +1,10 @@
 from .settings import settings, db, mongo_config, http_server
 from .account import AccountRegisterModel
-from .mongo import Books, BookCategories
+from .mongo import Department, Books, UserDetails
 
 __all__ = [
     'settings', 'db', 'mongo_config',
     'AccountRegisterModel',
-    'Books', 'BookCategories',
-    'http_server'
+    'http_server',
+    'Department', 'Books', 'UserDetails'
 ]
