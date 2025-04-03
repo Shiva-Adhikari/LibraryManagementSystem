@@ -3,7 +3,7 @@ import re
 
 # local modules
 from src.utils import _send_response, _read_json
-from src.models import Books_
+from src.models import Books
 
 
 def search_books(handler):
@@ -17,7 +17,7 @@ def search_books(handler):
         }
         return _send_response(handler, response, 500)
 
-    matching_books = Books_.objects(title__regex=f"(?i).*{re.escape(book_name)}.*")
+    matching_books = Books.objects(title__regex=f"(?i).*{re.escape(book_name)}.*")
     if not matching_books:
         response = {
             'status': 'error',

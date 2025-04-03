@@ -2,13 +2,11 @@
 from datetime import datetime, timedelta
 
 # local modules
-from src.utils import (
-    _send_response, _read_json, _verify_refresh_token
-)
+from src.utils import _send_response, _read_json, _verify_refresh_token
+from src.models import Books, UserDetails, Department
 
 
 def issue_books(handler):
-    from src.models import Books_, UserDetails, Department
     """User issue book.
     """
 
@@ -53,7 +51,7 @@ def issue_books(handler):
     for book in department.books:
         department_ids.append(book.id)
 
-    books = Books_.objects(title=book_name, id__in=department_ids).first()
+    books = Books.objects(title=book_name, id__in=department_ids).first()
 
     if not books:
         response = {

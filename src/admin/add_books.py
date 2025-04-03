@@ -1,5 +1,5 @@
 # local modules
-from src.models import Department, Books_
+from src.models import Department, Books
 from src.utils import _read_json, _send_response
 
 
@@ -26,7 +26,7 @@ def add_books(handler):
 
         # now add each book and update the department
         for book_data in book_list:
-            new_book = Books_(
+            new_book = Books(
                 title=book_data['title'].lower().strip(),
                 author=book_data['author'].lower().strip(),
                 available=book_data['available']
@@ -41,4 +41,4 @@ def add_books(handler):
             'status': 'success',
             'message': 'Added Books Successfully'
         }
-        _send_response(handler, response, 500)
+        return _send_response(handler, response, 200)

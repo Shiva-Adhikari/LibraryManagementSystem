@@ -1,6 +1,6 @@
 # local modules
 from src.utils import _send_response, _read_json, _verify_refresh_token
-from src.models import Department, Books_, UserDetails
+from src.models import Department, Books, UserDetails
 
 
 '''
@@ -163,7 +163,7 @@ def return_books(handler):
     for book in department.books:
         department_ids.append(book.id)
 
-    book = Books_.objects(title=book_name, id__in=department_ids).first()
+    book = Books.objects(title=book_name, id__in=department_ids).first()
     if not book:
         response = {
             'status': 'error',

@@ -1,13 +1,13 @@
 # local modules
 from src.utils import _send_response
-from src.models import Books_, Department
+from src.models import Books, Department
 
 
 def stock_book(handler):
     """Search for books with less than 5 available copies
     and find their department."""
 
-    low_stock_book = Books_.objects(available__lt=5)
+    low_stock_book = Books.objects(available__lt=5)
 
     if not low_stock_book:
         response = {

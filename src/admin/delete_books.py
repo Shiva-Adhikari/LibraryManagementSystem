@@ -1,5 +1,5 @@
 # local modules
-from src.models import Department, Books_
+from src.models import Department, Books
 from src.utils import _send_response, _read_json
 
 
@@ -19,9 +19,9 @@ def delete_books(handler):
         }
         return _send_response(handler, response, 500)
 
-    book_to_delete = Books_.objects.get(title=book_name)
+    get_books = Books.objects.get(title=book_name)
 
-    if not book_to_delete:
+    if not get_books:
         response = {
                 'status': 'error',
                 'message': 'Book not found'
@@ -29,13 +29,13 @@ def delete_books(handler):
         return _send_response(handler, response, 500)
 
     # department ko ra, book ko id match vayo vani
-    if book_to_delete.id in [book.id for book in department.books]:
+    if get_books.id in [book.id for book in department.books]:
         # delete reference id from department
-        department.books.remove(book_to_delete)
+        department.books.remove(get_books)
         department.save()
 
         # delete books from collection
-        book_to_delete.delete()
+        get_books.delete()
 
         response = {
             'status': 'success',
