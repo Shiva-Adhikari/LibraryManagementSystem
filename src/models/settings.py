@@ -3,7 +3,6 @@ from pydantic_settings import BaseSettings
 from pydantic import SecretStr
 from pymongo import MongoClient
 
-
 # build in model
 import os
 
