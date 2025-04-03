@@ -15,8 +15,11 @@ def list_books(handler):
 
     department = Department.objects(name=category).first()
     if not department:
-        print('department not found')
-        return
+        response = {
+            'status': 'error',
+            'message': 'department not found'
+        }
+        return _send_response(handler, response, 500)
 
     department_ids = []
     for book in department.books:
@@ -24,7 +27,7 @@ def list_books(handler):
 
     page_size = 5
     total_books = len(department.books)
-    total_pages = (total_books + page_size - 1)
+    total_pages = (total_books + page_size - 1) // page_size
 
     if page_no < 1 or page_no > total_pages:
         response = {'invalid': f'Invalid page, Available pages up to {total_pages}'}
@@ -37,7 +40,6 @@ def list_books(handler):
 
     # convert to readable JSON-like format
     books_list = [book.to_mongo().to_dict() for book in books]
-    # print(f'booklist: {books_list}')
 
     list_books = [
         {
