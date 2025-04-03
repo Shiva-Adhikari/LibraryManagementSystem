@@ -1,11 +1,9 @@
 # local modules
-from src.utils import (
-    find_keys,
-    _send_response, _read_json, _verify_refresh_token
-)
-from src.models import db
+from src.utils import _send_response, _read_json, _verify_refresh_token
+from src.models import Department, Books_, UserDetails
 
 
+'''
 def user_issue_books_list(handler):
     """display user issued books
 
@@ -128,3 +126,73 @@ def return_books(handler) -> None:
     else:
         response = {'error': 'Unable to return books, Books not found.'}
         _send_response(handler, response, 500)
+'''
+
+
+def return_books(handler):
+    """return books which is already issued by user
+
+    Returns:
+        bool: if issued books not available, exit.
+    """
+
+    data = _read_json(handler)
+    if not data:
+        return
+
+    category_name = data.get('category').lower().strip()
+    book_name = data.get('book_name').lower().strip()
+
+    user_details = _verify_refresh_token(handler, whoami='User')
+    if not user_details:
+        response = {'error': 'Data is Discarded, please login first.'}
+        return _send_response(handler, response, 500)
+
+    username = user_details['username']
+    email = user_details['email']
+
+    department = Department.objects(name=category_name).first()
+    if not department:
+        response = {
+            'status': 'error',
+            'message': 'department not found'
+        }
+        return _send_response(handler, response, 500)
+
+    department_ids = []
+    for book in department.books:
+        department_ids.append(book.id)
+
+    book = Books_.objects(title=book_name, id__in=department_ids).first()
+    if not book:
+        response = {
+            'status': 'error',
+            'message': 'book not found'
+        }
+        return _send_response(handler, response, 500)
+
+    user_detail = UserDetails.objects(username=username, email=email).first()
+    if not user_detail:
+        response = {
+            'status': 'error',
+            'message': 'user not found'
+        }
+        return _send_response(handler, response, 500)
+
+    if user_detail.id in [user.id for user in book.user_details]:
+        book.user_details.remove(user_detail)
+        book.save()
+
+        user_detail.delete()
+
+        response = {
+            'status': 'success',
+            'message': 'successfully returned book'
+        }
+        return _send_response(handler, response, 200)
+
+    response = {
+        'status': 'error',
+        'message': 'Book not found'
+    }
+    return _send_response(handler, response, 500)
