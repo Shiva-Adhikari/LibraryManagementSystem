@@ -9,9 +9,16 @@ def _send_response(handler, data, status_code=200):
 
 
 def _read_json(handler):
-    content_length = int(handler.headers['Content-Length'])
-    post_data = handler.rfile.read(content_length)
-    return json.loads(post_data.decode('utf-8'))
+    try:
+        content_length = int(handler.headers['Content-Length'])
+        post_data = handler.rfile.read(content_length)
+        return json.loads(post_data.decode('utf-8'))
+    except Exception:
+        response = {
+            'status': 'error',
+            'message': 'check your formatting before send request'
+        }
+        return _send_response(handler, response, 401)
 
 
 def _input_access_token(handler):
@@ -26,8 +33,7 @@ def _input_access_token(handler):
         return access_token
     else:
         response = {'missing token': 'Missing or Invalid Access token'}
-        _send_response(handler, response, 401)
-        return
+        return _send_response(handler, response, 401)
 
 
 def _input_refresh_token(handler):
@@ -37,5 +43,4 @@ def _input_refresh_token(handler):
         return auth_refresh_token
     else:
         response = {'missing token': 'Missing or Invalid Refresh token'}
-        _send_response(handler, response, 401)
-        return
+        return _send_response(handler, response, 401)
