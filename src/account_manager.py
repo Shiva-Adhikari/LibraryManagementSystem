@@ -4,21 +4,13 @@ import bcrypt
 from pydantic import ValidationError
 from password_validator import PasswordValidator  # type: ignore
 from email_validator import validate_email, EmailNotValidError
-from mongoengine import DoesNotExist
 
 # built in modules
-from datetime import datetime, timedelta  # combine is better
+from datetime import datetime, timedelta
 
 # local modules
-from src.utils import (
-    logger,
-    _read_json, _send_response
-)
-from src.models import settings, db
-from src.models import (
-    Account, AccountDetails,
-    # AccountRegisterModel
-)
+from src.utils import logger, _read_json, _send_response
+from src.models import settings, Account, AccountDetails
 
 
 def email_validation(handler, _email):
@@ -112,7 +104,8 @@ def check_accounts(account, username):
     for acc in account.account_details:
         account_ids.append(acc.id)
 
-    account_details = AccountDetails.objects(username=username, id__in=account_ids).first()
+    account_details = AccountDetails.objects(
+        username=username, id__in=account_ids).first()
     return bool(account_details)
 
 
@@ -168,7 +161,7 @@ def account_register(handler, whoami):
         try:
             validated_data.save()
         except Exception as e:
-            print(f'exception: {e} don\'t try to add multiple same username in database')
+            print(f'exception: {e} Same username found. Not adding again.')
             return
 
         # account bane ko xaina vane naya banaune
@@ -210,20 +203,16 @@ def account_login(handler, whoami, SECRET_KEY):
     """
 
     data = _read_json(handler)
+    if not data:
+        return
     username = data.get('username').lower().strip()
     password = data.get('password')
 
     try:
-        account = db.Accounts.find_one(
-            {f'{whoami}.username': username},
-            {f'{whoami}.$': 1}
-        )
-
+        account = AccountDetails.objects(username=username).first()
         if account:
-            extract_password = {
-                'password': account[whoami][0]['password']
-            }
-            _extract_password = extract_password['password'].encode('utf-8')
+            extract_password = account.password
+            _extract_password = extract_password.encode('utf-8')
 
             # check hash password
             if not bcrypt.checkpw(password.encode(), _extract_password):
@@ -236,7 +225,7 @@ def account_login(handler, whoami, SECRET_KEY):
             EXP_DATE = timedelta(days=30)
             payload = {
                 'account': whoami,
-                'id': account[whoami][0]['id'],
+                'id': str(account.id),
                 'device': mac_address,
                 'iat': int(datetime.now().timestamp()),
                 'exp': int((datetime.now() + EXP_DATE).timestamp())
@@ -281,34 +270,6 @@ def device_mac_address():
     with open(device, 'r') as file:
         mac_address = file.readline().strip()
         return mac_address
-
-
-def _count_accounts(category):
-    """Used to insert id.
-
-    Args:
-        category (str): Admin or User
-
-    Returns:
-        int: Assign the id.
-    """
-
-    try:
-        account = db.Accounts.aggregate([
-            {
-                '$match': {f'{category}': {'$exists': True}}
-            }, {
-                '$project': {
-                    '_id': 0,
-                    'count': {'$size': f'${category}'}
-                }
-            }
-        ]).next()['count']
-
-        id = account + 1
-        return id
-    except StopIteration:
-        return 1
 
 
 def encode_access_token(handler, json_text, SECRET_KEY):
@@ -393,13 +354,10 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
         account = data_json['account']
         id = data_json['id']
 
-        accounts = db.Accounts.find_one(
-                {f'{account}.id': id},
-                {f'{account}.$': 1}
-            )
+        accounts = AccountDetails.objects(id=id).first()
 
         # get username
-        username = accounts[account][0]['username']
+        username = accounts.username
 
         if account == 'Admin':
             SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
