@@ -19,7 +19,7 @@ def _read_json(handler):
             'status': 'error',
             'message': 'check your formatting before send request'
         }
-        return _send_response(handler, response, 401)
+        return _send_response(handler, response, 400)
 
 
 def _input_access_token(handler):
