@@ -1,11 +1,23 @@
 # third party module
-from pydantic import BaseModel, Field, EmailStr
+from mongoengine import (
+    # IntField,
+    StringField, EmailField, ListField, ReferenceField, Document
+)
 
-# built in module
-from typing import Optional
+
+class AccountDetails(Document):
+    # id = IntField(required=True)
+    username = StringField(required=True, unique=True)
+    email = EmailField(required=False)
+    password = StringField(required=True)
+    meta = {
+        'collection': 'AccountDetails'
+    }
 
 
-class AccountRegisterModel(BaseModel):
-    username: str = Field(..., description='username of the account')
-    password: str = Field(..., description='password of the account')
-    email: Optional[EmailStr] = None
+class Account(Document):
+    account = StringField(required=True, unique=True)
+    account_details = ListField(ReferenceField(AccountDetails))
+    meta = {
+        'collection': 'Account'
+    }
