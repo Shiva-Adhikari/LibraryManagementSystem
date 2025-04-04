@@ -27,8 +27,7 @@ def email_validation(handler, _email):
     except EmailNotValidError as e:
 
         response = {'error': f'Email not Valid {str(e)}'}
-        _send_response(handler, response, 500)
-        return
+        return _send_response(handler, response, 500)
 
 
 def password_validation(handler, password: str):
@@ -59,12 +58,10 @@ def password_validation(handler, password: str):
             messages = 'Password must be 8+ characters with upper, lower, '
             'digit, and special symbols.'
             response = {'error': messages}
-            _send_response(handler, response, 500)
-            return
+            return _send_response(handler, response, 500)
     except Exception as e:
         response = {'error': f'Password not valid: {str(e)}'}
-        _send_response(handler, response, 500)
-        return None
+        return _send_response(handler, response, 500)
 
 
 def confirm_password_validation(handler, _password):
@@ -160,9 +157,12 @@ def account_register(handler, whoami):
         validated_data = AccountDetails(**account_data)
         try:
             validated_data.save()
-        except Exception as e:
-            print(f'exception: {e} Same username found. Not adding again.')
-            return
+        except Exception:
+            response = {
+                'status': 'error',
+                'message': 'Same username found. Not adding again.',
+            }
+            return _send_response(handler, response, 500)
 
         # account bane ko xaina vane naya banaune
         account = Account.objects(account=whoami).first()
@@ -217,8 +217,7 @@ def account_login(handler, whoami, SECRET_KEY):
             # check hash password
             if not bcrypt.checkpw(password.encode(), _extract_password):
                 response = {'error': 'please enter correct password'}
-                _send_response(handler, response, 500)
-                return
+                return _send_response(handler, response, 500)
 
             mac_address = device_mac_address()
 
@@ -234,14 +233,12 @@ def account_login(handler, whoami, SECRET_KEY):
             # encrypt access_token
             _access_token = encode_access_token(handler, payload, SECRET_KEY)
             if not _access_token:
-                logger.error()
-                return
+                return logger.error()
 
             _, _refresh_token = refresh_token(
                 handler, _access_token, SECRET_KEY)
             if not _refresh_token:
-                logger.error()
-                return
+                return logger.error()
 
             response = {
                 'status': 'success',
@@ -318,14 +315,14 @@ def dencode_access_token(handler, encoded_access_token, SECRET_KEY):
 
     except jwt.exceptions.ExpiredSignatureError:
         response = {'token error': 'Your Token is Expired, Login Again.'}
-        _send_response(handler, response, 400)
+        return _send_response(handler, response, 400)
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         response = {'token error': 'Your Token is invalid, Login Again.'}
-        _send_response(handler, response, 400)
+        return _send_response(handler, response, 400)
 
     except Exception as e:
-        logger.debug(e)
+        return logger.debug(e)
 
 
 def refresh_token(handler, encoded_access_token, SECRET_KEY):
@@ -340,15 +337,13 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
             handler, encoded_access_token, SECRET_KEY)
 
         if not data_json:
-            logger.error('unable to decode_access_token')
-            return
+            return logger.error('unable to decode_access_token')
 
         device = data_json['device']
         address = device_mac_address()
         if device != address:
             response = {'mac-address': 'Your Token is Invalid'}
-            _send_response(handler, response, 500)
-            return
+            return _send_response(handler, response, 500)
 
         # check whose access token is it (admin/user)
         account = data_json['account']
@@ -375,8 +370,7 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
             return payload, token
 
     except Exception as e:
-        logger.error(e)
-        return
+        return logger.error(e)
 
 
 def generate_token(username, SECRET_KEY, email, account):
@@ -409,4 +403,4 @@ def generate_token(username, SECRET_KEY, email, account):
             return token, payload
 
     except Exception as e:
-        logger.error(e)
+        return logger.error(e)
