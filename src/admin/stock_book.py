@@ -14,7 +14,7 @@ def stock_book(handler):
             'status': 'error',
             'message': 'books not found with low stock'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     books_list = []
     for book in low_stock_book:

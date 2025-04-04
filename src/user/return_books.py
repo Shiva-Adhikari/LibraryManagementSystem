@@ -146,7 +146,7 @@ def return_books(handler):
     user_details = _verify_refresh_token(handler, whoami='User')
     if not user_details:
         response = {'error': 'Data is Discarded, please login first.'}
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 401)
 
     username = user_details['username']
     email = user_details['email']
@@ -157,7 +157,7 @@ def return_books(handler):
             'status': 'error',
             'message': 'department not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     department_ids = []
     for book in department.books:
@@ -169,7 +169,7 @@ def return_books(handler):
             'status': 'error',
             'message': 'book not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     user_detail = UserDetails.objects(username=username, email=email).first()
     if not user_detail:
@@ -177,7 +177,7 @@ def return_books(handler):
             'status': 'error',
             'message': 'user not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     if user_detail.id in [user.id for user in book.user_details]:
         book.user_details.remove(user_detail)
@@ -195,4 +195,4 @@ def return_books(handler):
         'status': 'error',
         'message': 'Book not found'
     }
-    return _send_response(handler, response, 500)
+    return _send_response(handler, response, 404)

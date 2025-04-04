@@ -27,7 +27,7 @@ def email_validation(handler, _email):
     except EmailNotValidError as e:
 
         response = {'error': f'Email not Valid {str(e)}'}
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 400)
 
 
 def password_validation(handler, password: str):
@@ -58,10 +58,10 @@ def password_validation(handler, password: str):
             messages = 'Password must be 8+ characters with upper, lower, '
             'digit, and special symbols.'
             response = {'error': messages}
-            return _send_response(handler, response, 500)
+            return _send_response(handler, response, 400)
     except Exception as e:
         response = {'error': f'Password not valid: {str(e)}'}
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 400)
 
 
 def confirm_password_validation(handler, _password):
@@ -119,11 +119,11 @@ def validation(handler, admin, username, _password):
     if len(username) > 3:
         account = check_accounts(admin, username)
         if account:
-            response = {'error': 'Username exits check another'}
-            return _send_response(handler, response, 500)
+            response = {'error': 'Same username found. Not adding again.'}
+            return _send_response(handler, response, 409)
     else:
         response = {'error': 'username must be more than 4 letter long'}
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 400)
 
     password = confirm_password_validation(handler, _password)
     if not password:
@@ -162,7 +162,7 @@ def account_register(handler, whoami):
                 'status': 'error',
                 'message': 'Same username found. Not adding again.',
             }
-            return _send_response(handler, response, 500)
+            return _send_response(handler, response, 409)
 
         # account bane ko xaina vane naya banaune
         account = Account.objects(account=whoami).first()
@@ -184,7 +184,7 @@ def account_register(handler, whoami):
             'error': f'Invalid Input: {ve}',
             'account': username,
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 400)
 
     except Exception as e:
         return logger.error(e)
@@ -217,7 +217,7 @@ def account_login(handler, whoami, SECRET_KEY):
             # check hash password
             if not bcrypt.checkpw(password.encode(), _extract_password):
                 response = {'error': 'please enter correct password'}
-                return _send_response(handler, response, 500)
+                return _send_response(handler, response, 400)
 
             mac_address = device_mac_address()
 
@@ -249,7 +249,7 @@ def account_login(handler, whoami, SECRET_KEY):
             return _send_response(handler, response, 200)
         else:
             response = {'error': 'Account not found'}
-            return _send_response(handler, response, 500)
+            return _send_response(handler, response, 404)
 
     except Exception as e:
         return logger.error(e)
@@ -343,7 +343,7 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
         address = device_mac_address()
         if device != address:
             response = {'mac-address': 'Your Token is Invalid'}
-            return _send_response(handler, response, 500)
+            return _send_response(handler, response, 401)
 
         # check whose access token is it (admin/user)
         account = data_json['account']

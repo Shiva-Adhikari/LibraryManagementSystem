@@ -23,7 +23,7 @@ def issue_books(handler):
             'status': 'error',
             'message': 'enter days not string'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 400)
 
     issue_date = datetime.now()
     warning_to_date = to_date - 3
@@ -33,8 +33,7 @@ def issue_books(handler):
     user_detail = _verify_refresh_token(handler, whoami='User')
     if not user_detail:
         response = {'error': 'Data is Discarded, please login first.'}
-        _send_response(handler, response, 500)
-        return
+        return _send_response(handler, response, 401)
 
     username = user_detail['username']
     email = user_detail['email']
@@ -45,7 +44,7 @@ def issue_books(handler):
             'status': 'error',
             'message': 'department not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     department_ids = []
     for book in department.books:
@@ -58,7 +57,7 @@ def issue_books(handler):
             'status': 'error',
             'message': 'book not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     book_info = {
         'username': username.lower(),
@@ -76,4 +75,4 @@ def issue_books(handler):
         'status': 'success',
         'message': 'Successfully issued book'
     }
-    return _send_response(handler, response, 200)
+    return _send_response(handler, response, 201)

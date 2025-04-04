@@ -11,6 +11,8 @@ def add_books(handler):
     """
 
     data = _read_json(handler)
+    if not data:
+        return
 
     for category_name, book_list in data.items():
         # check if department exists
@@ -41,4 +43,4 @@ def add_books(handler):
             'status': 'success',
             'message': 'Added Books Successfully'
         }
-        return _send_response(handler, response, 200)
+        return _send_response(handler, response, 201)

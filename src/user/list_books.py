@@ -19,7 +19,7 @@ def list_books(handler):
             'status': 'error',
             'message': 'department not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     department_ids = []
     for book in department.books:
@@ -31,8 +31,7 @@ def list_books(handler):
 
     if page_no < 1 or page_no > total_pages:
         response = {'invalid': f'Invalid page, Available pages up to {total_pages}'}
-        _send_response(handler, response, 500)
-        return
+        return _send_response(handler, response, 404)
 
     skip_line = (page_no - 1) * page_size
 

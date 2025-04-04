@@ -8,6 +8,8 @@ def delete_books(handler):
     """
 
     data = _read_json(handler)
+    if not data:
+        return
     category = data.get('category', '').lower().strip()
     book_name = data.get('book_name', '').lower().strip()
 
@@ -17,7 +19,7 @@ def delete_books(handler):
             'status': 'error',
             'message': 'Department not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     get_books = Books.objects.get(title=book_name)
 
@@ -26,7 +28,7 @@ def delete_books(handler):
                 'status': 'error',
                 'message': 'Book not found'
             }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     # department ko ra, book ko id match vayo vani
     if get_books.id in [book.id for book in department.books]:
@@ -47,4 +49,4 @@ def delete_books(handler):
                 'status': 'error',
                 'message': 'Book not found in this department'
             }
-    return _send_response(handler, response, 500)
+    return _send_response(handler, response, 404)

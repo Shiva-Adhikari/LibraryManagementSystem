@@ -5,6 +5,8 @@ from src.utils import _read_json, _send_response
 
 def update_books(handler):
     data = _read_json(handler)
+    if not data:
+        return
     category = data.get('category').lower().strip()
     old_book_name = data.get('old_book_name').lower().strip()
     new_book = data.get('new_book')
@@ -15,7 +17,7 @@ def update_books(handler):
             'status': 'error',
             'message': 'Department not found'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     # collect ids from department
     book_ids = []
@@ -29,7 +31,7 @@ def update_books(handler):
             'status': 'error',
             'message': 'Book Not Found to update'
         }
-        return _send_response(handler, response, 500)
+        return _send_response(handler, response, 404)
 
     book.title = new_book['title']
     book.author = new_book['author']
