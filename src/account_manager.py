@@ -4,6 +4,7 @@ import bcrypt
 from pydantic import ValidationError
 from password_validator import PasswordValidator  # type: ignore
 from email_validator import validate_email, EmailNotValidError
+from mongoengine import DoesNotExist
 
 # built in modules
 from datetime import datetime, timedelta  # combine is better
@@ -13,7 +14,11 @@ from src.utils import (
     logger,
     _read_json, _send_response
 )
-from src.models import AccountRegisterModel, settings, db
+from src.models import settings, db
+from src.models import (
+    Account, AccountDetails,
+    # AccountRegisterModel
+)
 
 
 def email_validation(handler, _email):
@@ -99,15 +104,16 @@ def check_accounts(account, username):
         bool: if account match it return True.
     """
 
-    fetch_account = db.Accounts.aggregate([
-        {'$unwind': f'${account}'},
-        {'$match': {f'{account}.username': username}},
-        {'$project': {'username': f'${account}.username', '_id': 0}}
-    ])
+    account = Account.objects(account=account).first()
+    if not account:
+        return
 
-    check_account = list(fetch_account)
+    account_ids = []
+    for acc in account.account_details:
+        account_ids.append(acc.id)
 
-    return bool(check_account)
+    account_details = AccountDetails.objects(username=username, id__in=account_ids).first()
+    return bool(account_details)
 
 
 def validation(handler, admin, username, _password):
@@ -124,11 +130,10 @@ def validation(handler, admin, username, _password):
         account = check_accounts(admin, username)
         if account:
             response = {'error': 'Username exits check another'}
-            _send_response(handler, response, 500)
-            return
+            return _send_response(handler, response, 500)
     else:
         response = {'error': 'username must be more than 4 letter long'}
-        _send_response(handler, response, 500)
+        return _send_response(handler, response, 500)
 
     password = confirm_password_validation(handler, _password)
     if not password:
@@ -150,64 +155,46 @@ def account_register(handler, whoami):
         _email = data.get('email', '').lower().strip()
 
         username, password = validation(handler, whoami, _username, _password)
-        id = _count_accounts(whoami)
-
         account_data = {
             'username': username,
             'password': password,
         }
-
         if whoami == 'User':
             email = email_validation(handler, _email)
             if not email:
                 return
-
             account_data['email'] = email
-
-        validated_data = AccountRegisterModel(**account_data)
-        _email = validated_data.email if whoami == 'User' else None
-
-        add_accounts = db.Accounts.update_one(
-            {f'{whoami}': {'$exists': True}},
-            {'$push': {
-                f'{whoami}': {
-                    'id': id,
-                    'username': validated_data.username,
-                    'email': _email,
-                    'password': validated_data.password
-                }
-            }},
-            upsert=True
-        )
-
-        if add_accounts.modified_count > 0 or add_accounts.upserted_id:
-            response = {
-                'message': 'Successfully Registered Account',
-                'account': username,
-            }
-            _send_response(handler, response, 200)
-            return True
-
-        else:
-            logger.debug('Register Failed')
-            response = {
-                'error': 'Register Failed',
-                'account': username,
-            }
-            _send_response(handler, response, 500)
+        validated_data = AccountDetails(**account_data)
+        try:
+            validated_data.save()
+        except Exception as e:
+            print(f'exception: {e} don\'t try to add multiple same username in database')
             return
 
+        # account bane ko xaina vane naya banaune
+        account = Account.objects(account=whoami).first()
+        if not account:
+            account = Account(account=whoami, account_details=[])
+            account.save()
+
+        # Append AccountDetails & Save
+        account.account_details.append(validated_data)
+        account.save()
+
+        response = {
+            'message': 'Successfully Registered Account',
+            'account': username,
+        }
+        return _send_response(handler, response, 200)
     except ValidationError as ve:
         response = {
             'error': f'Invalid Input: {ve}',
             'account': username,
         }
-        _send_response(handler, response, 500)
-        return
+        return _send_response(handler, response, 500)
 
     except Exception as e:
-        logger.error(e)
-        return
+        return logger.error(e)
 
 
 def account_login(handler, whoami, SECRET_KEY):
@@ -273,17 +260,13 @@ def account_login(handler, whoami, SECRET_KEY):
                 'access token': _access_token,
                 'refresh token': _refresh_token
             }
-            _send_response(handler, response, 200)
-
-            return True
+            return _send_response(handler, response, 200)
         else:
             response = {'error': 'Account not found'}
-            _send_response(handler, response, 500)
-            return
+            return _send_response(handler, response, 500)
 
     except Exception as e:
-        logger.error(e)
-        return
+        return logger.error(e)
 
 
 # get macaddress from device
