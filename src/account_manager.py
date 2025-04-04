@@ -362,7 +362,7 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
 
         elif account == 'User':
             SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
-            email = accounts[account][0]['email']
+            email = accounts.email
             token, payload = generate_token(
                 username, SECRET_KEY, email, account)
 
