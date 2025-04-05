@@ -1,5 +1,6 @@
 # built in modules
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse
 
 # local modules
 from src.admin import (
@@ -16,11 +17,12 @@ from src.models import mongo_config, http_server
 
 class MainServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/api/admin/search-books':
+        parsed_url = urlparse(self.path).path
+        if parsed_url == '/api/admin/search-books':
             search_books(self)
         elif self.path == '/api/admin/stock-books':
             stock_book(self)
-        elif self.path == '/api/user/list-books':
+        elif parsed_url == '/api/user/list-books':
             list_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
