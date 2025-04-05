@@ -9,7 +9,7 @@ from src.admin import (
 )
 from src.user import (
     user_register, user_login,
-    issue_books, return_books, list_books
+    issue_books, return_books, list_books, user_issue_books_list
 )
 from src.utils import _send_response
 from src.models import mongo_config, http_server
@@ -24,6 +24,8 @@ class MainServer(BaseHTTPRequestHandler):
             stock_book(self)
         elif parsed_url == '/api/user/list-books':
             list_books(self)
+        elif self.path == '/api/user/issued_books_list':
+            user_issue_books_list(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
             _send_response(self, response, 401)
