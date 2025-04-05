@@ -11,7 +11,7 @@ def stock_book(handler):
 
     if not low_stock_book:
         response = {
-            'status': 'error',
+            'status': 'success',
             'message': 'books not found with low stock'
         }
         return _send_response(handler, response, 404)
