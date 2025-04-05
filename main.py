@@ -15,6 +15,17 @@ from src.models import mongo_config, http_server
 
 
 class MainServer(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/api/admin/search-books':
+            search_books(self)
+        elif self.path == '/api/admin/stock-books':
+            stock_book(self)
+        elif self.path == '/api/user/list-books':
+            list_books(self)
+        else:
+            response = {'error': 'mistake is in path, /api/account/?'}
+            _send_response(self, response, 401)
+
     def do_POST(self):
         if self.path == '/api/admin/register':
             admin_register(self)
@@ -26,24 +37,18 @@ class MainServer(BaseHTTPRequestHandler):
             user_login(self)
         elif self.path == '/api/admin/add-books':
             add_books(self)
-        elif self.path == '/api/admin/search-books':
-            search_books(self)
-        elif self.path == '/api/admin/stock-books':
-            stock_book(self)
         elif self.path == '/api/user/issue-books':
             issue_books(self)
-        elif self.path == '/api/user/list-books':
-            list_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 404)
+            _send_response(self, response, 401)
 
     def do_DELETE(self):
         if self.path == '/api/admin/delete-books':
             delete_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 404)
+            _send_response(self, response, 401)
 
     def do_PUT(self):
         if self.path == '/api/admin/update-books':
@@ -52,7 +57,7 @@ class MainServer(BaseHTTPRequestHandler):
             return_books(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 404)
+            _send_response(self, response, 401)
 
 
 class Server:
