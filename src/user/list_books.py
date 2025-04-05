@@ -1,5 +1,5 @@
 # local modules
-from src.utils import _read_json, _send_response
+from src.utils import _read_get_query, _send_response
 from src.models import Department, Books
 
 
@@ -7,11 +7,11 @@ def list_books(handler):
     """Display list of Books.
     """
 
-    data = _read_json(handler)
+    data = _read_get_query(handler)
     if not data:
         return
     category = data.get('category').lower()
-    page_no = data.get('page')
+    page_no = int(data.get('page'))
 
     department = Department.objects(name=category).first()
     if not department:

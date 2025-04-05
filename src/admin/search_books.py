@@ -2,12 +2,12 @@
 import re
 
 # local modules
-from src.utils import _send_response, _read_json
+from src.utils import _send_response, _read_get_query
 from src.models import Books
 
 
 def search_books(handler):
-    data = _read_json(handler)
+    data = _read_get_query(handler)
     if not data:
         return
     book_name = data.get('book_name', '').strip()
