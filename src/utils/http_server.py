@@ -52,9 +52,7 @@ def _read_get_query(handler):
     parsed_url = urlparse(handler.path)
     query_params = parse_qs(parsed_url.query)
     clean_data = {}
-    print('a')
     for key, value in query_params.items():
         clean_data[key] = value[0]
 
-    print('b')
     return clean_data
