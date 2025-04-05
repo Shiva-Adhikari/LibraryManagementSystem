@@ -13,7 +13,7 @@ from src.utils import logger, _read_json, _send_response
 from src.models import settings, Account, AccountDetails
 
 
-def email_validation(handler, _email):
+def email_validation(handler, _email: str):
     """Validate email address
 
     Returns:
@@ -64,7 +64,7 @@ def password_validation(handler, password: str):
         return _send_response(handler, response, 400)
 
 
-def confirm_password_validation(handler, _password):
+def confirm_password_validation(handler, _password: str):
     """Validate 'password' and 'confirm password'
 
     Returns:
@@ -82,7 +82,7 @@ def confirm_password_validation(handler, _password):
     return password
 
 
-def check_accounts(account, username):
+def check_accounts(account: str, username: str):
     """Check Account whether Account is available or not
 
     Args:
@@ -106,7 +106,7 @@ def check_accounts(account, username):
     return bool(account_details)
 
 
-def validation(handler, admin, username, _password):
+def validation(handler, admin: str, username: str, _password: str):
     """Validate Account
 
     Args:
@@ -131,7 +131,7 @@ def validation(handler, admin, username, _password):
     return username.lower(), password
 
 
-def account_register(handler, whoami):
+def account_register(handler, whoami: str):
     """User and Admin account register
 
     Args:
@@ -178,7 +178,7 @@ def account_register(handler, whoami):
             'message': 'Successfully Registered Account',
             'account': username,
         }
-        return _send_response(handler, response, 200)
+        return _send_response(handler, response, 201)
     except ValidationError as ve:
         response = {
             'error': f'Invalid Input: {ve}',
@@ -190,7 +190,7 @@ def account_register(handler, whoami):
         return logger.error(e)
 
 
-def account_login(handler, whoami, SECRET_KEY):
+def account_login(handler, whoami: str, SECRET_KEY: str):
     """User or Admin account login
 
     Args:
@@ -269,7 +269,7 @@ def device_mac_address():
         return mac_address
 
 
-def encode_access_token(handler, json_text, SECRET_KEY):
+def encode_access_token(handler, json_text: str, SECRET_KEY: str):
     """Convert Text to access_token
 
     Args:
@@ -288,7 +288,7 @@ def encode_access_token(handler, json_text, SECRET_KEY):
         return encrypted_text
 
 
-def dencode_access_token(handler, encoded_access_token, SECRET_KEY):
+def dencode_access_token(handler, encoded_access_token: str, SECRET_KEY: str):
     """Decode access token which is get from file
 
     Args:
@@ -325,7 +325,7 @@ def dencode_access_token(handler, encoded_access_token, SECRET_KEY):
         return logger.debug(e)
 
 
-def refresh_token(handler, encoded_access_token, SECRET_KEY):
+def refresh_token(handler, encoded_access_token: str, SECRET_KEY: str):
     """A refresh token used to refresh the expired token
 
     Args:
@@ -373,7 +373,7 @@ def refresh_token(handler, encoded_access_token, SECRET_KEY):
         return logger.error(e)
 
 
-def generate_token(username, SECRET_KEY, email, account):
+def generate_token(username, SECRET_KEY: str, email: str, account: str):
     """This is used to create token used to encode
         user credentials i.e username and email
 
