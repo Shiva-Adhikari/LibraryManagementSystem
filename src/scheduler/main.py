@@ -6,7 +6,7 @@ from datetime import datetime
 
 # local modules
 from src.models import UserDetails
-from .send_email import send_email
+from src.scheduler.send_email import send_email
 
 
 def due_book_check():
@@ -38,5 +38,6 @@ def due_book_check():
 if __name__ == '__main__':
     scheduler = BlockingScheduler()
     scheduler.add_job(due_book_check, 'cron', hour=0)   # run every midnight
-    # scheduler.add_job(due_book_check, 'cron', minute="*")   # run every minute    # for testing purpose
+    # scheduler.add_job(due_book_check, 'cron', minute="*/1")   # run every minute    # for testing purpose
+    print("Scheduler starting...")
     scheduler.start()

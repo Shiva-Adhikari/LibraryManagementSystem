@@ -10,10 +10,10 @@ from email.message import EmailMessage
 from src.models import settings
 
 
-env = Environment(loader=FileSystemLoader('scheduler'))
+env = Environment(loader=FileSystemLoader('src/scheduler'))
 
 
-def render_template(user_username, subject_filled, body_filled):
+def render_template(user_username: str, subject_filled: str, body_filled: str):
     template = env.get_template('email_template.html')
     return template.render(
         user_username=user_username,
@@ -22,7 +22,7 @@ def render_template(user_username, subject_filled, body_filled):
     )
 
 
-def send_email(user_username, user_email, due_text):
+def send_email(user_username: str, user_email: str, due_text: str):
     """this send message in mailbox
 
     Args:
@@ -48,10 +48,10 @@ def send_email(user_username, user_email, due_text):
             'Please return it immediately. '
             'A late fee of Rs.500 has been added to your account.'
         )
-
     else:
         return
 
+    # call render_emplate function
     html_content = render_template(user_username, subject_filled, body_filled)
 
     em = EmailMessage()
@@ -69,5 +69,5 @@ def send_email(user_username, user_email, due_text):
             smtp.login(SENDER_EMAIL, SENDER_PASSWORD)
             smtp.sendmail(SENDER_EMAIL, email_receiver, em.as_string())
     except smtplib.SMTPRecipientsRefused:
-        # click.echo('Email not Valid')
+        # Email not Valid
         pass
