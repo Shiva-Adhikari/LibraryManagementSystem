@@ -181,6 +181,7 @@ def return_books(handler):
 
     if user_detail.id in [user.id for user in book.user_details]:
         book.user_details.remove(user_detail)
+        book.available = book.available + 1
         book.save()
 
         user_detail.delete()

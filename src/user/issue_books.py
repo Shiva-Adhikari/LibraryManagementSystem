@@ -70,6 +70,7 @@ def issue_books(handler):
     user_details = UserDetails(**book_info)
     user_details.save()
     books.user_details.append(user_details.id)
+    books.available = books.available - 1
     books.save()
     response = {
         'status': 'success',
