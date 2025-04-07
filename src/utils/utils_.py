@@ -69,41 +69,33 @@ def decode_token(self, token, SECRET_KEY, whoami):
         """if token is expired then it call refresh token to extend time.
         """
         from src import refresh_token
-        print('\nexception')
-        print('access token decode')
         auth_header = self.headers.get('Authorization')
-        print('aa')
         if not auth_header:
             response = {'missing token': 'Missing or Invalid Access token'}
             return (response, 401)
-        print('ab')
+
         if auth_header:
             if auth_header.startswith('Bearer '):
                 input_access_token = auth_header.split(' ', 1)[1]
             else:
                 input_access_token = auth_header  # Directly take the token
-        print('ac')
-        print('start aaa')
+
         if not input_access_token:
             return
 
-        print('aaa decode token')
         if whoami == 'Admin':
-            print('admin exec')
             SECRET = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
         elif whoami == 'User':
-            print('user exec')
             SECRET = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
-        print('bbb')
+
         token = refresh_token(input_access_token, SECRET)
-        print(f'ccc: {token}')
+
         if token:
-            print('got token')
             response = {
                 'message': 'Refresh Token Key.',
                 'token': token
             }
-            return (response, 200)
+            return response
 
     except Exception as e:
         logger.debug(e)
@@ -117,23 +109,21 @@ def _verify_refresh_token(self, whoami):
     if not token:
         response = {'missing token': 'Missing or Invalid Refresh token'}
         return (response, 401)
-    print(f'refresh token: {token}')
+
     if not token:
         logger.error('token not found from header')
         return
-    print('aa')
+
     if whoami == 'Admin':
-        print('admin')
         SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
         token_data = decode_token(self, token, SECRET_KEY, whoami)
     elif whoami == 'User':
-        print('user')
         SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
         token_data = decode_token(self, token, SECRET_KEY, whoami)
-    print('bb')
+
     if not token_data:
         return
-    print('cc')
+
     return token_data
 
 
