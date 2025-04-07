@@ -13,7 +13,8 @@ from src.utils import logger, _read_json, _send_response
 from src.models import settings, Account, AccountDetails
 
 
-def email_validation(handler, _email: str):
+@_send_response
+def email_validation(self, _email):
     """Validate email address
 
     Returns:
@@ -27,10 +28,11 @@ def email_validation(handler, _email: str):
     except EmailNotValidError as e:
 
         response = {'error': f'Email not Valid {str(e)}'}
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
 
-def password_validation(handler, password: str):
+@_send_response
+def password_validation(self, password: str):
     """Validate Combination of password
 
     Args:
@@ -58,31 +60,31 @@ def password_validation(handler, password: str):
             messages = 'Password must be 8+ characters with upper, lower, '
             'digit, and special symbols.'
             response = {'error': messages}
-            return _send_response(handler, response, 400)
+            return (response, 400)
     except Exception as e:
         response = {'error': f'Password not valid: {str(e)}'}
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
 
-def confirm_password_validation(handler, _password: str):
+def confirm_password_validation(self, _password: str):
     """Validate 'password' and 'confirm password'
 
     Returns:
         str: Return password
     """
 
-    password = password_validation(handler, _password)
+    password = password_validation(self, _password)
     if not password:
         return
 
     # create salt
     salt = bcrypt.gensalt(rounds=10)
     # convert password to hash with added salt
-    password = bcrypt.hashpw(password.encode(), salt)
-    return password
+    hashed = bcrypt.hashpw(password.encode(), salt)
+    return hashed.decode('utf-8')
 
 
-def check_accounts(account: str, username: str):
+def check_accounts(account, username: str):
     """Check Account whether Account is available or not
 
     Args:
@@ -106,7 +108,8 @@ def check_accounts(account: str, username: str):
     return bool(account_details)
 
 
-def validation(handler, admin: str, username: str, _password: str):
+@_send_response
+def validation(self, admin: str, username: str, _password: str):
     """Validate Account
 
     Args:
@@ -119,19 +122,26 @@ def validation(handler, admin: str, username: str, _password: str):
     if len(username) > 3:
         account = check_accounts(admin, username)
         if account:
-            response = {'error': 'Same username found. Not adding again.'}
-            return _send_response(handler, response, 409)
+            response = {'error': 'Same username found. Not adding again.1'}
+            return (response, 409)
     else:
         response = {'error': 'username must be more than 4 letter long'}
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
-    password = confirm_password_validation(handler, _password)
+    password = confirm_password_validation(self, _password)
     if not password:
         return
-    return username.lower(), password
+
+    user_pass = {
+        'username': username.lower(),
+        'password': password
+    }
+    return user_pass
 
 
-def account_register(handler, whoami: str):
+@_send_response
+@_read_json
+def account_register(self, data, whoami: str):
     """User and Admin account register
 
     Args:
@@ -139,30 +149,39 @@ def account_register(handler, whoami: str):
     """
 
     try:
-        data = _read_json(handler)
         _username = data.get('username').lower().strip()
         _password = data.get('password')
         _email = data.get('email', '').lower().strip()
 
-        username, password = validation(handler, whoami, _username, _password)
+        data = validation(self, whoami, _username, _password)
+        if not data:
+            response = {
+                'status': 'error',
+                'message': 'Same username found. Not adding again.2',
+            }
+            return (response, 409)
+
+        username = data.get('username')
+        password = data.get('password')
         account_data = {
             'username': username,
             'password': password,
         }
         if whoami == 'User':
-            email = email_validation(handler, _email)
+            email = email_validation(self, _email)
             if not email:
                 return
             account_data['email'] = email
+
         validated_data = AccountDetails(**account_data)
         try:
             validated_data.save()
         except Exception:
             response = {
                 'status': 'error',
-                'message': 'Same username found. Not adding again.',
+                'message': 'Same username found. Not adding again.3',
             }
-            return _send_response(handler, response, 409)
+            return (response, 409)
 
         # account bane ko xaina vane naya banaune
         account = Account.objects(account=whoami).first()
@@ -175,22 +194,24 @@ def account_register(handler, whoami: str):
         account.save()
 
         response = {
-            'message': 'Successfully Registered Account',
             'account': username,
+            'message': 'Successfully Registered Account',
         }
-        return _send_response(handler, response, 201)
+        return (response, 201)
     except ValidationError as ve:
         response = {
             'error': f'Invalid Input: {ve}',
             'account': username,
         }
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
     except Exception as e:
         return logger.error(e)
 
 
-def account_login(handler, whoami: str, SECRET_KEY: str):
+@_send_response
+@_read_json
+def account_login(self, data, whoami: str, SECRET_KEY: str):
     """User or Admin account login
 
     Args:
@@ -201,13 +222,10 @@ def account_login(handler, whoami: str, SECRET_KEY: str):
     Returns:
         bool: if successfully written in file it return True
     """
-
-    data = _read_json(handler)
     if not data:
         return
     username = data.get('username').lower().strip()
     password = data.get('password')
-
     try:
         account = AccountDetails.objects(username=username).first()
         if account:
@@ -217,10 +235,9 @@ def account_login(handler, whoami: str, SECRET_KEY: str):
             # check hash password
             if not bcrypt.checkpw(password.encode(), _extract_password):
                 response = {'error': 'please enter correct password'}
-                return _send_response(handler, response, 400)
+                return (response, 400)
 
             mac_address = device_mac_address()
-
             EXP_DATE = timedelta(days=30)
             payload = {
                 'account': whoami,
@@ -231,12 +248,12 @@ def account_login(handler, whoami: str, SECRET_KEY: str):
             }
 
             # encrypt access_token
-            _access_token = encode_access_token(handler, payload, SECRET_KEY)
+            _access_token = encode_access_token(payload, SECRET_KEY)
             if not _access_token:
                 return logger.error()
 
-            _, _refresh_token = refresh_token(
-                handler, _access_token, SECRET_KEY)
+            token = refresh_token(self, _access_token, SECRET_KEY)
+            _refresh_token = token['token']
             if not _refresh_token:
                 return logger.error()
 
@@ -246,10 +263,10 @@ def account_login(handler, whoami: str, SECRET_KEY: str):
                 'access token': _access_token,
                 'refresh token': _refresh_token
             }
-            return _send_response(handler, response, 200)
+            return (response, 200)
         else:
             response = {'error': 'Account not found'}
-            return _send_response(handler, response, 404)
+            return (response, 404)
 
     except Exception as e:
         return logger.error(e)
@@ -269,7 +286,7 @@ def device_mac_address():
         return mac_address
 
 
-def encode_access_token(handler, json_text: str, SECRET_KEY: str):
+def encode_access_token(json_text, SECRET_KEY: str):
     """Convert Text to access_token
 
     Args:
@@ -288,7 +305,8 @@ def encode_access_token(handler, json_text: str, SECRET_KEY: str):
         return encrypted_text
 
 
-def dencode_access_token(handler, encoded_access_token: str, SECRET_KEY: str):
+@_send_response
+def dencode_access_token(self, encoded_access_token: str, SECRET_KEY: str):
     """Decode access token which is get from file
 
     Args:
@@ -315,17 +333,18 @@ def dencode_access_token(handler, encoded_access_token: str, SECRET_KEY: str):
 
     except jwt.exceptions.ExpiredSignatureError:
         response = {'token error': 'Your Token is Expired, Login Again.'}
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
     except (jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         response = {'token error': 'Your Token is invalid, Login Again.'}
-        return _send_response(handler, response, 400)
+        return (response, 400)
 
     except Exception as e:
         return logger.debug(e)
 
 
-def refresh_token(handler, encoded_access_token: str, SECRET_KEY: str):
+@_send_response
+def refresh_token(self, encoded_access_token, SECRET_KEY: str):
     """A refresh token used to refresh the expired token
 
     Args:
@@ -334,8 +353,7 @@ def refresh_token(handler, encoded_access_token: str, SECRET_KEY: str):
 
     try:
         data_json = dencode_access_token(
-            handler, encoded_access_token, SECRET_KEY)
-
+            self, encoded_access_token, SECRET_KEY)
         if not data_json:
             return logger.error('unable to decode_access_token')
 
@@ -343,17 +361,15 @@ def refresh_token(handler, encoded_access_token: str, SECRET_KEY: str):
         address = device_mac_address()
         if device != address:
             response = {'mac-address': 'Your Token is Invalid'}
-            return _send_response(handler, response, 401)
+            return (response, 401)
 
         # check whose access token is it (admin/user)
         account = data_json['account']
         id = data_json['id']
 
         accounts = AccountDetails.objects(id=id).first()
-
         # get username
         username = accounts.username
-
         if account == 'Admin':
             SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
             email = ''
@@ -367,7 +383,11 @@ def refresh_token(handler, encoded_access_token: str, SECRET_KEY: str):
                 username, SECRET_KEY, email, account)
 
         if (payload or token):
-            return payload, token
+            send_me = {
+                'payload': payload,
+                'token': token
+            }
+            return send_me
 
     except Exception as e:
         return logger.error(e)
