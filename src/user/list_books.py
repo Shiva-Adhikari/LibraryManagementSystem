@@ -3,11 +3,12 @@ from src.utils import _read_get_query, _send_response
 from src.models import Department, Books
 
 
-def list_books(handler):
+@_send_response
+@_read_get_query
+def list_books(self, data):
     """Display list of Books.
     """
 
-    data = _read_get_query(handler)
     if not data:
         return
     category = data.get('category').lower()
@@ -19,7 +20,7 @@ def list_books(handler):
             'status': 'error',
             'message': 'department not found'
         }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     department_ids = []
     for book in department.books:
@@ -31,7 +32,7 @@ def list_books(handler):
 
     if page_no < 1 or page_no > total_pages:
         response = {'invalid': f'Invalid page, Available pages up to {total_pages}'}
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     skip_line = (page_no - 1) * page_size
 
@@ -54,4 +55,4 @@ def list_books(handler):
         'status': 'success',
         'message': list_books
     }
-    return _send_response(handler, response, 200)
+    return (response, 200)
