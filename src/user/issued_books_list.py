@@ -8,7 +8,7 @@ def user_issue_books_list(self):
     """display user issued books
     """
 
-    fetch_details, _ = _verify_refresh_token(self, whoami='User')
+    fetch_details = _verify_refresh_token(self, whoami='User')
     if not fetch_details:
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)

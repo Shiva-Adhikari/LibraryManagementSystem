@@ -29,7 +29,7 @@ def issue_books(self, data):
     due_warning = issue_date + timedelta(days=warning_to_date)
     due_date = issue_date + timedelta(days=to_date)
 
-    user_detail, _ = _verify_refresh_token(self, whoami='User')
+    user_detail = _verify_refresh_token(self, whoami='User')
     if not user_detail:
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)

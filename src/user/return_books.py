@@ -19,7 +19,7 @@ def return_books(self, data):
     category_name = data.get('category').lower().strip()
     book_name = data.get('book_name').lower().strip()
 
-    user_details, _ = _verify_refresh_token(self, whoami='User')
+    user_details = _verify_refresh_token(self, whoami='User')
     if not user_details:
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)

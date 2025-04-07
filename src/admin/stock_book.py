@@ -4,7 +4,7 @@ from src.models import Books, Department
 
 
 @_send_response
-def stock_book():
+def stock_book(self):
     """Search for books with less than 5 available copies
     and find their department."""
 
