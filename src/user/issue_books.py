@@ -11,6 +11,7 @@ from src.models import Books, UserDetails, Department
 def issue_books(self, data):
     """User issue book.
     """
+
     if not data:
         return
 
@@ -24,6 +25,7 @@ def issue_books(self, data):
             'message': 'enter days not string'
         }
         return (response, 400)
+
     issue_date = datetime.now()
     warning_to_date = to_date - 3
     due_warning = issue_date + timedelta(days=warning_to_date)
@@ -34,8 +36,8 @@ def issue_books(self, data):
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)
 
-    username = user_detail['username']
-    email = user_detail['email']
+    username = user_detail['token']['payload']['username']
+    email = user_detail['token']['payload']['email']
     department = Department.objects(name=category_name).first()
     if not department:
         response = {
@@ -64,6 +66,7 @@ def issue_books(self, data):
         'due_warning': due_warning,
         'due_date': due_date
     }
+
     user_details = UserDetails(**book_info)
 
     user_details.save()

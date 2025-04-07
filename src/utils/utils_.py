@@ -68,7 +68,9 @@ def decode_token(self, token, SECRET_KEY, whoami):
             jwt.exceptions.InvalidTokenError, jwt.DecodeError):
         """if token is expired then it call refresh token to extend time.
         """
+
         from src import refresh_token
+
         auth_header = self.headers.get('Authorization')
         if not auth_header:
             response = {'missing token': 'Missing or Invalid Access token'}
@@ -88,7 +90,7 @@ def decode_token(self, token, SECRET_KEY, whoami):
         elif whoami == 'User':
             SECRET = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
 
-        token = refresh_token(input_access_token, SECRET)
+        token = refresh_token(self, input_access_token, SECRET)
 
         if token:
             response = {
