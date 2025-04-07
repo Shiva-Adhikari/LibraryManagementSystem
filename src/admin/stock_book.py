@@ -3,7 +3,8 @@ from src.utils import _send_response
 from src.models import Books, Department
 
 
-def stock_book(handler):
+@_send_response
+def stock_book():
     """Search for books with less than 5 available copies
     and find their department."""
 
@@ -14,7 +15,7 @@ def stock_book(handler):
             'status': 'success',
             'message': 'books not found with low stock'
         }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     books_list = []
     for book in low_stock_book:
@@ -36,4 +37,4 @@ def stock_book(handler):
         'status': 'success',
         'message': books_list
     }
-    return _send_response(handler, response, 200)
+    return (response, 200)

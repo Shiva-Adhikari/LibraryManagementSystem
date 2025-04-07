@@ -3,8 +3,9 @@ from src.models import Department, Books
 from src.utils import _read_json, _send_response
 
 
-def update_books(handler):
-    data = _read_json(handler)
+@_send_response
+@_read_json
+def update_books(self, data):
     if not data:
         return
     category = data.get('category').lower().strip()
@@ -17,7 +18,7 @@ def update_books(handler):
             'status': 'error',
             'message': 'Department not found'
         }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     # collect ids from department
     book_ids = []
@@ -31,7 +32,7 @@ def update_books(handler):
             'status': 'error',
             'message': 'Book Not Found to update'
         }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     book.title = new_book['title']
     book.author = new_book['author']
@@ -42,4 +43,4 @@ def update_books(handler):
         'status': 'success',
         'message': 'Book Updated Successfully'
     }
-    return _send_response(handler, response, 200)
+    return (response, 200)

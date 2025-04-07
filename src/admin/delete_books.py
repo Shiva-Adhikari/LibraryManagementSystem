@@ -3,11 +3,12 @@ from src.models import Department, Books
 from src.utils import _send_response, _read_json
 
 
-def delete_books(handler):
+@_send_response
+@_read_json
+def delete_books(self, data):
     """Delete Books from database.
     """
 
-    data = _read_json(handler)
     if not data:
         return
     category = data.get('category', '').lower().strip()
@@ -19,16 +20,16 @@ def delete_books(handler):
             'status': 'error',
             'message': 'Department not found'
         }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
-    get_books = Books.objects.get(title=book_name)
+    get_books = Books.objects(title=book_name).first()
 
     if not get_books:
         response = {
                 'status': 'error',
                 'message': 'Book not found'
             }
-        return _send_response(handler, response, 404)
+        return (response, 404)
 
     # department ko ra, book ko id match vayo vani
     if get_books.id in [book.id for book in department.books]:
@@ -43,10 +44,10 @@ def delete_books(handler):
             'status': 'success',
             'message': 'Successfully Deleted Book'
         }
-        return _send_response(handler, response, 200)
+        return (response, 200)
 
     response = {
                 'status': 'error',
                 'message': 'Book not found in this department'
             }
-    return _send_response(handler, response, 404)
+    return (response, 404)

@@ -3,14 +3,12 @@ from src.models import Department, Books
 from src.utils import _read_json, _send_response
 
 
-def add_books(handler):
+@_send_response
+@_read_json
+def add_books(self, data):
     """Add book in database
-
-    Args:
-        handler: The request handler containing the JSON data
     """
 
-    data = _read_json(handler)
     if not data:
         return
 
@@ -43,4 +41,4 @@ def add_books(handler):
             'status': 'success',
             'message': 'Added Books Successfully'
         }
-        return _send_response(handler, response, 201)
+        return (response, 201)
