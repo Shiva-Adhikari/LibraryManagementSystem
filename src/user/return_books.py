@@ -24,11 +24,17 @@ def return_books(self, data):
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)
 
-    username = user_details['username']
-    email = user_details['email']
+    # username = user_details['username']
+    # email = user_details['email']
+
+    if isinstance(user_details.get('token'), dict):
+        username = user_details['token']['payload']['username']
+        email = user_details['token']['payload']['email']
+    else:
+        username = user_details['username']
+        email = user_details['email']
 
     department = Department.objects(name=category_name).first()
-    print(f"Department: {department}")
     if not department:
         response = {
             'status': 'error',
@@ -41,7 +47,6 @@ def return_books(self, data):
         department_ids.append(book.id)
 
     book = Books.objects(title=book_name, id__in=department_ids).first()
-    print(f"book: {book}")
     if not book:
         response = {
             'status': 'error',
@@ -49,8 +54,9 @@ def return_books(self, data):
         }
         return (response, 404)
 
-    user_detail = UserDetails.objects(username=username, email=email).first()
-    print(f"user_detail: {user_detail}")
+    books_ids = [book.id for book in book.user_details]
+    user_detail = UserDetails.objects(
+        username=username, email=email, id__in=books_ids).first()
     if not user_detail:
         response = {
             'status': 'error',
@@ -58,21 +64,21 @@ def return_books(self, data):
         }
         return (response, 404)
 
-    if user_detail.id in [user.id for user in book.user_details]:
-        book.user_details.remove(user_detail)
-        book.available = book.available + 1
-        book.save()
+    # if user_detail.id in [user.id for user in book.user_details]:
+    book.user_details.remove(user_detail)
+    book.available = book.available + 1
+    book.save()
 
-        user_detail.delete()
-
-        response = {
-            'status': 'success',
-            'message': 'successfully returned book'
-        }
-        return (response, 200)
+    user_detail.delete()
 
     response = {
-        'status': 'error',
-        'message': 'Book not found'
+        'status': 'success',
+        'message': 'successfully returned book'
     }
-    return (response, 404)
+    return (response, 200)
+
+    # response = {
+    #     'status': 'error',
+    #     'message': 'Book not found'
+    # }
+    # return (response, 404)
