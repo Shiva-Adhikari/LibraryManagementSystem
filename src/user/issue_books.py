@@ -36,8 +36,13 @@ def issue_books(self, data):
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)
 
-    username = user_detail['token']['payload']['username']
-    email = user_detail['token']['payload']['email']
+    if isinstance(user_detail.get('token'), dict):
+        username = user_detail['token']['payload']['username']
+        email = user_detail['token']['payload']['email']
+    else:
+        username = user_detail['username']
+        email = user_detail['email']
+
     department = Department.objects(name=category_name).first()
     if not department:
         response = {
@@ -72,7 +77,14 @@ def issue_books(self, data):
     user_details.save()
     books.user_details.append(user_details.id)
     books.available = books.available - 1
-    books.save()
+    try:
+        books.save()
+    except Exception:
+        response = {
+            'status': 'success',
+            'message': 'Books not available'
+        }
+        return (response, 404)
 
     response = {
         'status': 'success',
