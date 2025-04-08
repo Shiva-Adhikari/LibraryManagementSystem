@@ -24,9 +24,6 @@ def return_books(self, data):
         response = {'error': 'Data is Discarded, please login first.'}
         return (response, 401)
 
-    # username = user_details['username']
-    # email = user_details['email']
-
     if isinstance(user_details.get('token'), dict):
         username = user_details['token']['payload']['username']
         email = user_details['token']['payload']['email']
@@ -60,11 +57,10 @@ def return_books(self, data):
     if not user_detail:
         response = {
             'status': 'error',
-            'message': 'user not found'
+            'message': 'book not found, issue book first'
         }
         return (response, 404)
 
-    # if user_detail.id in [user.id for user in book.user_details]:
     book.user_details.remove(user_detail)
     book.available = book.available + 1
     book.save()
@@ -76,9 +72,3 @@ def return_books(self, data):
         'message': 'successfully returned book'
     }
     return (response, 200)
-
-    # response = {
-    #     'status': 'error',
-    #     'message': 'Book not found'
-    # }
-    # return (response, 404)
