@@ -3,44 +3,6 @@ import json
 from urllib.parse import urlparse, parse_qs
 
 
-def _input_access_token():
-    print('_input_access_token():')
-    print('exit')
-    exit()
-    # def wrapper(self, *args, **kwargs):
-    #     auth_header = self.headers.get('Authorization')
-
-    #     if auth_header:
-    #         if auth_header.startswith('Bearer '):
-    #             access_token = auth_header.split(' ', 1)[1]
-    #         else:
-    #             access_token = auth_header  # Directly take the token
-
-    #         # return access_token
-    #         return function(self, *args, **kwargs, access_token=access_token)
-    #     else:
-    #         response = {'missing token': 'Missing or Invalid Access token'}
-    #         return (response, 401)
-    # return wrapper
-
-
-def _input_refresh_token():
-    print('_input_refresh_token():')
-    print('exit')
-    exit()
-    # def wrapper(self, *args, **kwargs):
-    #     auth_refresh_token = self.headers.get('RefreshToken')
-
-    #     if auth_refresh_token:
-    #         # return auth_refresh_token
-    #         return function(
-    #             self, *args, **kwargs, refresh_token=auth_refresh_token)
-    #     else:
-    #         response = {'missing token': 'Missing or Invalid Refresh token'}
-    #         return (response, 401)
-    # return wrapper
-
-
 def _send_response(function):
     def wrapper(self, *args, **kwargs):
         result = function(self, *args, **kwargs)
@@ -82,13 +44,3 @@ def _read_get_query(function):
 
         return function(self, clean_data, *args, **kwargs)
     return wrapper
-
-
-# @_send_response
-# def _input_refresh_token(self):
-#     auth_refresh_token = self.headers.get('RefreshToken')
-#     if auth_refresh_token:
-#         return auth_refresh_token
-#     else:
-#         response = {'missing token': 'Missing or Invalid Refresh token'}
-#         return (response, 401)
