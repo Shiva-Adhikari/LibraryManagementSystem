@@ -7,7 +7,7 @@ import os
 
 # local modules
 from src.models import settings, db
-from .http_server import _send_response, _input_access_token, _input_refresh_token
+from .http_server import _send_response
 
 
 def logging_module():
