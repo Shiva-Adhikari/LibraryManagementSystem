@@ -94,7 +94,7 @@ def decode_token(self, token, SECRET_KEY, whoami):
 
         if token:
             response = {
-                'message': 'Refresh Token Key.',
+                'message': 'Refresh Token Key. Save it',
                 'token': token
             }
             return response
@@ -111,10 +111,6 @@ def _verify_refresh_token(self, whoami):
     if not token:
         response = {'missing token': 'Missing or Invalid Refresh token'}
         return (response, 401)
-
-    if not token:
-        logger.error('token not found from header')
-        return
 
     if whoami == 'Admin':
         SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
