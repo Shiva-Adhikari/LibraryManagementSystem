@@ -14,12 +14,9 @@ def add_books(self, data):
 
     for category_name, book_list in data.items():
         # check if department exists
-        existing_department = Department.objects(name=category_name).first()
+        department = Department.objects(name=category_name).first()
 
-        if existing_department:
-            # if exists just add book to it
-            department = existing_department
-        else:
+        if not department:
             # create new department
             department = Department(name=category_name, books=[])
             department.save()
