@@ -15,53 +15,45 @@ from src.utils import _send_response
 from src.models import mongo_config, http_server
 
 
+routes = {
+    ('GET', '/api/admin/search-books'): search_books,
+    ('GET', '/api/admin/stock-books'): stock_book,
+    ('GET', '/api/user/list-books'): list_books,
+    ('GET', '/api/user/issued_books_list'): user_issue_books_list,
+    ('POST', '/api/admin/register'): admin_register,
+    ('POST', '/api/admin/login'): admin_login,
+    ('POST', '/api/user/register'): user_register,
+    ('POST', '/api/user/login'): user_login,
+    ('POST', '/api/admin/add-books'): add_books,
+    ('POST', '/api/user/issue-books'): issue_books,
+    ('PUT', '/api/admin/update-books'): update_books,
+    ('PUT', '/api/user/return-books'): return_books,
+    ('DELETE', '/api/admin/delete-books'): delete_books,
+}
+
+
 class MainServer(BaseHTTPRequestHandler):
-    def do_GET(self):
+    def request_me(self):
         parsed_url = urlparse(self.path).path
-        if parsed_url == '/api/admin/search-books':
-            search_books(self)
-        elif self.path == '/api/admin/stock-books':
-            stock_book(self)
-        elif parsed_url == '/api/user/list-books':
-            list_books(self)
-        elif self.path == '/api/user/issued_books_list':
-            user_issue_books_list(self)
+        key = (self.command, parsed_url)
+        if key in routes:
+            handler = routes[key]
+            handler(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
             _send_response(self, response, 401)
+
+    def do_GET(self):
+        self.request_me()
 
     def do_POST(self):
-        if self.path == '/api/admin/register':
-            admin_register(self)
-        elif self.path == '/api/admin/login':
-            admin_login(self)
-        elif self.path == '/api/user/register':
-            user_register(self)
-        elif self.path == '/api/user/login':
-            user_login(self)
-        elif self.path == '/api/admin/add-books':
-            add_books(self)
-        elif self.path == '/api/user/issue-books':
-            issue_books(self)
-        else:
-            response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 401)
-
-    def do_DELETE(self):
-        if self.path == '/api/admin/delete-books':
-            delete_books(self)
-        else:
-            response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 401)
+        self.request_me()
 
     def do_PUT(self):
-        if self.path == '/api/admin/update-books':
-            update_books(self)
-        elif self.path == '/api/user/return-books':
-            return_books(self)
-        else:
-            response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 401)
+        self.request_me()
+
+    def do_DELETE(self):
+        self.request_me()
 
 
 class Server:
