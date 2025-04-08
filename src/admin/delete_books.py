@@ -22,7 +22,9 @@ def delete_books(self, data):
         }
         return (response, 404)
 
-    get_books = Books.objects(title=book_name).first()
+    department_ids = [book.id for book in department.books]
+
+    get_books = Books.objects(title=book_name, id__in=department_ids).first()
 
     if not get_books:
         response = {
@@ -31,23 +33,14 @@ def delete_books(self, data):
             }
         return (response, 404)
 
-    # department ko ra, book ko id match vayo vani
-    if get_books.id in [book.id for book in department.books]:
-        # delete reference id from department
-        department.books.remove(get_books)
-        department.save()
+    # delete reference id from department
+    department.books.remove(get_books)
+    department.save()
 
-        # delete books from collection
-        get_books.delete()
-
-        response = {
-            'status': 'success',
-            'message': 'Successfully Deleted Book'
-        }
-        return (response, 200)
-
+    # delete books from collection
+    get_books.delete()
     response = {
-                'status': 'error',
-                'message': 'Book not found in this department'
-            }
-    return (response, 404)
+        'status': 'success',
+        'message': 'Successfully Deleted Book'
+    }
+    return (response, 200)
