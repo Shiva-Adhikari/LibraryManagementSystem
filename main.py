@@ -3,45 +3,30 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
 # local modules
-from src.admin import (
+from src.admin import (  # noqa: F401
     admin_register, admin_login,
     add_books, delete_books, update_books, search_books, stock_book
 )
-from src.user import (
+from src.user import (  # noqa: F401
     user_register, user_login,
     issue_books, return_books, list_books, user_issue_books_list
 )
-from src.utils import _send_response
+from src.utils import _send_response, ROUTES
 from src.models import mongo_config, http_server
 
 
-routes = {
-    ('GET', '/api/admin/search-books'): search_books,
-    ('GET', '/api/admin/stock-books'): stock_book,
-    ('GET', '/api/user/list-books'): list_books,
-    ('GET', '/api/user/issued_books_list'): user_issue_books_list,
-    ('POST', '/api/admin/register'): admin_register,
-    ('POST', '/api/admin/login'): admin_login,
-    ('POST', '/api/user/register'): user_register,
-    ('POST', '/api/user/login'): user_login,
-    ('POST', '/api/admin/add-books'): add_books,
-    ('POST', '/api/user/issue-books'): issue_books,
-    ('PUT', '/api/admin/update-books'): update_books,
-    ('PUT', '/api/user/return-books'): return_books,
-    ('DELETE', '/api/admin/delete-books'): delete_books,
-}
-
-
 class MainServer(BaseHTTPRequestHandler):
+    @_send_response
     def request_me(self):
         parsed_url = urlparse(self.path).path
         key = (self.command, parsed_url)
-        if key in routes:
-            handler = routes[key]
-            handler(self)
+
+        handler = ROUTES.get(key)
+        if handler:
+            return handler(self)
         else:
             response = {'error': 'mistake is in path, /api/account/?'}
-            _send_response(self, response, 401)
+            return (response, 401)
 
     def do_GET(self):
         self.request_me()
