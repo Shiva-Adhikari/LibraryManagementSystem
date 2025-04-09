@@ -44,3 +44,13 @@ def _read_get_query(function):
 
         return function(self, clean_data, *args, **kwargs)
     return wrapper
+
+
+ROUTES = {}
+
+
+def route(method, path):
+    def wrapper(function):
+        ROUTES[(method, path)] = function
+        return function
+    return wrapper
