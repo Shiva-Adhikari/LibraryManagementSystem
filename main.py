@@ -11,12 +11,15 @@ from src.user import (  # noqa: F401
     user_register, user_login,
     issue_books, return_books, list_books, user_issue_books_list
 )
-from src.utils import _send_response, ROUTES
+from src.utils import (
+    # _send_response,
+    ROUTES
+)
 from src.models import mongo_config, http_server
 
 
 class MainServer(BaseHTTPRequestHandler):
-    @_send_response
+    # @_send_response
     def request_me(self):
         parsed_url = urlparse(self.path).path
         key = (self.command, parsed_url)
@@ -25,8 +28,9 @@ class MainServer(BaseHTTPRequestHandler):
         if handler:
             return handler(self)
         else:
-            response = {'error': 'mistake is in path, /api/account/?'}
-            return (response, 401)
+            # response = {'error': 'mistake is in path, /api/account/?'}
+            # return (response, 401)
+            raise TypeError('"mistake is in path, /api/account/?"')
 
     def do_GET(self):
         self.request_me()

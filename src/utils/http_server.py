@@ -26,11 +26,12 @@ def _read_json(function):
             body = json.loads(post_data.decode('utf-8'))
             return function(self, body, *args, **kwargs)
         except Exception:
-            response = {
-                'status': 'error',
-                'message': 'check your formatting before send request'
-            }
-            return (response, 400)
+            # response = {
+                # 'status': 'error',
+                # 'message': 'check your formatting before send request'
+            # }
+            # return (response, 400)
+            raise TypeError('"check your formatting before send request"')
     return wrapper
 
 
