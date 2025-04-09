@@ -1,8 +1,9 @@
 # local modules
-from src.utils import _send_response
+from src.utils import _send_response, route
 from src.models import Books, Department
 
 
+@route('GET', '/api/admin/stock-books')
 @_send_response
 def stock_book(self):
     """Search for books with less than 5 available copies

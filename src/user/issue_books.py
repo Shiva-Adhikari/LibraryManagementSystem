@@ -2,10 +2,13 @@
 from datetime import datetime, timedelta
 
 # local modules
-from src.utils import _send_response, _read_json, _verify_refresh_token
+from src.utils import (
+    _send_response, _read_json, _verify_refresh_token, route
+)
 from src.models import Books, UserDetails, Department
 
 
+@route('POST', '/api/user/issue-books')
 @_send_response
 @_read_json
 def issue_books(self, data):

@@ -1,8 +1,10 @@
 # local modules
 from src import account_register, account_login
 from src.models import settings
+from src.utils import route
 
 
+@route('POST', '/api/admin/register')
 def admin_register(self):
     """This is where admin register.
     """
@@ -11,6 +13,7 @@ def admin_register(self):
     account_register(self, whoami)
 
 
+@route('POST', '/api/admin/login')
 def admin_login(self):
     """Admin login
 

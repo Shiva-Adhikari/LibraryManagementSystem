@@ -1,8 +1,9 @@
 # local modules
-from src.utils import _read_get_query, _send_response
+from src.utils import _read_get_query, _send_response, route
 from src.models import Department, Books
 
 
+@route('GET', '/api/user/list-books')
 @_send_response
 @_read_get_query
 def list_books(self, data):

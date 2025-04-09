@@ -1,8 +1,9 @@
 # local modules
-from src.utils import _verify_refresh_token, _send_response
+from src.utils import _verify_refresh_token, _send_response, route
 from src.models import UserDetails, Books
 
 
+@route('GET', '/api/user/issued_books_list')
 @_send_response
 def user_issue_books_list(self):
     """display user issued books

@@ -1,8 +1,11 @@
 # local modules
-from src.utils import _send_response, _read_json, _verify_refresh_token
+from src.utils import (
+    _send_response, _read_json, _verify_refresh_token, route
+)
 from src.models import Department, Books, UserDetails
 
 
+@route('PUT', '/api/user/return-books')
 @_send_response
 @_read_json
 def return_books(self, data):
@@ -12,7 +15,6 @@ def return_books(self, data):
         bool: if issued books not available, exit.
     """
 
-    # data = _read_json(handler)
     if not data:
         return
 

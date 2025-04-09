@@ -1,8 +1,9 @@
 # local modules
 from src.models import Department, Books
-from src.utils import _send_response, _read_json
+from src.utils import _send_response, _read_json, route
 
 
+@route('DELETE', '/api/admin/delete-books')
 @_send_response
 @_read_json
 def delete_books(self, data):

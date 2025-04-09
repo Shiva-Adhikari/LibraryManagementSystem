@@ -2,10 +2,11 @@
 import re
 
 # local modules
-from src.utils import _send_response, _read_get_query
+from src.utils import _send_response, _read_get_query, route
 from src.models import Books
 
 
+@route('GET', '/api/admin/search-books')
 @_send_response
 @_read_get_query
 def search_books(self, data):

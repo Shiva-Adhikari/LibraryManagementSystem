@@ -1,8 +1,9 @@
 # local modules
 from src.models import Department, Books
-from src.utils import _read_json, _send_response
+from src.utils import _read_json, _send_response, route
 
 
+@route('PUT', '/api/admin/update-books')
 @_send_response
 @_read_json
 def update_books(self, data):

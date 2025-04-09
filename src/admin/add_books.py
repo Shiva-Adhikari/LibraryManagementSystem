@@ -1,8 +1,9 @@
 # local modules
 from src.models import Department, Books
-from src.utils import _read_json, _send_response
+from src.utils import _read_json, _send_response, route
 
 
+@route('POST', '/api/admin/add-books')
 @_send_response
 @_read_json
 def add_books(self, data):
