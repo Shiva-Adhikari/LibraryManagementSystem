@@ -1,7 +1,6 @@
 # local modules
 from src import account_register, account_login
-from src.models import settings
-from src.utils import route
+from src.utils import route, Env
 
 
 @route('POST', '/api/admin/register')
@@ -22,7 +21,7 @@ def admin_login(self):
     """
 
     whoami = 'Admin'
-    access_token = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
+    access_token = Env.ADMIN_SECRET_ACCESS_TOKEN.value
 
     success_login = account_login(self, whoami, access_token)
     if success_login:

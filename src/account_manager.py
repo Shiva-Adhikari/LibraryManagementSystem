@@ -9,8 +9,8 @@ from email_validator import validate_email, EmailNotValidError
 from datetime import datetime, timedelta
 
 # local modules
-from src.utils import logger, _read_json, _send_response
-from src.models import settings, Account, AccountDetails
+from src.utils import logger, _read_json, _send_response, Env
+from src.models import Account, AccountDetails
 
 
 @_send_response
@@ -297,7 +297,7 @@ def encode_access_token(json_text, SECRET_KEY: str):
         True: if encoded token is successfully written in file.
     """
 
-    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
+    ALGORITHM = Env.JWT_ALGORITHM.value
 
     encrypted_text = jwt.encode(json_text, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -316,7 +316,7 @@ def dencode_access_token(self, encoded_access_token: str, SECRET_KEY: str):
         str: if successfully decoded then it return decoded text
     """
 
-    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
+    ALGORITHM = Env.JWT_ALGORITHM.value
     try:
         decoded = jwt.decode(
             encoded_access_token,
@@ -371,13 +371,13 @@ def refresh_token(self, encoded_access_token, SECRET_KEY: str):
         # get username
         username = accounts.username
         if account == 'Admin':
-            SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
+            SECRET_KEY = Env.ADMIN_SECRET_JWT.value
             email = ''
             token, payload = generate_token(
                 username, SECRET_KEY, email, account)
 
         elif account == 'User':
-            SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
+            SECRET_KEY = Env.USER_SECRET_JWT.value
             email = accounts.email
             token, payload = generate_token(
                 username, SECRET_KEY, email, account)
@@ -406,7 +406,7 @@ def generate_token(username, SECRET_KEY: str, email: str, account: str):
         str: if succesfully encoded then it return.
     """
 
-    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
+    ALGORITHM = Env.JWT_ALGORITHM.value
     EXP_DATE = timedelta(days=5)
     payload = {}
 
