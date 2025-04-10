@@ -8,6 +8,7 @@ from src.utils.http_server import (
     _send_response, _read_json, _read_get_query,
     route, ROUTES
 )
+from src.utils.enums import Env
 
 __all__ = [
     'logger',
