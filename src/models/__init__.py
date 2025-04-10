@@ -1,5 +1,5 @@
-from .settings import settings, db, mongo_config, http_server
-from .account import (
+from src.models.settings import settings, db, mongo_config, http_server
+from src.models.account import (
     Account, AccountDetails
 )
 from .mongo import Department, Books, UserDetails
