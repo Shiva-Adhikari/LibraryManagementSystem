@@ -13,7 +13,7 @@ from src.user import (  # noqa: F401
 )
 from src.utils import (
     # _send_response,
-    ROUTES
+    ROUTES, logger
 )
 from src.models import mongo_config, http_server
 
@@ -52,13 +52,13 @@ class Server:
 
     def __enter__(self):
         self.server = HTTPServer((self.HOST, self.PORT), MainServer)
-        print("Server is Running...")
+        logger.info('Server is Running...')
         return self.server
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.server:
             self.server.server_close()
-            print('Server Stopped.')
+            logger.info('Server Stopped.')
 
 
 if __name__ == '__main__':
@@ -66,4 +66,4 @@ if __name__ == '__main__':
         try:
             server.serve_forever()
         except KeyboardInterrupt:
-            print('server interrupted by user.')
+            logger.info('server interrupted by user.')
