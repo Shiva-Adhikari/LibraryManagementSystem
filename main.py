@@ -13,9 +13,9 @@ from src.user import (  # noqa: F401
 )
 from src.utils import (
     # _send_response,
-    ROUTES, logger
+    ROUTES, logger, Env
 )
-from src.models import mongo_config, http_server
+# from src.models import mongo_config, http_server
 
 
 class MainServer(BaseHTTPRequestHandler):
@@ -47,8 +47,8 @@ class MainServer(BaseHTTPRequestHandler):
 
 class Server:
     def __init__(self):
-        self.HOST = mongo_config.HOST
-        self.PORT = http_server.HTTPSERVER_PORT
+        self.HOST = Env.HOST.value
+        self.PORT = Env.HTTPSERVER_PORT.value
 
     def __enter__(self):
         self.server = HTTPServer((self.HOST, self.PORT), MainServer)

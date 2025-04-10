@@ -6,8 +6,9 @@ import logging
 import os
 
 # local modules
-from src.models import settings, db
+from src.models import db
 from src.utils.http_server import _send_response
+from src.utils.enums import Env
 
 
 def logging_module():
@@ -77,7 +78,7 @@ def decode_token(self, token, SECRET_KEY, whoami):
         str: return decoded token i.e user or admin credentials.
     """
 
-    ALGORITHM = settings.JWT_ALGORITHM.get_secret_value()
+    ALGORITHM = Env.JWT_ALGORITHM.value
     try:
         # this is used by professional, remember this for future
         decoded = jwt.decode(
@@ -115,9 +116,9 @@ def decode_token(self, token, SECRET_KEY, whoami):
             return
 
         if whoami == 'Admin':
-            SECRET = settings.ADMIN_SECRET_ACCESS_TOKEN.get_secret_value()
+            SECRET = Env.ADMIN_SECRET_ACCESS_TOKEN.value
         elif whoami == 'User':
-            SECRET = settings.USER_SECRET_ACCESS_TOKEN.get_secret_value()
+            SECRET = Env.USER_SECRET_ACCESS_TOKEN.value
 
         token = refresh_token(self, input_access_token, SECRET)
 
@@ -142,10 +143,10 @@ def _verify_refresh_token(self, whoami):
         return (response, 401)
 
     if whoami == 'Admin':
-        SECRET_KEY = settings.ADMIN_SECRET_JWT.get_secret_value()
+        SECRET_KEY = Env.ADMIN_SECRET_JWT.value
         token_data = decode_token(self, token, SECRET_KEY, whoami)
     elif whoami == 'User':
-        SECRET_KEY = settings.USER_SECRET_JWT.get_secret_value()
+        SECRET_KEY = Env.USER_SECRET_JWT.value
         token_data = decode_token(self, token, SECRET_KEY, whoami)
 
     if not token_data:
