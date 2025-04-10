@@ -15,7 +15,6 @@ from src.utils import (
     # _send_response,
     ROUTES, logger, Env
 )
-# from src.models import mongo_config, http_server
 
 
 class MainServer(BaseHTTPRequestHandler):
