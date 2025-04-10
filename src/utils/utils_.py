@@ -21,15 +21,44 @@ def logging_module():
     log_dir = os.path.abspath('logs')
     os.makedirs(log_dir, exist_ok=True)     # create dir if not exist
     log_path = os.path.join(log_dir, 'log_file.log')
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s %(filename)s %(funcName)s lineno: %(lineno)d '
-        '%(levelname)s: %(message)s',
-        filename=log_path,
-        filemode='a'
+
+    console_format = '%(message)s'
+    file_format = (
+        '%(asctime)s %(filename)s %(funcName)s lineno: %(lineno)d '
+        '%(levelname)s: %(message)s'
     )
 
-    return logging.getLogger(__name__)
+    class InfoOnlyFilter(logging.Filter):
+        def filter(self, record):
+            return record.levelno == logging.INFO
+
+    class ExcludeInfoFilter(logging.Filter):
+        def filter(self, record):
+            return record.levelno != logging.INFO
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    if not logger.handlers:
+        console_handler = logging.StreamHandler()
+        file_handler = logging.FileHandler(log_path)
+
+        console_handler.setLevel(logging.INFO)
+        file_handler.setLevel(logging.DEBUG)
+
+        console_handler.addFilter(InfoOnlyFilter())
+        file_handler.addFilter(ExcludeInfoFilter())
+
+        console_formatter = logging.Formatter(console_format)
+        file_formatter = logging.Formatter(file_format)
+
+        console_handler.setFormatter(console_formatter)
+        file_handler.setFormatter(file_formatter)
+
+        logger.addHandler(console_handler)
+        logger.addHandler(file_handler)
+
+    return logger
 
 
 # Instance
