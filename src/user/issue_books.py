@@ -75,6 +75,19 @@ def issue_books(self, data):
         'due_date': due_date
     }
 
+    # book issued or not
+    search_book = Books.objects(title=book_name).first()
+
+    search_book_id = [user.id for user in search_book.user_details]
+    user_found = UserDetails.objects(
+        username=username, id__in=search_book_id).first()
+    if user_found:
+        response = {
+            'status': 'error',
+            'message': 'already issued book, return book first'
+        }
+        return (response, 409)
+
     user_details = UserDetails(**book_info)
 
     user_details.save()
