@@ -26,6 +26,16 @@ def update_books(self, data):
     for book in department.books:
         book_ids.append(book.id)
 
+    new_book_title = new_book['title']
+    # check book exists or not before update
+    search_book = Books.objects(title=new_book_title, id__in=book_ids).first()
+    if search_book:
+        response = {
+            'status': 'error',
+            'message': 'Book already present'
+        }
+        return (response, 409)
+
     try:
         book = Books.objects.get(title=old_book_name, id__in=book_ids)
     except Exception:
