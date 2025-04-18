@@ -3,7 +3,7 @@ from src.models import Department, Books
 from src.utils import _send_response, _read_json, route
 
 
-@route('DELETE', '/api/admin/delete-books')
+@route('DELETE', r'^/api/admin/delete-books/(?P<category>[^/]+)$')
 @_send_response
 @_read_json
 def delete_books(self, data):
@@ -12,7 +12,8 @@ def delete_books(self, data):
 
     if not data:
         return
-    category = data.get('category', '').lower().strip()
+
+    category = self.Category
     book_name = data.get('book_name', '').lower().strip()
 
     department = Department.objects(name=category).first()
