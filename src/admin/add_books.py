@@ -13,7 +13,7 @@ def add_books(self, data):
     if not data:
         return
 
-    category_name = self.path_params['category']
+    category_name = self.Category
 
     # check if department exists
     department = Department.objects(name=category_name).first()
