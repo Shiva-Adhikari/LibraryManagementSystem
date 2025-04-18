@@ -1,6 +1,6 @@
 # built in modules
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 import re
 
 # local modules
@@ -28,7 +28,9 @@ class MainServer(BaseHTTPRequestHandler):
                 if method == self.command:
                     match = re.match(pattern, re_path)
                     if match:
-                        self.path_params = match.groupdict()
+                        raw_category = match.group('category')
+                        decoded_category = unquote(raw_category)
+                        self.Category = decoded_category.strip().lower()
                         return func(self)
 
             raise TypeError('"mistake is in path, /api/account/?"')
