@@ -1,6 +1,7 @@
 # built in modules
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
+import re
 
 # local modules
 from src.admin import (  # noqa: F401
@@ -12,24 +13,31 @@ from src.user import (  # noqa: F401
     issue_books, return_books, list_books, user_issue_books_list
 )
 from src.utils import (
-    # _send_response,
+    _send_response,
     ROUTES, logger, Env
 )
 
 
 class MainServer(BaseHTTPRequestHandler):
-    # @_send_response
+    @_send_response
     def request_me(self):
-        parsed_url = urlparse(self.path).path
-        key = (self.command, parsed_url)
+        re_path = urlparse(self.path).path
 
-        handler = ROUTES.get(key)
-        if handler:
-            return handler(self)
-        else:
-            # response = {'error': 'mistake is in path, /api/account/?'}
-            # return (response, 401)
+        try:
+            for (method, pattern), func in ROUTES.items():
+                if method == self.command:
+                    match = re.match(pattern, re_path)
+                    if match:
+                        self.path_params = match.groupdict()
+                        return func(self)
+
             raise TypeError('"mistake is in path, /api/account/?"')
+        except Exception:
+            response = {
+                'status': 'error',
+                'message': 'mistake is in path, /api/account/?'
+            }
+            return (response, 401)
 
     def do_GET(self):
         self.request_me()
