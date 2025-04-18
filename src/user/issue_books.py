@@ -8,7 +8,7 @@ from src.utils import (
 from src.models import Books, UserDetails, Department
 
 
-@route('POST', '/api/user/issue-books')
+@route('POST', r'^/api/user/issue-books/(?P<category>[^/]+)$')
 @_send_response
 @_read_json
 def issue_books(self, data):
@@ -18,7 +18,8 @@ def issue_books(self, data):
     if not data:
         return
 
-    category_name = data.get('category').lower().strip()
+    # category_name = data.get('category').lower().strip()
+    category_name = self.Category
     book_name = data.get('book_name').lower().strip()
     to_date = data.get('days')
 

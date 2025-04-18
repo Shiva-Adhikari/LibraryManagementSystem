@@ -5,7 +5,7 @@ from src.utils import (
 from src.models import Department, Books, UserDetails
 
 
-@route('PUT', '/api/user/return-books')
+@route('PUT', r'^/api/user/return-books/(?P<category>[^/]+)$')
 @_send_response
 @_read_json
 def return_books(self, data):
@@ -18,7 +18,8 @@ def return_books(self, data):
     if not data:
         return
 
-    category_name = data.get('category').lower().strip()
+    # category_name = data.get('category').lower().strip()
+    category_name = self.Category
     book_name = data.get('book_name').lower().strip()
 
     user_details = _verify_refresh_token(self, whoami='User')

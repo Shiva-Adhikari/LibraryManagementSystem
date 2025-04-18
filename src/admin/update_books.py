@@ -3,13 +3,14 @@ from src.models import Department, Books
 from src.utils import _read_json, _send_response, route
 
 
-@route('PUT', '/api/admin/update-books')
+@route('PUT', r'^/api/admin/update-books/(?P<category>[^/]+)$')
 @_send_response
 @_read_json
 def update_books(self, data):
     if not data:
         return
-    category = data.get('category').lower().strip()
+
+    category = self.Category
     old_book_name = data.get('old_book_name').lower().strip()
     new_book = data.get('new_book')
 
