@@ -24,6 +24,11 @@ class MainServer(BaseHTTPRequestHandler):
         re_path = urlparse(self.path).path
 
         try:
+            key = (self.command, re_path)
+            handler = ROUTES.get(key)
+            if handler:
+                return handler(self)
+
             for (method, pattern), func in ROUTES.items():
                 if method == self.command:
                     match = re.match(pattern, re_path)
