@@ -46,8 +46,8 @@ def update_books(self, data):
         }
         return (response, 404)
 
-    book.title = new_book['title']
-    book.author = new_book['author']
+    book.title = new_book['title'].lower().strip()
+    book.author = new_book['author'].lower().strip()
     book.available = new_book['available']
 
     book.save()
